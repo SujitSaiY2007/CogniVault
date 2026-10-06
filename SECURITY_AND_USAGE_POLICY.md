@@ -9,26 +9,35 @@
 
 ## Demo Accounts
 
-Use synthetic demo identities only. Do not store real user credentials.
+Use synthetic demo identities only. Do not store real user credentials or real student records.
+
+## Learner Data
+
+Store only the minimum data needed for the demo: learner ID, topic mastery state, assessment interaction metadata, and recommendation evidence. Avoid unnecessary personal attributes.
 
 ## Usage Controls
 
-A lightweight quota layer is planned to control:
+A lightweight quota layer controls:
+
 - requests per user/session,
-- model token usage,
+- model token usage where available,
 - ingestion volume,
 - assessment generation volume.
 
-Actual limits will be selected after measuring the chosen API/model usage. No cost claim will be invented before measurement.
+Actual limits are configuration values chosen after provider/model measurement. They are not cost guarantees.
 
 ## Failure Behavior
 
-- API unavailable → show service-unavailable state; do not fabricate output.
-- Retrieval failure → report insufficient evidence.
-- Citation mapping failure → do not present a grounded answer.
-- Question verification failure → do not present the question.
-- Quota exceeded → clearly report the limit.
+- API unavailable → explicit service-unavailable state; no fabricated output.
+- Retrieval failure → insufficient-evidence state.
+- Citation mapping failure → no grounded answer.
+- Question verification failure → question rejected.
+- Quota exceeded → explicit limit state.
 
-## Privacy
+## Source and License Safety
 
-Only the minimum learner data required for the demo should be stored. Demo data should be synthetic or user-provided for the session.
+Do not commit large/private course files without permission. Track source provenance and licensing in the corpus manifest.
+
+## Security Acceptance
+
+A release cannot pass if repository scans reveal real credentials or if failure modes can silently fabricate grounded output.
