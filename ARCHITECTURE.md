@@ -23,21 +23,23 @@ Accept PDF/textbook, PPTX/slides, images/figures, and selected lecture-video tra
 ### 2. Evidence Store
 
 Maintain:
-
 - source_id,
 - source metadata,
 - evidence_id,
 - source type,
 - modality,
 - extracted text,
-- page/slide/timestamp/region locator,
-- parent evidence relation,
-- extraction method/confidence,
-- content hash.
+- page/slide/timestamp locator,
+- binary image assets (MIME type, SHA-256, width, height),
+- topics, concepts, and directed prerequisite chains.
 
-### 3. Retrieval
+### 3. Retrieval Engine
 
-Use SQLite FTS5 for lexical retrieval plus embeddings/vector search for semantic retrieval. Fuse ranked results deterministically and preserve retrieval traces.
+- **Lexical Retrieval:** SQLite FTS5 `MATCH` queries ranked by Okapi BM25 combined with query term coverage.
+- **Semantic Retrieval:** SQLite-persisted 32-bit float vector embeddings with dimension validation and model tracking.
+- **Hybrid Fusion:** Deterministic linear combination: $0.45 \times \text{lexical} + 0.55 \times \text{semantic}$, with stable alphabetical tie-breaking on `evidence_id`.
+- **Retrieval Trace:** Machine-readable trace capturing query, mode, candidate count, result count, scores breakdown, rankings, source IDs, and fail-closed unsupported reasons.
+- **Source Resolver:** Verifiable resolution from `evidence_id` back to exact source location, path, SHA-256, and text/asset payload.
 
 ### 4. Evidence Gate
 

@@ -124,8 +124,84 @@ Cognivault uses established ideas including RAG, multimodal extraction, intellig
 
 The project does not claim these techniques as inventions. Any stronger project-specific novelty claim must be supported by evidence.
 
+## Chat 01 Developer Usage
+
+### 1. Environment Setup & Installation
+```bash
+python -m venv .venv
+# On Windows:
+.venv\Scripts\activate
+# On Linux/macOS:
+source .venv/bin/activate
+
+pip install -e .
+```
+
+### 2. Test Execution
+Run all automated unit and acceptance tests (K1–K10):
+```bash
+pytest -v
+```
+
+### 3. Evidence Ingestion
+Ingest textbooks, slide decks, and lecture transcripts into SQLite:
+```python
+from app.db import EvidenceDB
+from app.ingest import ingest_pdf, ingest_pptx, ingest_transcript
+
+db = EvidenceDB("cognivault.sqlite")
+
+# Ingest PDF textbook (extracts text chunks and figures with page provenance)
+pdf_source_id = ingest_pdf("textbook.pdf", db)
+
+# Ingest PPTX slide deck (extracts slide text and embedded images with slide provenance)
+pptx_source_id = ingest_pptx("lecture.pptx", db)
+
+# Ingest lecture transcript (supports [mm:ss], [hh:mm:ss], mm:ss formats)
+vid_source_id = ingest_transcript("transcript.txt", db)
+```
+
+### 4. Embedding Indexing
+Generate and persist embeddings in SQLite:
+```python
+from app.retrieval import build_embeddings
+
+# Persists normalized embeddings into SQLite without committed binaries
+build_embeddings(db)
+```
+
+### 5. Deterministic Hybrid Retrieval
+Query using SQLite FTS5 lexical search, semantic embeddings, or deterministic hybrid fusion:
+```python
+from app.retrieval import HybridRetriever
+
+retriever = HybridRetriever(db)
+results, trace = retriever.search("Newton second law", k=5, mode="hybrid")
+
+for r in results:
+    print(r.evidence_id, r.score, r.location, r.snippet[:100])
+
+# Machine-readable retrieval trace
+print("Unsupported:", trace.unsupported, "Reason:", trace.reason)
+```
+
+### 6. Exact Provenance Resolution
+Resolve any retrieved evidence ID back to its original source location:
+```python
+from app.source_resolver import resolve
+
+provenance = resolve(results[0].evidence_id, db)
+print(provenance["source_path"], provenance["location"], provenance["text"])
+```
+
 ## Next Phase
 
-**Chat 1 — Multimodal Knowledge Foundation**
+**Chat 2 — Intelligence Core**
 
-Implementation begins with source manifests, evidence/provenance objects, PDF/PPTX/video extraction, indexing, hybrid retrieval and retrieval tests.
+Building on the verified Chat 01 evidence foundation, Chat 2 will implement:
+- Grounded tutor response engine with evidence citation mapping.
+- Evidence sufficiency gate and explicit abstention.
+- Question generation and deterministic/model-assisted verification.
+- Bayesian Knowledge Tracing (BKT) per-topic learner model.
+- Misconception signal detection and targeted remediation recommendations.
+

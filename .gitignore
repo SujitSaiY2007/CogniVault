@@ -5,6 +5,7 @@ __pycache__/
 venv/
 env/
 *.egg-info/
+.pytest_cache/
 
 # Environment / secrets
 .env
@@ -18,6 +19,11 @@ env/
 data/local/
 uploads/
 cache/
+
+# Model caches
+.cache/
+hf_cache/
+models_cache/
 
 # Generated artifacts
 *.log

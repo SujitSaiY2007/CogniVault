@@ -23,5 +23,12 @@
 | D-019 | No custom foundation-model training | Unnecessary for hackathon MVP | Locked |
 | D-020 | Video MVP uses transcript/timestamps; key-frame reasoning is stretch | Provides real multimodal source coverage without excessive complexity | Locked |
 | D-021 | Chat 0 technical lock is authoritative for implementation | Prevents implementation drift | Locked |
+| D-022 | Embedded images stored as first-class evidence and binary assets | Figures are independently addressable evidence units with MIME type and SHA-256 | Implemented & Verified |
+| D-023 | Relational topic, concept, and prerequisite representation in SQLite | Supports many-to-many evidence-concept mapping and directed prerequisite chains with transitive closure | Implemented & Verified |
+| D-024 | SQLite FTS5 MATCH with BM25-backed ranking for lexical search | Uses genuine FTS5 BM25 score combined with term coverage rather than naive token overlap | Implemented & Verified |
+| D-025 | Persisted embeddings with dimension validation and explicit failure handling | Stored in SQLite, reused across searches without re-encoding, and catches dimension mismatches | Implemented & Verified |
+| D-026 | Deterministic hybrid scoring ($0.45 \times \text{lex} + 0.55 \times \text{sem}$) with stable tie-breaking | Ensures identical ranking across runs with alphabetical tie-breaking on `evidence_id` | Implemented & Verified |
+| D-027 | Full provenance source resolver with safe error boundaries | Resolves evidence ID into source path, title, SHA-256, locator, text, asset, and metadata; fails safely on invalid inputs | Implemented & Verified |
+| D-028 | Structured machine-readable RetrievalTrace | Captures candidate count, result count, scores, rankings, source IDs, and explicit unsupported reasons | Implemented & Verified |
 
 New decisions must be added here with rationale and status.
