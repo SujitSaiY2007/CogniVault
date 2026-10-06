@@ -10,6 +10,7 @@ class EvidenceUnit(BaseModel):
     text: str
     location: dict[str, str|int|float] = Field(default_factory=dict)
     evidence_type: str = "text"
+    asset_id: str|None = None
     topics: list[str] = Field(default_factory=list)
     concepts: list[str] = Field(default_factory=list)
     prerequisites: list[str] = Field(default_factory=list)
