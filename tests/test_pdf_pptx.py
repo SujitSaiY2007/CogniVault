@@ -1,4 +1,4 @@
-import base64,io
+import base64,hashlib,io
 from app.db import EvidenceDB
 from app.ingest import ingest_pdf, ingest_pptx
 from app.source_resolver import resolve
@@ -26,7 +26,9 @@ def test_pdf_embedded_image_is_first_class_evidence(tmp_path):
     e=images[0]
     assert e.modality.value=="image" and e.asset_id and e.location["page"]==1
     asset=db.get_asset(e.asset_id)
-    assert asset and asset[2]=="image/png" and asset[6]==PNG
+    assert asset and asset[2]=="image/png"
+    assert asset[6].startswith(b"\x89PNG\r\n\x1a\n") and asset[6]
+    assert asset[3]==hashlib.sha256(asset[6]).hexdigest()
 
 def test_pptx_embedded_image_is_first_class_evidence(tmp_path):
     from pptx import Presentation
