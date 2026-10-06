@@ -1,23 +1,25 @@
 # Requirements Traceability
 
-This document maps the Track D requirements to planned implementation and verification. Exact implementation references will be filled as code is created.
+This maps the Track D project brief to implementation, tests and evidence. It is not a claim that the current repository already satisfies these requirements.
 
-| Requirement Area | Planned Capability | Planned Verification |
-|---|---|---|
-| Multimodal ingestion | Extract text, images, figures, diagrams and applicable video timestamps | Ingestion tests + evidence inspection |
-| Source-linked KB | Evidence units with page/slide/timestamp metadata | Metadata integrity tests |
-| Grounded tutor | Retrieval-first answer generation with citations | G1–G5 |
-| Exact source navigation | Citation maps to source location | Citation integrity test |
-| Off-material handling | Abstain or clearly flag unsupported questions | G5 |
-| Adaptive assessment | Topic/source/difficulty-aware question selection | A1 + learner tests |
-| Correctness verification | Verify generated questions and answer keys | A2 |
-| Repetition control | Avoid exact/near duplicate questions | A3 |
-| Feedback | Evidence-grounded corrective feedback | A4 |
-| Learner model | Per-topic mastery state updated by sessions | L1–L3 |
-| Misconception support | Detect likely misconceptions and recommend intervention | L3 + evaluation |
-| Evaluation | Context precision/recall, faithfulness, relevancy and personalization metrics | Evaluation protocol |
-| Simulated learners | Different profiles across multiple sessions | L1–L3 |
-| UX/demo | Clear tutor, assessment, learner and evidence views | End-to-end demo |
-| Documentation | Architecture, learner model, evaluation and setup docs | Final audit |
+| Requirement | Implementation mapping | Verification | Current state |
+|---|---|---|---|
+| Multimodal ingestion | PDF, PPTX, figure extraction, video transcript/timestamps | ingestion tests | Planned |
+| Source-linked knowledge base | source manifest + evidence units + locators | provenance tests | Planned |
+| Grounded tutor | retrieval + sufficiency gate + cited response | G1, G4, G5 | Planned |
+| Exact source navigation | evidence_id resolves to page/slide/timestamp | citation integrity test | Planned |
+| Off-material handling | abstention/unsupported state | G5 + abstention benchmark | Planned |
+| Adaptive assessment | mastery/difficulty/repetition/prerequisite selector | A1, A3, L1-L3 | Planned |
+| Question correctness | deterministic/model-assisted verification | A2 | Planned |
+| Answer verification | objective deterministic checks + structured free-text rubric | A2/A4 | Planned |
+| Repetition control | question fingerprint/history | A3 | Planned |
+| Feedback | evidence-grounded corrective feedback | A4 | Planned |
+| Learner model | BKT per topic/skill | L1-L2 | Planned |
+| Misconception support | repeated/strong error signals | L3 + evaluation | Planned |
+| Personalization | mastery/difficulty/recommendation policy | L1-L3 | Planned |
+| Evaluation | retrieval, faithfulness, relevancy, abstention, assessment and personalization metrics | evaluation runner | Planned |
+| Simulated learners | distinct scripted learner profiles | L1-L3 | Planned |
+| UX/demo | Streamlit tutor, assessment, learner and evidence views | end-to-end demo | Planned |
+| Security | environment secrets, synthetic users, quotas | security tests | Planned |
 
-No requirement is considered satisfied until its verification evidence is recorded.
+No requirement is considered satisfied until verification evidence is recorded.
