@@ -10,50 +10,83 @@ User
 → Learner Model
 → Persistent Storage
 
-## Core Components
+## Core Flow
+
+Course source → ingestion → evidence units → lexical/semantic indexes → retrieval → evidence sufficiency → grounded tutor/assessment → verification → learner update → recommendation.
+
+## Components
 
 ### 1. Ingestion
-Accept supported learning sources and transform them into source-linked evidence units.
+
+Accept PDF/textbook, PPTX/slides, images/figures, and selected lecture-video transcript/timestamp sources.
 
 ### 2. Evidence Store
-Maintain searchable evidence with provenance:
-- source identifier,
-- document/video title,
-- page/slide/section,
-- timestamp when applicable,
+
+Maintain:
+
+- source_id,
+- source metadata,
+- evidence_id,
+- source type,
+- modality,
 - extracted text,
-- visual/figure reference when applicable.
+- page/slide/timestamp/region locator,
+- parent evidence relation,
+- extraction method/confidence,
+- content hash.
 
 ### 3. Retrieval
-Retrieve evidence for a learner query and expose the provenance needed by the answer layer.
 
-### 4. Tutor
-Generate an answer only after evidence sufficiency checks. The answer includes source references.
+Use SQLite FTS5 for lexical retrieval plus embeddings/vector search for semantic retrieval. Fuse ranked results deterministically and preserve retrieval traces.
 
-### 5. Assessment
-Select or generate questions using learner state, topic, source, difficulty, and repetition history. Verification occurs before display.
+### 4. Evidence Gate
 
-### 6. Learner Model
-Maintain per-topic mastery estimates and session evidence. The model should be simple enough to explain and evaluate.
+Generation is permitted only when retrieved evidence is relevant, sufficient, valid and addressable. Otherwise return an unsupported/insufficient-evidence state.
 
-### 7. Misconception Layer
-Infer likely misunderstanding patterns from wrong answers and conversation signals, then map them to evidence-grounded remediation.
+### 5. Tutor
 
-### 8. Evaluation
-Run a fixed benchmark and simulated learner sessions. Store raw outputs and calculated metrics so reported results are reproducible.
+Generate only from approved evidence in grounded mode and attach claim-supporting citations.
+
+### 6. Assessment
+
+Generate/select tagged questions from course evidence. Verify before display. Prefer deterministic checking for numerical and objective answers.
+
+### 7. Learner Model
+
+Use Bayesian Knowledge Tracing per topic/skill. Store mastery probability and interaction history.
+
+### 8. Misconception Layer
+
+Convert repeated/strong error patterns into likely misconception signals and map them to evidence-grounded remediation.
+
+### 9. Recommendation
+
+Use mastery, difficulty readiness, prerequisite readiness, recent errors, misconception signals and repetition history to select the next learning action.
+
+### 10. Evaluation
+
+Run fixed benchmark cases and simulated learner sessions. Store raw outputs and calculated metrics for reproducibility.
 
 ## Technology Boundary
 
-Initial preference:
 - Python
 - Streamlit
 - SQLite
-- ChromaDB or an equivalent lightweight vector store
-- Gemini or another permitted LLM/multimodal model
-- Standard Python libraries for deterministic verification
+- SQLite FTS5
+- lightweight vector store
+- one permitted LLM/multimodal provider
+- deterministic Python verification
 
-Technology may change only if the replacement materially improves reliability or required functionality.
+No microservices, Kubernetes, custom model training, or multi-agent orchestration.
 
-## Architecture Rule
+## Failure Boundaries
 
-Do not introduce microservices, Kubernetes, custom model training, or multi-agent orchestration unless a measured requirement justifies the complexity.
+Provider failure → explicit unavailable state.  
+Retrieval failure → insufficient evidence.  
+Citation mapping failure → no grounded answer.  
+Question verification failure → question rejected.  
+Quota exceeded → explicit limit state.
+
+## Source of Truth
+
+docs/CHAT0_TECHNICAL_LOCK.md is the detailed Chat 0 architecture/behavior specification.
