@@ -5,64 +5,83 @@ Tests are defined before completion claims.
 ## Grounding
 
 ### G1 — Directly Supported
-**Input:** Question whose answer is explicitly present in the course material.  
-**Expected:** Correct answer with valid source citation.  
-**Pass:** Citation resolves to the supporting evidence.
+Input: question explicitly answered by course material.  
+Expected: correct answer with valid citation.  
+Pass: citation resolves to supporting evidence and answer contains no unsupported course claim.
 
-### G2 — Visual/Diagram Evidence
-**Input:** Question requiring information from a diagram/figure.  
-**Expected:** Correct interpretation with figure/source reference.  
-**Pass:** Answer is supported by the referenced visual evidence.
+### G2 — Visual/Diagram
+Input: question requiring implemented figure/visual evidence.  
+Expected: correct interpretation with figure/source reference.  
+Pass: referenced visual evidence actually supports the answer.
 
-### G3 — Video Evidence
-**Input:** Question whose evidence occurs in lecture video.  
-**Expected:** Correct answer with timestamp metadata.  
-**Pass:** Timestamp resolves to the supporting segment.
+### G3 — Video
+Input: question whose evidence occurs in an ingested lecture segment.  
+Expected: answer with resolvable timestamp.  
+Pass: timestamp maps to the supporting segment.
 
 ### G4 — Cross-Source Synthesis
-**Input:** Question requiring two course sources.  
-**Expected:** Correct synthesis with both supporting references.  
-**Pass:** Each major claim has supporting evidence.
+Input: question requiring two course sources.  
+Expected: synthesis with both supporting references.  
+Pass: every material claim has supporting evidence.
 
 ### G5 — Unsupported
-**Input:** Question outside the provided course material.  
-**Expected:** Abstention or explicit unsupported-material flag.  
-**Pass:** No unsupported factual answer is presented as course-grounded.
+Input: question outside supplied course material.  
+Expected: abstention or explicit unsupported-material state.  
+Pass: no unsupported answer is presented as course-grounded.
 
 ## Assessment
 
 ### A1 — Tagged Question
-Question has valid topic, difficulty and source metadata and a verified answer.
+Question has valid topic, difficulty, source evidence and verification status.  
+Pass: all required fields validate.
 
 ### A2 — Correctness Verification
-Deterministic or model-assisted verification rejects an incorrect answer key before display.
+Present an intentionally incorrect answer key or unsupported question.  
+Pass: verifier rejects it before presentation.
 
 ### A3 — Repetition Control
-Repeated sessions do not return the same or near-duplicate question when alternatives exist.
+Run repeated sessions with multiple valid candidate questions.  
+Pass: identical/near-duplicate question is suppressed when alternatives exist.
 
 ### A4 — Corrective Feedback
-Wrong answer produces evidence-grounded feedback and points to relevant material.
+Submit a wrong answer.  
+Pass: feedback is tied to relevant evidence and identifies the learner's next action.
 
 ## Learner Model
 
 ### L1 — Profile Divergence
-Two simulated learners with different weaknesses produce different mastery states/recommendations.
+Run two simulated learners with materially different answer histories.  
+Pass: mastery states and recommendations differ in the expected direction.
 
 ### L2 — Session Update
-A learner's mastery changes after verified assessment evidence.
+Run verified correct/incorrect responses.  
+Pass: BKT state changes deterministically according to configured parameters and observation.
 
 ### L3 — Targeted Intervention
-A learner with a demonstrated weakness receives a recommendation targeting that weakness.
+Give a learner repeated errors on one topic.  
+Pass: recommendation targets that topic and cites the remediation evidence.
 
-## System Evaluation
+## Security
 
-The benchmark must report executed values for:
+### S1 — Secret Safety
+Repository scan contains no committed real secret.  
+Pass: no credential is present.
+
+### S2 — Failure Closure
+Force retrieval/provider/verification failure.  
+Pass: system shows explicit failure/abstention state rather than fabricated output.
+
+## Evaluation Gates
+
+The evaluation runner must report executed values for:
+
 - context precision,
 - context recall,
-- faithfulness,
+- faithfulness/supported-claim rate,
 - answer relevancy,
-- mastery improvement,
+- supported-answer rate,
+- unsupported-question abstention rate,
 - question repetition rate,
-- intervention/recommendation relevance.
+- mastery/recommendation metrics.
 
-The exact formulas and thresholds will be finalized in EVALUATION_PROTOCOL.md.
+No threshold is considered achieved until the metric is actually measured.
