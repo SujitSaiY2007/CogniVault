@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS evidence(
  topics_json TEXT NOT NULL, concepts_json TEXT NOT NULL, prerequisites_json TEXT NOT NULL,
  metadata_json TEXT NOT NULL, FOREIGN KEY(source_id) REFERENCES sources(source_id));
 CREATE VIRTUAL TABLE IF NOT EXISTS evidence_fts USING fts5(
- evidence_id UNINDEXED, text, topics, concepts, content='');
+ evidence_id UNINDEXED, text, topics, concepts);
 CREATE TABLE IF NOT EXISTS embeddings(evidence_id TEXT PRIMARY KEY, vector BLOB NOT NULL);
 """
 class EvidenceDB:
