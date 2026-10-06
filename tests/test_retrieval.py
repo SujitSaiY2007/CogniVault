@@ -37,9 +37,11 @@ def test_semantic_retrieval_uses_persisted_embedding(tmp_path,monkeypatch):
             return np.array([[1.0,0.0]],dtype=np.float32)
     monkeypatch.setattr(retriever,"_model",lambda:FakeModel())
     r,t=retriever.search("anything",mode="semantic")
+    assert len(r)==1
     assert r[0].evidence_id=="s1:e00001"
-    assert r[0].semantic_score>r[1].semantic_score
-    assert t.result_ids==["s1:e00001","s1:e00002"]
+    assert r[0].semantic_score==1.0
+    assert t.result_ids==["s1:e00001"]
+    assert not t.unsupported
 
 def test_ranking_tie_break_is_deterministic(tmp_path):
     db=_db(tmp_path)
