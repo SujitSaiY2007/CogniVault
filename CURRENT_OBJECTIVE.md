@@ -2,26 +2,39 @@
 
 ## Objective
 
-Lock the foundation of Cognivault before substantial implementation begins.
+Lock the foundation of Cognivault before substantial application implementation.
 
-## Required Outputs
+## Chat 0 Status
 
-- Project identity and scope.
-- Hackathon requirement mapping.
-- Architecture.
-- Data/evidence model.
-- Corpus strategy.
-- Grounding and abstention policy.
-- Assessment verification policy.
-- Learner-model design.
-- Evaluation methodology.
-- Security and quota policy.
-- Prior-art positioning.
-- Acceptance-test specification.
-- Demo plan.
-- Submission checklist.
-- Repository governance.
+**LOCKED.** The technical specification and affected control documents have been reconciled.
+
+## Locked Outputs
+
+- Hackathon capability baseline.
+- MVP and stretch boundary.
+- Corpus/source strategy.
+- Multimodal ingestion architecture.
+- Evidence/provenance schema.
+- Hybrid retrieval.
+- Evidence sufficiency and abstention.
+- Grounded tutor contract.
+- Assessment generation and verification.
+- BKT learner model.
+- Misconception signal policy.
+- Personalization policy.
+- Evaluation methodology and acceptance gates.
+- Security, secrets and quota controls.
+- Prior-art/competitive positioning.
+- UI architecture.
+- Demo sequence.
+- Chat-by-chat implementation plan.
 
 ## Exit Criteria
 
-Chat 0 is complete only when all required foundation documents exist, agree with each other, and the active state/handoff files identify the next implementation objective.
+All required foundation documents agree with the Chat 0 technical lock and the next implementation objective is explicit.
+
+**Exit status: SATISFIED.**
+
+## Next Objective
+
+Chat 1 — Multimodal Knowledge Foundation.
