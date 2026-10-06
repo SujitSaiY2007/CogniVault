@@ -8,7 +8,14 @@ def _sha256(path):
     with open(path,"rb") as f:
         for b in iter(lambda:f.read(1024*1024),b""):h.update(b)
     return h.hexdigest()
+def _bytes_sha256(data):
+    return hashlib.sha256(data).hexdigest()
 def _id(s,n):return f"{s}:e{n:05d}"
+def _asset_id(data):return "asset:"+_bytes_sha256(data)[:24]
+def _add_image_evidence(db,sid,eid,modality,location,data,mime_type,width=None,height=None):
+    aid=_asset_id(data)
+    db.add_evidence(EvidenceUnit(evidence_id=eid,source_id=sid,modality=Modality.image,text="Embedded figure/image evidence",location=location,evidence_type="image",asset_id=aid,metadata={"mime_type":mime_type,"sha256":_bytes_sha256(data)}))
+    db.add_asset(aid,eid,mime_type,_bytes_sha256(data),data,width,height)
 def ingest_pdf(path,db,source_id=None):
     import pymupdf
     p=Path(path); sid=source_id or _sha256(p)[:16]; doc=pymupdf.open(p)
@@ -19,6 +26,12 @@ def ingest_pdf(path,db,source_id=None):
             chunk=chunk.strip()
             if len(chunk)<20:continue
             n+=1; db.add_evidence(EvidenceUnit(evidence_id=_id(sid,n),source_id=sid,modality=Modality.pdf,text=chunk,location={"page":page_no}))
+        for img in page.get_images(full=True):
+            xref=img[0]
+            extracted=doc.extract_image(xref)
+            data=extracted["image"]
+            n+=1
+            _add_image_evidence(db,sid,_id(sid,n),Modality.pdf,{"page":page_no,"image_xref":xref},data,extracted["mime"],extracted.get("width"),extracted.get("height"))
     return sid
 def ingest_pptx(path,db,source_id=None):
     from pptx import Presentation
@@ -26,8 +39,14 @@ def ingest_pptx(path,db,source_id=None):
     db.add_source(SourceRecord(source_id=sid,path=str(p),modality=Modality.pptx,title=p.stem,sha256=_sha256(p))); n=0
     for slide_no,slide in enumerate(prs.slides,1):
         texts=[sh.text.strip() for sh in slide.shapes if hasattr(sh,"text_frame") and sh.text.strip()]
-        if not texts:continue
-        n+=1; db.add_evidence(EvidenceUnit(evidence_id=_id(sid,n),source_id=sid,modality=Modality.pptx,text="\n".join(texts),location={"slide":slide_no}))
+        if texts:
+            n+=1; db.add_evidence(EvidenceUnit(evidence_id=_id(sid,n),source_id=sid,modality=Modality.pptx,text="\n".join(texts),location={"slide":slide_no}))
+        for shape in slide.shapes:
+            if shape.shape_type == 13:
+                image=shape.image
+                data=image.blob
+                n+=1
+                _add_image_evidence(db,sid,_id(sid,n),Modality.pptx,{"slide":slide_no,"shape_id":shape.shape_id},data,image.content_type,image.width,image.height)
     return sid
 def ingest_transcript(path,db,source_id=None):
     p=Path(path); sid=source_id or _sha256(p)[:16]
