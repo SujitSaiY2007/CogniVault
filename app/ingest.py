@@ -10,8 +10,8 @@ def _sha256(path):
     return h.hexdigest()
 def _id(s,n):return f"{s}:e{n:05d}"
 def ingest_pdf(path,db,source_id=None):
-    import fitz
-    p=Path(path); sid=source_id or _sha256(p)[:16]; doc=fitz.open(p)
+    import pymupdf
+    p=Path(path); sid=source_id or _sha256(p)[:16]; doc=pymupdf.open(p)
     db.add_source(SourceRecord(source_id=sid,path=str(p),modality=Modality.pdf,title=p.stem,sha256=_sha256(p))); n=0
     for page_no,page in enumerate(doc,1):
         text=page.get_text("text").strip()
