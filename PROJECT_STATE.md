@@ -6,54 +6,44 @@ Chat 01 — Multimodal Knowledge Foundation
 
 ## Status
 
-CHAT 01 COMPLETE & VERIFIED — READY FOR CHAT 02
+**CHAT 01 COMPLETE & VERIFIED — READY FOR CHAT 02**
 
 ## Verified Repository State
 
 - Repository: `SujitSaiY2007/CogniVault`
-- Current branch: `chat01-evidence-foundation`
-- Test Execution: **40 passed in 8.31s** (`pytest -v`)
-- Baseline Preservation: All 13 original baseline tests preserved; 27 new unit and acceptance tests passing.
-- Dedicated acceptance harness: `tests/acceptance/test_k1_to_k10.py` fully executable.
+- Active branch: `chat01-evidence-foundation`
+- Starting commit: `7f17b0dc0f7345fdd4778dc481c003bf8f35129d`
+- Verified ending commit: `424ad5617e3d8461e468ddd59d5771decde5e9fe`
+- Main remains untouched at: `0dd3acd0f973f7afcf8dada234f844ee5095b19a`
+- Test execution: **40 passed in 8.69s** (`pytest -v`)
+- Baseline preservation: original 13 tests preserved; zero regressions.
+- Acceptance harness: `tests/acceptance/test_k1_to_k10.py` — K1 through K10 all PASS.
 
-## Implemented & Verified Capabilities
+## Implemented & Verified
 
-1. **Source Registration & Integrity (K1):**
-   - Source record schema with SHA-256 verification, path, title, modality, and metadata persistence.
-2. **PDF Page Provenance (K2):**
-   - Page-level locators, deterministic evidence IDs (`<sid>:e00001`), chunk extraction via PyMuPDF.
-3. **PPTX Slide Provenance (K3):**
-   - Slide-level locators, shape text extraction, deterministic IDs via `python-pptx`.
-4. **Transcript Timestamp Ingestion (K4):**
-   - Ingestion across standard formats (`[mm:ss]`, `[hh:mm:ss]`, `mm:ss`, `hh:mm:ss`, hyphen/colon) bound to `Modality.video`.
-5. **Embedded Figure & Image Evidence (K5):**
-   - First-class evidence units with `Modality.image`, independent `asset_id`, and binary storage in `assets` table with MIME type, SHA-256 digest, and dimensions.
-6. **Relational Concept & Prerequisite Model (K6):**
-   - Relational tables for topics, concepts, many-to-many evidence links, and directed prerequisite chains with transitive closure calculation and cycle protection.
-7. **SQLite FTS5 Lexical Retrieval (K7):**
-   - Genuine SQLite FTS5 `MATCH` queries with Okapi BM25 ranking and term coverage.
-8. **Semantic Embeddings & Dimension Validation (K8):**
-   - Persisted vector storage in SQLite, reuse across searches without re-computation, dimension validation, and model tracking.
-9. **Deterministic Hybrid Retrieval (K9):**
-   - Linear fusion ($0.45 \times \text{lex} + 0.55 \times \text{sem}$) with alphabetical tie-breaking and rich machine-readable `RetrievalTrace`.
-10. **Provenance Continuity & Unsupported Abstention (K10):**
-    - End-to-end evidence ID continuity through `app.source_resolver.resolve()`.
-    - Fail-closed handling for empty queries, off-corpus queries, missing embeddings, and invalid retrieval modes without hallucinating evidence.
+1. Source registration and SHA-256 identity (K1).
+2. PDF page-level provenance and deterministic evidence IDs (K2).
+3. PPTX slide-level provenance and deterministic evidence IDs (K3).
+4. Multiformat transcript timestamp ingestion (K4).
+5. First-class embedded figure/image evidence with persisted assets (K5).
+6. Relational topics, concepts, evidence links, and prerequisite closure (K6).
+7. Genuine SQLite FTS5 MATCH + BM25 lexical retrieval (K7).
+8. Persisted semantic embeddings with dimension/model validation (K8).
+9. Deterministic hybrid retrieval: 0.45 lexical + 0.55 semantic (K9).
+10. Evidence-ID continuity, source resolution, and fail-closed unsupported behavior (K10).
 
-## Locked Boundaries (Out of Scope for Chat 01)
+## Locked Boundaries
 
-- Tutor chat and LLM generation.
-- Bayesian Knowledge Tracing (BKT) learner state updates.
-- Student profile modeling and personalization engine.
-- Misconception diagnosis.
-- Question generation and verification.
-- Streamlit tutor/student dashboard.
+Chat 01 does not contain tutor chat, LLM generation, BKT, learner profiles, misconception diagnosis, question generation/verification, or Streamlit UI.
 
-## Next Required Work
+## Next Phase — Chat 02: Intelligence Core
 
-Chat 2 — Intelligence Core:
-1. Implement evidence sufficiency gate.
-2. Implement citation-grounded tutor generation.
-3. Implement question generation and deterministic verification.
-4. Implement BKT learner mastery modeling.
-5. Implement misconception detection and remediation recommendations.
+The next implementation phase must build on the verified Chat 01 contracts rather than replacing them. The planned Intelligence Core includes:
+
+1. Evidence sufficiency gate.
+2. Citation-grounded tutor generation.
+3. Question generation tied to evidence/topics and deterministic verification.
+4. BKT learner mastery state.
+5. Misconception signals and remediation selection.
+
+Before implementation, Chat 02 must audit the locked specification and current repository state, then define executable acceptance tests for its own gates.
