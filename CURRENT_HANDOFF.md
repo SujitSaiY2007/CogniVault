@@ -1,43 +1,46 @@
 # Current Handoff — Chat 01 Complete
 
-## Last Completed Action
-
-Completed and verified **Chat 01 — Multimodal Knowledge Foundation**.
-
-## Verified Repository State
+## Verified Baseline
 
 - Repository: `SujitSaiY2007/CogniVault`
-- Branch: `chat01-evidence-foundation` (Active development branch; `main` was NOT modified).
-- Automated Test Suite: **40 passed in 8.31s** (`pytest -v`)
-- Acceptance Harness: `tests/acceptance/test_k1_to_k10.py` (K1 through K10 all pass).
-- Baseline: Preserved initial 13 passing tests with zero regressions.
+- Branch: `chat01-evidence-foundation`
+- Starting commit: `7f17b0dc0f7345fdd4778dc481c003bf8f35129d`
+- Verified ending commit: `424ad5617e3d8461e468ddd59d5771decde5e9fe`
+- `main`: untouched at `0dd3acd0f973f7afcf8dada234f844ee5095b19a`
+- Verification: **40 passed in 8.69s**
+- K1–K10: **10/10 PASS**
+- Working tree was clean after verification.
 
-## Completed Components
+## Chat 01 Deliverables
 
-1. **Evidence and Source Data Model:** Typed Pydantic models for sources, evidence, assets, topics, concepts, prerequisites, retrieval results, and traces (`app/models.py`).
-2. **SQLite Storage Engine:** Tables for `sources`, `evidence`, `evidence_fts` (FTS5), `embeddings`, `assets`, `topics`, `concepts`, `evidence_concepts`, `evidence_topics`, and `concept_prerequisites` (`app/db.py`).
-3. **Multimodal Ingestion:** Extractors for PDF, PPTX, video transcripts, and embedded figures (`app/ingest.py`).
-4. **Retrieval Engine:** FTS5 BM25 lexical search, persisted semantic embeddings with dimension validation, deterministic hybrid fusion ($0.45 \times \text{lex} + 0.55 \times \text{sem}$), stable tie-breaking, and machine-readable `RetrievalTrace` (`app/retrieval.py`).
-5. **Exact Provenance Resolver:** Resolves any evidence ID to its source path, title, SHA-256, page/slide/timestamp locator, text, and binary asset (`app/source_resolver.py`).
-6. **Acceptance Test Suite:** 10 executable acceptance tests covering K1 through K10 (`tests/acceptance/test_k1_to_k10.py`).
+The verified foundation includes multimodal ingestion, page/slide/timestamp provenance, first-class image assets, relational topics/concepts/prerequisites, SQLite FTS5 BM25 retrieval, persisted semantic embeddings, deterministic hybrid ranking, retrieval traces, source resolution, evidence-ID continuity, and fail-closed unsupported behavior.
 
-## Authoritative Documentation
+## Scope Boundary
 
-- `docs/CHAT01_IMPLEMENTATION_STATUS.md` — Detailed implementation and verification status report.
-- `docs/CHAT0_TECHNICAL_LOCK.md` — Locked technical specification.
-- `DECISION_LOG.md` — Architectural decisions D-001 through D-028.
-- `README.md` — Developer usage instructions for ingestion, retrieval, and provenance resolution.
+Do not re-implement or weaken Chat 01. Chat 02 must consume its evidence and retrieval contracts.
 
-## Scope Boundaries
+Deferred features:
+- Tutor/LLM generation
+- Evidence sufficiency
+- Question generation/verification
+- BKT learner modeling
+- Misconception detection/remediation
+- Streamlit UI
+- Full benchmark/evaluation runner
 
-- Chat 01 is strictly the knowledge foundation and retrieval layer.
-- Later-stage components (Tutor Chat, BKT Learner Modeling, Question Generation/Verification, Streamlit UI) are strictly out of scope for this branch and reserved for Chat 02+.
+## Chat 02 Starting Objective
 
-## Next Chat: Chat 02 — Intelligence Core
+**Build the Intelligence Core on top of the verified evidence foundation.**
 
-1. Implement grounded tutor prompt and citation formatting engine.
-2. Implement evidence sufficiency gate and fail-closed abstention.
-3. Implement question generation tagged to topics and source citations.
-4. Implement deterministic and model-assisted assessment verification.
-5. Implement Bayesian Knowledge Tracing (BKT) learner state updates.
-6. Implement misconception signal tracking and remediation selection.
+Required first actions:
+1. Audit the authoritative Chat 0 specification and Chat 01 implementation.
+2. Map each Chat 02 requirement to code contracts and executable acceptance tests.
+3. Implement the evidence sufficiency gate before allowing generation.
+4. Implement citation-grounded tutor generation with exact evidence/source mapping.
+5. Implement question generation and deterministic/model-assisted answer verification.
+6. Implement BKT per-topic mastery updates.
+7. Implement misconception signals and targeted remediation selection.
+8. Add negative/unsupported-path tests and preserve all Chat 01 tests.
+9. Execute the full suite locally before declaring Chat 02 complete.
+
+Do not claim a test passes unless it has actually been executed.
