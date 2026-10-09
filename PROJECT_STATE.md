@@ -6,14 +6,14 @@ Chat 02 — Intelligence Core
 
 ## Status
 
-CHAT 02 COMPLETE, CORRECTED & VERIFIED — READY FOR CHAT 03
+CHAT 02 IMPLEMENTATION COMPLETE; FINAL POST-CLOSURE REGRESSION RERUN REQUIRED BEFORE CHAT 03
 
 ## Verified Repository State
 
 - Repository: `SujitSaiY2007/CogniVault`
 - Current branch: `chat02-intelligence-core`
 - Starting baseline commit: `424ad5617e3d8461e468ddd59d5771decde5e9fe`
-- Test Execution: **80 passed in 22.12s** (`pytest -v --durations=10`)
+- Last previously reported test execution: **80 passed in 23.99s** (`pytest -v --durations=10`), reported before the final malformed-grouped-decimal assertions were added. Current HEAD requires a fresh full-suite run.
 - Baseline Preservation: All 40 Chat 01 baseline tests preserved with zero regressions; 40 unit and acceptance tests passing.
 - Dedicated acceptance harnesses:
   - `tests/acceptance/test_k1_to_k10.py` (K1–K10 all pass)
@@ -46,9 +46,9 @@ CHAT 02 COMPLETE, CORRECTED & VERIFIED — READY FOR CHAT 03
 
 ## Next Required Work
 
-Chat 3 — Product & Evaluation:
+Chat 03 — Product & Evaluation:
 1. Implement Streamlit multi-view UI (`app/ui/`).
 2. Implement evaluation benchmark runner (`evaluation/runner.py`).
 3. Implement simulated learner multi-turn session scripts.
-4. Execute and record formal evaluation metrics (retrieval precision/recall, faithfulness, abstention rate, question repetition rate).
+4. Execute and record formal evaluation metrics (retrieval precision/recall, faithfulness or a clearly labeled proxy, supported-answer/abstention behavior, question repetition, learner-state updates, and recommendation behavior).
 
