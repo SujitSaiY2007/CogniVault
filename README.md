@@ -11,7 +11,7 @@
 ## Project Status
 
 **Phase:** Chat 02 — Intelligence Core  
-**Status:** COMPLETE & VERIFIED — ready for Chat 03  
+**Status:** IMPLEMENTATION COMPLETE; final regression rerun required at current branch HEAD before Chat 03 implementation  
 **Repository:** SujitSaiY2007/CogniVault  
 **Default branch:** main  
 **Active branch:** chat02-intelligence-core  
@@ -86,7 +86,7 @@ No unnecessary microservices, Kubernetes, custom foundation-model training or mu
 - PROJECT_STATE.md — verified project state.
 - CURRENT_OBJECTIVE.md — active objective and exit status.
 - CURRENT_HANDOFF.md — precise continuation state.
-- DECISION_LOG.md — locked decisions and rationale (D-001 to D-035).
+- DECISION_LOG.md — locked decisions and rationale (D-001 to D-038).
 - REQUIREMENTS_TRACEABILITY.md — requirement → implementation → test mapping.
 - ARCHITECTURE.md — system architecture.
 - TEST_SPECIFICATION.md — acceptance tests (G1–G5, A1–A4, L1–L3, S1–S2).
