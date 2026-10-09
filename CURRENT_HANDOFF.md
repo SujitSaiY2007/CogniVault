@@ -30,7 +30,7 @@ Completed the Chat 02 Intelligence Core and corrective audit. Documentation is b
 
 - `docs/CHAT02_IMPLEMENTATION_STATUS.md` — Detailed implementation and verification status report.
 - `docs/CHAT0_TECHNICAL_LOCK.md` — Authoritative technical specification.
-- `DECISION_LOG.md` — Decisions D-001 through D-037.
+- `DECISION_LOG.md` — Decisions D-001 through D-038.
 - `REQUIREMENTS_TRACEABILITY.md` — Requirement-to-verification traceability matrix.
 - `README.md` — Developer usage instructions and current phase state.
 - `NEXT_CHAT_PROMPT.md` — authoritative, task-first Chat 03 implementation prompt.
