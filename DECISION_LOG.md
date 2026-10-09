@@ -39,7 +39,7 @@
 | D-035 | Explainable mastery-bracketed recommendation policy | Maps mastery (<0.40 review, 0.40–0.70 practice, 0.70–0.85 mixed, >0.85 advance) with prerequisite graph gating | Implemented & Verified |
 
 | D-036 | Unverified prerequisite policy (MVP) | Prerequisites with no learner record block advancement and trigger foundational review on that prerequisite | Implemented & Verified |
-| D-037 | Assessment verification structural scope & numerical parsing contract | Scopes deterministic verifier to structural integrity, single-choice mapping, and robust finite numeric/tolerance parsing; factual truth explicitly distinguished | Implemented & Verified |
+| D-037 | Assessment verification structural scope & numerical parsing contract | Scopes deterministic verifier to structural integrity, single-choice mapping, and robust finite numeric/tolerance parsing; factual truth explicitly distinguished | Implemented & Verified |\n| D-038 | Strict numeric thousands-separator grouping | Commas are accepted only in valid three-digit groups before optional decimals/scientific notation; malformed groupings are rejected rather than silently normalized into a different number | Implemented; final regression assertions added, full-suite rerun pending |
 
 New decisions must be added here with rationale and status.
 
