@@ -54,9 +54,12 @@ def parse_numerical_value(val: Any) -> float | None:
     if lower in {"nan", "+nan", "-nan", "inf", "+inf", "-inf", "infinity", "+infinity", "-infinity"}:
         return None
 
-    # Remove standard thousands-separator commas if present
+    # Remove standard thousands-separator commas ONLY if they follow valid grouping
     if "," in cleaned:
-        cleaned = cleaned.replace(",", "")
+        if re.match(r"^[+-]?\d{1,3}(,\d{3})+(\.\d+)?([eE][+-]?\d+)?$", cleaned):
+            cleaned = cleaned.replace(",", "")
+        else:
+            return None
 
     try:
         parsed = float(cleaned)

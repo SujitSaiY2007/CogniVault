@@ -46,6 +46,13 @@ def test_parse_numerical_value():
     assert parse_numerical_value("inf") is None
     assert parse_numerical_value("-inf") is None
     assert parse_numerical_value("infinity") is None
+    # Invalid comma placements
+    assert parse_numerical_value("1,2") is None
+    assert parse_numerical_value("1,2,3") is None
+    assert parse_numerical_value(",100") is None
+    assert parse_numerical_value("100,") is None
+    assert parse_numerical_value("1,0000") is None
+    assert parse_numerical_value("1,,000") is None
 
 def test_question_verifier_valid_mcq(tmp_path):
     db = EvidenceDB(tmp_path / "assess.sqlite")
