@@ -85,7 +85,8 @@ No unnecessary microservices, Kubernetes, custom foundation-model training or mu
 - PROJECT_MASTER_PLAN.md — project identity, MVP and phase plan.
 - PROJECT_STATE.md — verified project state.
 - CURRENT_OBJECTIVE.md — active objective and exit status.
-- CURRENT_HANDOFF.md — precise continuation state.\n- NEXT_CHAT_PROMPT.md — authoritative task-first prompt for Chat 03.
+- CURRENT_HANDOFF.md — precise continuation state.
+- NEXT_CHAT_PROMPT.md — authoritative task-first prompt for Chat 03.
 - DECISION_LOG.md — locked decisions and rationale (D-001 to D-038).
 - REQUIREMENTS_TRACEABILITY.md — requirement → implementation → test mapping.
 - ARCHITECTURE.md — system architecture.
