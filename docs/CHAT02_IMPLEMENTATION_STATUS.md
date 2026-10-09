@@ -28,7 +28,7 @@ Execution command:
 & .\.venv\Scripts\python.exe -m pytest -v --durations=10
 ```
 
-Execution output:
+Recorded execution output from an earlier run (80 passed in 22.12s; a later run was reported as 80 passed in 23.99s. Both runs preceded the final malformed-grouped-decimal assertions):
 ```text
 ============================= test session starts =============================
 platform win32 -- Python 3.12.4, pytest-8.4.2, pluggy-1.6.0
