@@ -1,19 +1,19 @@
-# Current Handoff — Chat 02 Corrected and Verified
+# Current Handoff — Chat 02 Implementation Closure
 
 ## Last Completed Action
 
-Completed and verified **Chat 02 — Intelligence Core** and executed the **Chat 02 Corrective Audit**.
+Completed the Chat 02 Intelligence Core and corrective audit. Documentation is being synchronized to the closure point. The latest small test-only addition still requires a fresh full-suite run before Chat 03 implementation.
 
 ## Verified Repository State
 
 - Repository: `SujitSaiY2007/CogniVault`
 - Branch: `chat02-intelligence-core` (Active development branch; `main` was NOT modified).
 - Starting Baseline Commit: `424ad5617e3d8461e468ddd59d5771decde5e9fe`
-- Automated Test Suite: **80 passed in 22.12s** (`pytest -v --durations=10`)
+- Automated Test Suite: **80 passed in 23.99s in the last previously reported run** (the final malformed-grouped-decimal assertions were added afterward; rerun required) (`pytest -v --durations=10`)
 - Acceptance Harnesses:
   - `tests/acceptance/test_k1_to_k10.py` (K1–K10: **10/10 PASS**)
   - `tests/acceptance/test_chat02_acceptance.py` (G1–G5, A1–A4, L1–L3, S2: **13/13 PASS**)
-- Baseline Preservation: 100% of earlier 40 tests pass with zero regressions.
+- Baseline Preservation: The previous full run preserved all 40 Chat 01 baseline tests; reconfirm at current HEAD.
 
 ## Completed Components & Corrective Audit Enhancements
 
@@ -32,14 +32,14 @@ Completed and verified **Chat 02 — Intelligence Core** and executed the **Chat
 - `docs/CHAT0_TECHNICAL_LOCK.md` — Authoritative technical specification.
 - `DECISION_LOG.md` — Decisions D-001 through D-037.
 - `REQUIREMENTS_TRACEABILITY.md` — Requirement-to-verification traceability matrix.
-- `README.md` — Developer usage instructions for knowledge foundation and intelligence core.
+- `README.md` — Developer usage instructions and current phase state.\n- `NEXT_CHAT_PROMPT.md` — authoritative, task-first Chat 03 implementation prompt.
 
 ## Scope Boundaries
 
 - Chat 02 delivers the complete intelligence and reasoning core (tutor, sufficiency, assessment, BKT, misconceptions, recommendations).
 - User interface (Streamlit frontend), automated benchmark evaluation runner, and simulated learner benchmarking are strictly reserved for Chat 03.
 
-## Next Chat: Chat 03 — Product & Evaluation
+## Mandatory Gate Before Chat 03\n\nSync to the current remote HEAD of `chat02-intelligence-core`, confirm clean worktree and branch, and run the full test suite. Fix any failures caused by the final numerical comma-grouping regression cases, rerun all tests, and push only to this branch. Do not start Chat 03 implementation until the current HEAD is green.\n\n## Next Chat: Chat 03 — Product & Evaluation
 
 1. Implement multi-view Streamlit UI (`app/ui/`) covering Course Ingestion, Evidence Explorer, Tutor Chat, Adaptive Assessment, Learner Profile, and Recommendation Views.
 2. Implement evaluation benchmark runner (`evaluation/runner.py`) for automated scoring (precision, recall, faithfulness, abstention rate, question repetition).
