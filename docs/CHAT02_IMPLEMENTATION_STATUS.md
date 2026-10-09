@@ -146,5 +146,6 @@ The previously reported run passed 80 tests with zero failures and preserved the
 - **D-034:** Error signal accumulation with threshold $\ge 2$ for misconception diagnosis.
 - **D-035:** Explainable mastery-bracketed recommendation policy with prerequisite graph gating.
 - **D-036:** Explicit unverified prerequisite blocking policy for MVP.
-- **D-037:** Assessment verification structural scope and robust numerical parsing contract.\n- **D-038:** Strict thousands-separator grouping; malformed comma groupings are rejected instead of silently changed.
+- **D-037:** Assessment verification structural scope and robust numerical parsing contract.
+- **D-038:** Strict thousands-separator grouping; malformed comma groupings are rejected instead of silently changed.
 
