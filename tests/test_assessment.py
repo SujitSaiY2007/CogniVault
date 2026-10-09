@@ -53,6 +53,9 @@ def test_parse_numerical_value():
     assert parse_numerical_value("100,") is None
     assert parse_numerical_value("1,0000") is None
     assert parse_numerical_value("1,,000") is None
+    assert parse_numerical_value("12,34.56") is None
+    assert parse_numerical_value("1,234.5.6") is None
+    assert parse_numerical_value("1,234,56.78") is None
 
 def test_question_verifier_valid_mcq(tmp_path):
     db = EvidenceDB(tmp_path / "assess.sqlite")
