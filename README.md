@@ -85,7 +85,7 @@ No unnecessary microservices, Kubernetes, custom foundation-model training or mu
 - PROJECT_MASTER_PLAN.md — project identity, MVP and phase plan.
 - PROJECT_STATE.md — verified project state.
 - CURRENT_OBJECTIVE.md — active objective and exit status.
-- CURRENT_HANDOFF.md — precise continuation state.
+- CURRENT_HANDOFF.md — precise continuation state.\n- NEXT_CHAT_PROMPT.md — authoritative task-first prompt for Chat 03.
 - DECISION_LOG.md — locked decisions and rationale (D-001 to D-038).
 - REQUIREMENTS_TRACEABILITY.md — requirement → implementation → test mapping.
 - ARCHITECTURE.md — system architecture.
@@ -100,7 +100,7 @@ No unnecessary microservices, Kubernetes, custom foundation-model training or mu
 - docs/CHAT02_IMPLEMENTATION_STATUS.md — Chat 02 status report.
 - docs/PRIOR_ART_AND_POSITIONING.md — prior-art and competitive-positioning record.
 - app/ — application code (ingestion, retrieval, tutor, sufficiency, assessment, BKT, misconceptions, recommendations).
-- tests/ — automated/acceptance tests (75 passing tests covering K1–K10 and G1–G5, A1–A4, L1–L3, S2).
+- tests/ — automated/acceptance tests (80 tests in the last reported full run; the latest malformed-number regression assertions require a fresh full-suite run).
 - evaluation/ — evaluation artifacts area (benchmark runner in Chat 03).
 - data/ — corpus/evaluation data area.
 
@@ -128,7 +128,7 @@ pip install -e .
 ```
 
 ### 2. Test Execution
-Run all 75 automated unit and acceptance tests (K1–K10, G1–G5, A1–A4, L1–L3, S2):
+Run the complete automated unit and acceptance suite (K1–K10, G1–G5, A1–A4, L1–L3, S2). For the Chat 02 closure verification on Windows, use:
 ```bash
 pytest -v
 ```
