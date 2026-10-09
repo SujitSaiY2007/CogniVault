@@ -6,15 +6,15 @@ Chat 02 — Intelligence Core
 
 ## Status
 
-CHAT 02 COMPLETE & VERIFIED — READY FOR CHAT 03
+CHAT 02 COMPLETE, CORRECTED & VERIFIED — READY FOR CHAT 03
 
 ## Verified Repository State
 
 - Repository: `SujitSaiY2007/CogniVault`
 - Current branch: `chat02-intelligence-core`
 - Starting baseline commit: `424ad5617e3d8461e468ddd59d5771decde5e9fe`
-- Test Execution: **75 passed in 21.03s** (`pytest -v`)
-- Baseline Preservation: All 40 Chat 01 baseline tests preserved with zero regressions; 35 new unit and acceptance tests passing.
+- Test Execution: **80 passed in 22.12s** (`pytest -v --durations=10`)
+- Baseline Preservation: All 40 Chat 01 baseline tests preserved with zero regressions; 40 unit and acceptance tests passing.
 - Dedicated acceptance harnesses:
   - `tests/acceptance/test_k1_to_k10.py` (K1–K10 all pass)
   - `tests/acceptance/test_chat02_acceptance.py` (G1–G5, A1–A4, L1–L3, S2 all pass)
@@ -28,7 +28,7 @@ CHAT 02 COMPLETE & VERIFIED — READY FOR CHAT 03
 3. **Grounded Tutor Engine (G1–G4):**
    - Direct evidence citation, multi-source cross-synthesis, visual and video timestamp provenance, and fail-closed provider boundaries in `app/tutor.py`.
 4. **Assessment Generation & Verification (A1–A2):**
-   - Topic-, difficulty-, and evidence-tagged questions; deterministic verification for MCQ single-choice validity, numerical tolerance, non-empty options, and database evidence linkage in `app/assessment.py`.
+   - Topic-, difficulty-, and evidence-tagged questions; deterministic structural verification for MCQ single-choice validity, option uniqueness, robust numerical parsing, and database evidence linkage in `app/assessment.py`.
 5. **Adaptive Question Selection & Repetition Control (A3, A4):**
    - Stable question fingerprinting and served candidate suppression; citation-backed corrective feedback and remediation action mapping in `app/assessment.py`.
 6. **Bayesian Knowledge Tracing (L1–L2):**
@@ -36,7 +36,7 @@ CHAT 02 COMPLETE & VERIFIED — READY FOR CHAT 03
 7. **Misconception Detection & Remediation (L3):**
    - Error signal accumulation with threshold $\ge 2$ (preventing isolated slip over-diagnosis per D-016), prerequisite concept resolution, and remedial evidence linkage in `app/misconceptions.py`.
 8. **Adaptive Recommendation Engine:**
-   - Mastery-bracketed policy (<0.40 foundational review, 0.40–0.70 targeted practice, 0.70–0.85 mixed application, $\ge 0.85$ advance topic); prerequisite graph traversal and active misconception prioritization in `app/recommendation.py`.
+   - Mastery-bracketed policy aligned with `docs/CHAT0_TECHNICAL_LOCK.md` §17 ($p < 0.40$ foundational review, $0.40 \le p < 0.70$ targeted practice, $0.70 \le p \le 0.85$ mixed application, $p > 0.85$ advance topic); prerequisite graph traversal, unverified-prerequisite blocking (D-036), and active misconception prioritization in `app/recommendation.py`.
 
 ## Locked Boundaries (Out of Scope for Chat 02)
 
@@ -51,3 +51,4 @@ Chat 3 — Product & Evaluation:
 2. Implement evaluation benchmark runner (`evaluation/runner.py`).
 3. Implement simulated learner multi-turn session scripts.
 4. Execute and record formal evaluation metrics (retrieval precision/recall, faithfulness, abstention rate, question repetition rate).
+

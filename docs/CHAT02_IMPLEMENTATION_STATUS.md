@@ -2,20 +2,20 @@
 
 **Branch:** `chat02-intelligence-core`  
 **Date:** 2026-10-09  
-**Status:** IMPLEMENTED AND VERIFIED  
-**Test Suite:** 75 passed in 21.03s (`pytest -v`)
+**Status:** IMPLEMENTED, CORRECTED, AND VERIFIED  
+**Test Suite:** 80 passed in 22.12s (`pytest -v --durations=10`)
 
 ---
 
 ## 1. Executive Summary
 
-Chat 02 implements and verifies the complete **Intelligence Core** of CogniVault under Track D (*Personalized Tutoring & Adaptive Learning*). Building upon the verified Chat 01 multimodal evidence foundation, Chat 02 delivers:
+Chat 02 implements and verifies the complete **Intelligence Core** of CogniVault under Track D (*Personalized Tutoring & Adaptive Learning*), and incorporates the corrective audit:
 1. Fail-closed evidence sufficiency gating (`app/sufficiency.py`).
 2. Citation-grounded tutoring with cross-source synthesis and multi-modal provenance (`app/tutor.py`).
-3. Assessment generation, deterministic verification, repetition suppression, and corrective feedback (`app/assessment.py`).
+3. Assessment generation, deterministic verification with explicit structural integrity scope, repetition suppression, robust numerical parsing, and corrective feedback (`app/assessment.py`).
 4. Bayesian Knowledge Tracing (BKT) per-topic learner modeling (`app/learner_model.py`).
 5. Threshold-based misconception detection with prerequisite remediation linkage (`app/misconceptions.py`).
-6. Mastery-bracketed, prerequisite-aware adaptive recommendations (`app/recommendation.py`).
+6. Mastery-bracketed, prerequisite-aware adaptive recommendations aligned strictly with `docs/CHAT0_TECHNICAL_LOCK.md` §17 and explicit unverified-prerequisite blocking (`app/recommendation.py`).
 
 **No frontend UI or automated benchmark evaluation runner has been added; these are strictly reserved for Chat 03.**
 
@@ -36,27 +36,27 @@ rootdir: C:\Users\sujit\CogniVault
 configfile: pyproject.toml
 testpaths: tests
 plugins: anyio-4.15.1
-collected 75 items
+collected 80 items
 
-tests\acceptance\test_chat02_acceptance.py .............                 [ 17%]
-tests\acceptance\test_k1_to_k10.py ..........                            [ 30%]
-tests\test_assessment.py .....                                           [ 37%]
-tests\test_evidence_continuity.py ....                                   [ 42%]
-tests\test_ingestion.py ..                                               [ 45%]
-tests\test_learner_bkt.py ....                                           [ 50%]
-tests\test_misconceptions.py ..                                          [ 53%]
-tests\test_models_db.py .....                                            [ 60%]
-tests\test_pdf_pptx.py .....                                             [ 66%]
-tests\test_recommendations.py ..                                         [ 69%]
-tests\test_retrieval.py ...........                                      [ 84%]
+tests\acceptance\test_chat02_acceptance.py .............                 [ 16%]
+tests\acceptance\test_k1_to_k10.py ..........                            [ 28%]
+tests\test_assessment.py .........                                       [ 40%]
+tests\test_evidence_continuity.py ....                                   [ 45%]
+tests\test_ingestion.py ..                                               [ 47%]
+tests\test_learner_bkt.py ....                                           [ 52%]
+tests\test_misconceptions.py ..                                          [ 55%]
+tests\test_models_db.py .....                                            [ 61%]
+tests\test_pdf_pptx.py .....                                             [ 67%]
+tests\test_recommendations.py ...                                        [ 71%]
+tests\test_retrieval.py ...........                                      [ 85%]
 tests\test_source_resolver.py ...                                        [ 88%]
-tests\test_sufficiency.py .....                                          [ 94%]
+tests\test_sufficiency.py .....                                          [ 95%]
 tests\test_tutor.py ....                                                 [100%]
 
-============================= 75 passed in 21.03s =============================
+============================= 80 passed in 22.12s =============================
 ```
 
-All 75 tests passed with zero failures and zero regressions against the 40 baseline tests.
+All 80 tests passed with zero failures and zero regressions against the 40 baseline tests.
 
 ---
 
@@ -65,7 +65,7 @@ All 75 tests passed with zero failures and zero regressions against the 40 basel
 ### IMPLEMENTED & VERIFIED
 
 1. **Intelligence Core Data Contracts (`app/models.py`)**
-   - Strongly-typed Pydantic models: `SufficiencyResult`, `Citation`, `TutorResponse`, `QuestionType`, `Difficulty`, `QuestionOption`, `Question`, `QuestionVerificationResult`, `LearnerSubmission`, `AnswerEvaluation`, `BKTParams`, `TopicMasteryRecord`, `MisconceptionSignal`, `Recommendation`.
+   - Strongly-typed Pydantic models: `SufficiencyResult`, `Citation`, `TutorResponse`, `QuestionType`, `Difficulty`, `QuestionOption`, `Question`, `QuestionVerificationResult` (with explicit `scope="structural_integrity"`), `LearnerSubmission`, `AnswerEvaluation`, `BKTParams`, `TopicMasteryRecord`, `MisconceptionSignal`, `Recommendation`.
 
 2. **Persistence Layer Extensions (`app/db.py`)**
    - SQLite tables and indexes for `learner_states`, `questions`, `learner_interactions`, `misconceptions`, and `error_signals`.
@@ -82,8 +82,9 @@ All 75 tests passed with zero failures and zero regressions against the 40 basel
 
 5. **Assessment Generation & Deterministic Verification (`app/assessment.py`)**
    - Topic-, difficulty-, and evidence-linked questions.
-   - Deterministic checks for MCQ single-choice validity, option uniqueness, numerical tolerance, non-empty solutions, and database evidence existence.
-   - Rejection of invalid answer keys before presentation.
+   - Deterministic structural verification: single unambiguous MCQ option matching, option uniqueness, distinct option texts, database evidence existence.
+   - Robust numerical parsing (`parse_numerical_value`) handling integers, decimals, signs, scientific notation, comma-thousands, with strict non-negative finite tolerance enforcement. Rejection of NaN/inf and malformed strings.
+   - Explicit scope boundary: Structural integrity certified; factual domain truth distinguished from syntactic consistency.
 
 6. **Repetition Suppression & Adaptive Selection (`app/assessment.py`)**
    - Normalized question stem + concept fingerprinting (`compute_question_fingerprint`).
@@ -104,13 +105,13 @@ All 75 tests passed with zero failures and zero regressions against the 40 basel
    - Remediation evidence package linking to remedial units.
 
 10. **Adaptive Recommendation Policy (`app/recommendation.py`)**
-    - Policy brackets:
-      - $<0.40$: Foundational review (easy)
-      - $0.40–0.70$: Targeted practice (medium)
-      - $0.70–0.85$: Mixed application (medium)
-      - $\ge 0.85$: Advance topic / next prerequisite-dependent topic (hard)
+    - Policy brackets strictly aligned with `docs/CHAT0_TECHNICAL_LOCK.md` §17:
+      - $p < 0.40$: Foundational review (easy)
+      - $0.40 \le p < 0.70$: Targeted practice (medium)
+      - $0.70 \le p \le 0.85$: Mixed application (medium)
+      - $p > 0.85$: Advance topic / next prerequisite-dependent topic (hard)
+    - Prerequisite readiness: Unverified prerequisites (missing learner mastery record) and under-mastered prerequisites ($<0.70$) block advancement and trigger `foundational_review` targeting the prerequisite (D-036).
     - Active misconception remediation prioritized over general practice.
-    - Prerequisite graph traversal blocking advanced topics if prerequisite mastery is low.
 
 ---
 
@@ -144,3 +145,6 @@ All 75 tests passed with zero failures and zero regressions against the 40 basel
 - **D-033:** BKT parameter defaults ($P(L_0)=0.10, P(T)=0.15, P(S)=0.10, P(G)=0.20$) and state persistence.
 - **D-034:** Error signal accumulation with threshold $\ge 2$ for misconception diagnosis.
 - **D-035:** Explainable mastery-bracketed recommendation policy with prerequisite graph gating.
+- **D-036:** Explicit unverified prerequisite blocking policy for MVP.
+- **D-037:** Assessment verification structural scope and robust numerical parsing contract.
+

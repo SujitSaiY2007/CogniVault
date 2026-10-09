@@ -157,6 +157,8 @@ class QuestionVerificationResult(BaseModel):
     verification_method: str = "deterministic"  # "deterministic" | "model_assisted"
     failure_reasons: list[str] = Field(default_factory=list)
     checks_passed: list[str] = Field(default_factory=list)
+    scope: str = "structural_integrity"  # Structural and single-option consistency; does not prove external factual domain truth.
+
 
 class LearnerSubmission(BaseModel):
     learner_id: str
@@ -211,7 +213,7 @@ class Recommendation(BaseModel):
     concept_id: str | None = None
     difficulty: Difficulty = Difficulty.medium
     rationale: str
-    learner_state_evidence: dict[str, str | int | float | bool] = Field(default_factory=dict)
+    learner_state_evidence: dict[str, str | int | float | bool | None] = Field(default_factory=dict)
     suggested_evidence_ids: list[str] = Field(default_factory=list)
     suggested_question_id: str | None = None
 

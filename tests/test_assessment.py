@@ -1,5 +1,11 @@
+import math
 import pytest
-from app.assessment import AssessmentEngine, DeterministicQuestionVerifier, compute_question_fingerprint
+from app.assessment import (
+    AssessmentEngine,
+    DeterministicQuestionVerifier,
+    compute_question_fingerprint,
+    parse_numerical_value,
+)
 from app.db import EvidenceDB
 from app.models import (
     Difficulty,
@@ -11,6 +17,35 @@ from app.models import (
     QuestionType,
     SourceRecord,
 )
+
+def test_parse_numerical_value():
+    # Valid numeric representations
+    assert parse_numerical_value("42") == 42.0
+    assert parse_numerical_value("3.14159") == 3.14159
+    assert parse_numerical_value("-15.5") == -15.5
+    assert parse_numerical_value("+12.0") == 12.0
+    assert parse_numerical_value("1.5e3") == 1500.0
+    assert parse_numerical_value("-2.5e-2") == -0.025
+    assert parse_numerical_value("  100.25  ") == 100.25
+    assert parse_numerical_value("1,000.5") == 1000.5
+    assert parse_numerical_value("1,234,567.89") == 1234567.89
+    assert parse_numerical_value(42) == 42.0
+    assert parse_numerical_value(-7.8) == -7.8
+
+    # Malformed & invalid inputs
+    assert parse_numerical_value("abc") is None
+    assert parse_numerical_value("12.3.4") is None
+    assert parse_numerical_value("1.2e") is None
+    assert parse_numerical_value("42 meters") is None
+    assert parse_numerical_value("--5") is None
+    assert parse_numerical_value("") is None
+    assert parse_numerical_value("   ") is None
+    assert parse_numerical_value(None) is None
+    assert parse_numerical_value("nan") is None
+    assert parse_numerical_value("NaN") is None
+    assert parse_numerical_value("inf") is None
+    assert parse_numerical_value("-inf") is None
+    assert parse_numerical_value("infinity") is None
 
 def test_question_verifier_valid_mcq(tmp_path):
     db = EvidenceDB(tmp_path / "assess.sqlite")
@@ -39,6 +74,7 @@ def test_question_verifier_valid_mcq(tmp_path):
     res = verifier.verify(q, db=db)
     assert res.is_valid
     assert len(res.failure_reasons) == 0
+    assert res.scope == "structural_integrity"
 
 def test_question_verifier_rejects_invalid_answer_key(tmp_path):
     db = EvidenceDB(tmp_path / "assess2.sqlite")
@@ -64,6 +100,46 @@ def test_question_verifier_rejects_invalid_answer_key(tmp_path):
     assert not res.is_valid
     assert any("does not match any valid option key" in r for r in res.failure_reasons)
 
+def test_question_verifier_rejects_duplicate_mcq_options(tmp_path):
+    db = EvidenceDB(tmp_path / "assess_dup.sqlite")
+    db.add_source(SourceRecord(source_id="s1", path="p.pdf", modality=Modality.pdf, title="P", sha256="h"))
+    db.add_evidence(EvidenceUnit(evidence_id="s1:e00001", source_id="s1", modality=Modality.pdf, text="Sample text", location={"page": 1}))
+
+    verifier = DeterministicQuestionVerifier()
+    # Duplicate option keys
+    q_dup_key = Question(
+        question_id="q_dup_key",
+        topic_id="Physics",
+        evidence_ids=["s1:e00001"],
+        question_type=QuestionType.mcq,
+        prompt="Sample question with duplicate option keys?",
+        options=[
+            QuestionOption(key="A", text="First choice"),
+            QuestionOption(key="A", text="Second choice")
+        ],
+        expected_answer="A"
+    )
+    res1 = verifier.verify(q_dup_key, db=db)
+    assert not res1.is_valid
+    assert any("Duplicate option keys" in r for r in res1.failure_reasons)
+
+    # Duplicate option texts
+    q_dup_text = Question(
+        question_id="q_dup_text",
+        topic_id="Physics",
+        evidence_ids=["s1:e00001"],
+        question_type=QuestionType.mcq,
+        prompt="Sample question with duplicate option text?",
+        options=[
+            QuestionOption(key="A", text="Identical Text"),
+            QuestionOption(key="B", text="Identical Text")
+        ],
+        expected_answer="A"
+    )
+    res2 = verifier.verify(q_dup_text, db=db)
+    assert not res2.is_valid
+    assert any("Duplicate option texts" in r for r in res2.failure_reasons)
+
 def test_question_verifier_rejects_missing_evidence(tmp_path):
     db = EvidenceDB(tmp_path / "assess3.sqlite")
     verifier = DeterministicQuestionVerifier()
@@ -79,6 +155,92 @@ def test_question_verifier_rejects_missing_evidence(tmp_path):
     assert not res.is_valid
     assert any("do not exist in database" in r for r in res.failure_reasons)
 
+def test_numerical_question_verification_and_tolerance(tmp_path):
+    db = EvidenceDB(tmp_path / "assess_num.sqlite")
+    db.add_source(SourceRecord(source_id="s1", path="p.pdf", modality=Modality.pdf, title="P", sha256="h"))
+    db.add_evidence(EvidenceUnit(evidence_id="s1:e00001", source_id="s1", modality=Modality.pdf, text="Speed of sound is 343 m/s.", location={"page": 1}))
+
+    verifier = DeterministicQuestionVerifier()
+
+    # 1. Valid numerical question with scientific notation and positive tolerance
+    q_valid = Question(
+        question_id="q_valid_num",
+        topic_id="Physics",
+        evidence_ids=["s1:e00001"],
+        question_type=QuestionType.numerical,
+        prompt="What is the speed of light in vacuum in m/s (scientific notation)?",
+        expected_answer="3.0e8",
+        tolerance=1.0e6
+    )
+    res_valid = verifier.verify(q_valid, db=db)
+    assert res_valid.is_valid
+
+    # 2. Negative tolerance rejection
+    q_neg_tol = Question(
+        question_id="q_neg_tol",
+        topic_id="Physics",
+        evidence_ids=["s1:e00001"],
+        question_type=QuestionType.numerical,
+        prompt="What is the acceleration due to gravity on Earth in m/s^2?",
+        expected_answer="9.81",
+        tolerance=-0.1
+    )
+    res_neg_tol = verifier.verify(q_neg_tol, db=db)
+    assert not res_neg_tol.is_valid
+    assert any("tolerance cannot be negative" in r for r in res_neg_tol.failure_reasons)
+
+    # 3. Malformed expected answer rejection
+    q_malformed = Question(
+        question_id="q_malformed",
+        topic_id="Physics",
+        evidence_ids=["s1:e00001"],
+        question_type=QuestionType.numerical,
+        prompt="What is the value of pi?",
+        expected_answer="3.14.15abc"
+    )
+    res_malformed = verifier.verify(q_malformed, db=db)
+    assert not res_malformed.is_valid
+    assert any("not a valid parseable finite number" in r for r in res_malformed.failure_reasons)
+
+def test_numerical_submission_evaluation(tmp_path):
+    db = EvidenceDB(tmp_path / "assess_eval.sqlite")
+    db.add_source(SourceRecord(source_id="s1", path="p.pdf", modality=Modality.pdf, title="P", sha256="h"))
+    db.add_evidence(EvidenceUnit(evidence_id="s1:e00001", source_id="s1", modality=Modality.pdf, text="Gravitational acceleration is 9.81 m/s^2.", location={"page": 1}))
+
+    engine = AssessmentEngine(db)
+    q = engine.build_and_verify_question(
+        question_id="q_num_eval",
+        topic_id="Physics",
+        prompt="What is the standard acceleration due to gravity on Earth in m/s^2?",
+        expected_answer="9.81",
+        evidence_ids=["s1:e00001"],
+        question_type=QuestionType.numerical,
+        tolerance=0.05
+    )
+
+    # Correct within tolerance
+    sub1 = LearnerSubmission(learner_id="u1", question_id="q_num_eval", topic_id="Physics", answer="9.83")
+    eval1 = engine.evaluate_submission(sub1, q)
+    assert eval1.is_correct
+    assert eval1.status == "correct"
+
+    # Scientific notation answer
+    sub2 = LearnerSubmission(learner_id="u2", question_id="q_num_eval", topic_id="Physics", answer="9.81e0")
+    eval2 = engine.evaluate_submission(sub2, q)
+    assert eval2.is_correct
+
+    # Outside tolerance
+    sub3 = LearnerSubmission(learner_id="u3", question_id="q_num_eval", topic_id="Physics", answer="9.90")
+    eval3 = engine.evaluate_submission(sub3, q)
+    assert not eval3.is_correct
+    assert eval3.status == "incorrect"
+
+    # Malformed submission input (should fail cleanly without exception)
+    sub4 = LearnerSubmission(learner_id="u4", question_id="q_num_eval", topic_id="Physics", answer="nine point eight")
+    eval4 = engine.evaluate_submission(sub4, q)
+    assert not eval4.is_correct
+    assert eval4.status == "incorrect"
+
 def test_repetition_suppression_and_adaptive_selection(tmp_path):
     db = EvidenceDB(tmp_path / "assess4.sqlite")
     db.add_source(SourceRecord(source_id="s1", path="p.pdf", modality=Modality.pdf, title="P", sha256="h"))
@@ -86,7 +248,7 @@ def test_repetition_suppression_and_adaptive_selection(tmp_path):
 
     engine = AssessmentEngine(db)
 
-    # Add 3 questions for topic "Calculus"
+    # Add 2 questions for topic "Calculus"
     q1 = engine.build_and_verify_question(
         question_id="q_calc_01",
         topic_id="Calculus",

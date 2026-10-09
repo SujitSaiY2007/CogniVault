@@ -1,6 +1,7 @@
 from __future__ import annotations
 import hashlib
 import json
+import math
 import re
 from typing import Any
 from .db import EvidenceDB
@@ -23,7 +24,61 @@ def compute_question_fingerprint(prompt: str, topic_id: str = "", concept_id: st
     key = f"{topic_id}:{concept_id or ''}:{core_text}"
     return hashlib.sha256(key.encode("utf-8")).hexdigest()[:24]
 
+def parse_numerical_value(val: Any) -> float | None:
+    """
+    Parse a numerical input (str, int, float) into a finite float.
+    Correctly handles:
+      - Integers and floating point numbers: '42', '3.14', '-0.5'
+      - Explicit positive and negative signs: '+12', '-4.5'
+      - Scientific notation: '1.5e2', '-2.3e-4', '+1E6'
+      - Comma thousand separators: '1,000.5' -> 1000.5
+      - Whitespace stripping: '  42.0  '
+    Rejects:
+      - Non-numeric strings: 'abc', '12.3.4', '1.2e', '42 meters'
+      - Non-finite values: 'NaN', 'inf', '-infinity'
+      - Empty strings and None
+    """
+    if val is None:
+        return None
+    if isinstance(val, (int, float)):
+        return float(val) if math.isfinite(val) else None
+    if not isinstance(val, str):
+        return None
+
+    cleaned = val.strip()
+    if not cleaned:
+        return None
+
+    # Reject literal non-finite representations
+    lower = cleaned.lower()
+    if lower in {"nan", "+nan", "-nan", "inf", "+inf", "-inf", "infinity", "+infinity", "-infinity"}:
+        return None
+
+    # Remove standard thousands-separator commas if present
+    if "," in cleaned:
+        cleaned = cleaned.replace(",", "")
+
+    try:
+        parsed = float(cleaned)
+        if math.isfinite(parsed):
+            return parsed
+        return None
+    except (ValueError, TypeError):
+        return None
+
 class DeterministicQuestionVerifier:
+    """
+    Deterministic structural & key-integrity verifier for educational questions.
+
+    Verification Scope & Guarantee:
+      - STRUCTURAL VALIDITY: Validates prompt length, topic presence, and evidence addressability.
+      - KEY-OPTION INTEGRITY: Establishes that MCQ options are unique, distinct, and that the
+        expected answer unambiguously resolves to exactly one valid option key or option text.
+      - NUMERICAL INTEGRITY: Validates parseability of numeric answers and non-negative tolerances.
+      - SCOPE BOUNDARY: This verifier certifies structural and mapping integrity; it does NOT
+        prove external factual domain truth of the prompt/answer against real-world knowledge
+        without external ground-truth evidence alignment or LLM validation.
+    """
     def verify(self, question: Question, db: EvidenceDB | None = None) -> QuestionVerificationResult:
         failures: list[str] = []
         passes: list[str] = []
@@ -75,24 +130,42 @@ class DeterministicQuestionVerifier:
             else:
                 passes.append("Option texts distinct")
 
-            # Expected answer must match an option key or option text
-            valid_keys = set(keys)
-            exp_clean = question.expected_answer.strip().upper()
-            if exp_clean not in valid_keys and question.expected_answer.strip().lower() not in texts:
-                failures.append(f"Expected answer '{question.expected_answer}' does not match any valid option key {list(valid_keys)}")
+            # Single unambiguous expected answer match
+            exp_raw = question.expected_answer.strip()
+            exp_upper = exp_raw.upper()
+            exp_lower = exp_raw.lower()
+
+            matching_keys = [k for k in keys if k == exp_upper]
+            matching_texts = [t for t in texts if t == exp_lower]
+
+            if not matching_keys and not matching_texts:
+                failures.append(
+                    f"Expected answer '{question.expected_answer}' does not match any valid option key {list(set(keys))} or option text"
+                )
+            elif matching_keys and matching_texts:
+                # Check if the matched key belongs to the matched text option
+                matched_key_for_text = [
+                    opt.key.strip().upper() for opt in question.options if opt.text.strip().lower() == exp_lower
+                ]
+                if matched_key_for_text != matching_keys:
+                    failures.append(
+                        f"Expected answer '{question.expected_answer}' is ambiguous across multiple distinct options"
+                    )
+                else:
+                    passes.append("Expected answer unambiguously matches exactly one MCQ option (structural verification)")
             else:
-                passes.append("Expected answer matches valid MCQ option")
+                passes.append("Expected answer unambiguously matches exactly one MCQ option (structural verification)")
 
         elif question.question_type == QuestionType.numerical:
-            try:
-                val = float(re.sub(r"[^\d\.\-\+eE]", "", question.expected_answer.strip()))
+            val = parse_numerical_value(question.expected_answer)
+            if val is None:
+                failures.append(f"Expected answer '{question.expected_answer}' is not a valid parseable finite number")
+            else:
                 passes.append(f"Expected numerical value parseable ({val})")
-            except (ValueError, TypeError):
-                failures.append(f"Expected answer '{question.expected_answer}' is not a valid parseable number")
 
             if question.tolerance is not None:
-                if question.tolerance < 0.0:
-                    failures.append(f"Numerical tolerance cannot be negative: {question.tolerance}")
+                if not isinstance(question.tolerance, (int, float)) or not math.isfinite(question.tolerance) or question.tolerance < 0.0:
+                    failures.append(f"Numerical tolerance cannot be negative or non-finite: {question.tolerance}")
                 else:
                     passes.append(f"Tolerance valid ({question.tolerance})")
 
@@ -109,7 +182,9 @@ class DeterministicQuestionVerifier:
             verification_method="deterministic",
             failure_reasons=failures,
             checks_passed=passes,
+            scope="structural_integrity"
         )
+
 
 class AssessmentEngine:
     def __init__(self, db: EvidenceDB, verifier: DeterministicQuestionVerifier | None = None):
@@ -219,13 +294,17 @@ class AssessmentEngine:
                         break
 
         elif question.question_type == QuestionType.numerical:
-            try:
-                user_val = float(re.sub(r"[^\d\.\-\+eE]", "", user_ans))
-                exp_val = float(re.sub(r"[^\d\.\-\+eE]", "", question.expected_answer))
-                tol = question.tolerance if question.tolerance is not None else 1e-5
-                is_correct = abs(user_val - exp_val) <= tol
-            except (ValueError, TypeError):
+            user_val = parse_numerical_value(user_ans)
+            exp_val = parse_numerical_value(question.expected_answer)
+            if user_val is None or exp_val is None:
                 is_correct = False
+            else:
+                tol = (
+                    question.tolerance
+                    if (question.tolerance is not None and isinstance(question.tolerance, (int, float)) and math.isfinite(question.tolerance) and question.tolerance >= 0.0)
+                    else 1e-5
+                )
+                is_correct = abs(user_val - exp_val) <= tol
 
         elif question.question_type == QuestionType.short_answer:
             # Rubric / keyword matching

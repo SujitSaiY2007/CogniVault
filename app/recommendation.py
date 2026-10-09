@@ -61,22 +61,46 @@ class AdaptiveRecommendationEngine:
         prereqs = self.db.get_all_prerequisites(target_topic)
         for prereq in prereqs:
             prereq_mastery = mastery_map.get(prereq)
-            if prereq_mastery and prereq_mastery.p_mastery < 0.70:
-                # Prerequisite not met
+            if prereq_mastery is None or prereq_mastery.p_mastery < 0.70:
+                # Prerequisite not met or unverified
                 ev = self.db.get_evidence_for_concept(prereq) or self.db.get_evidence_for_topic(prereq)
+                if not ev:
+                    ev = list(self.db.all_evidence())
                 eids = [e.evidence_id for e in ev[:2]]
+
+                if prereq_mastery is None:
+                    rationale = (
+                        f"Prerequisite '{prereq}' for topic '{target_topic}' has no recorded mastery. "
+                        f"Prerequisites must be verified (mastery >= 0.70) before advancement."
+                    )
+                    evidence_payload = {
+                        "target_topic": target_topic,
+                        "prerequisite_topic": prereq,
+                        "prerequisite_mastery": None,
+                        "prerequisite_recorded": False,
+                        "status": "unverified_prerequisite"
+                    }
+                else:
+                    rationale = (
+                        f"Prerequisite '{prereq}' for topic '{target_topic}' requires reinforcement "
+                        f"(mastery: {prereq_mastery.p_mastery:.2f} < 0.70)."
+                    )
+                    evidence_payload = {
+                        "target_topic": target_topic,
+                        "prerequisite_topic": prereq,
+                        "prerequisite_mastery": prereq_mastery.p_mastery,
+                        "prerequisite_recorded": True,
+                        "status": "below_threshold"
+                    }
+
                 return Recommendation(
                     learner_id=learner_id,
                     recommended_action="foundational_review",
                     topic_id=prereq,
                     concept_id=prereq,
                     difficulty=Difficulty.easy,
-                    rationale=f"Prerequisite '{prereq}' for topic '{target_topic}' requires reinforcement (mastery: {prereq_mastery.p_mastery:.2f} < 0.70).",
-                    learner_state_evidence={
-                        "target_topic": target_topic,
-                        "prerequisite_topic": prereq,
-                        "prerequisite_mastery": prereq_mastery.p_mastery
-                    },
+                    rationale=rationale,
+                    learner_state_evidence=evidence_payload,
                     suggested_evidence_ids=eids
                 )
 
@@ -87,6 +111,10 @@ class AdaptiveRecommendationEngine:
         suggested_eids = [e.evidence_id for e in ev_items[:3]]
 
         # Mastery Policy Brackets (CHAT0_TECHNICAL_LOCK §17)
+        # p < 0.40: foundational review
+        # 0.40 <= p < 0.70: targeted practice
+        # 0.70 <= p <= 0.85: mixed application
+        # p > 0.85: advance topic
         if p_mastery < 0.40:
             action = "foundational_review"
             diff = Difficulty.easy
@@ -95,10 +123,10 @@ class AdaptiveRecommendationEngine:
             action = "targeted_practice"
             diff = Difficulty.medium
             rationale = f"Current topic mastery is developing ({p_mastery:.2f} in [0.40, 0.70)). Recommend targeted medium-difficulty practice."
-        elif p_mastery < 0.85:
+        elif p_mastery <= 0.85:
             action = "mixed_application"
             diff = Difficulty.medium
-            rationale = f"Current topic mastery is strong ({p_mastery:.2f} in [0.70, 0.85)). Recommend mixed application practice."
+            rationale = f"Current topic mastery is strong ({p_mastery:.2f} in [0.70, 0.85]). Recommend mixed application practice."
         else:
             action = "advance_topic"
             diff = Difficulty.hard
@@ -111,9 +139,9 @@ class AdaptiveRecommendationEngine:
                     break
             if next_topic != target_topic:
                 target_topic = next_topic
-                rationale = f"Mastery in previous topic exceeded 0.85 ({p_mastery:.2f}). Ready to advance to dependent topic '{target_topic}'."
+                rationale = f"Mastery in previous topic exceeded 0.85 ({p_mastery:.2f} > 0.85). Ready to advance to dependent topic '{target_topic}'."
             else:
-                rationale = f"High topic mastery achieved ({p_mastery:.2f} >= 0.85). Recommend advanced challenges."
+                rationale = f"High topic mastery achieved ({p_mastery:.2f} > 0.85). Recommend advanced challenges."
 
         return Recommendation(
             learner_id=learner_id,
@@ -129,3 +157,4 @@ class AdaptiveRecommendationEngine:
             },
             suggested_evidence_ids=suggested_eids
         )
+

@@ -38,5 +38,9 @@
 | D-034 | Misconception detection thresholding with prerequisite remediation mapping | Requires $\ge 2$ repeated errors before diagnosing misconceptions, linking remediation to prerequisite concepts and evidence | Implemented & Verified |
 | D-035 | Explainable mastery-bracketed recommendation policy | Maps mastery (<0.40 review, 0.40–0.70 practice, 0.70–0.85 mixed, >0.85 advance) with prerequisite graph gating | Implemented & Verified |
 
+| D-036 | Unverified prerequisite policy (MVP) | Prerequisites with no learner record block advancement and trigger foundational review on that prerequisite | Implemented & Verified |
+| D-037 | Assessment verification structural scope & numerical parsing contract | Scopes deterministic verifier to structural integrity, single-choice mapping, and robust finite numeric/tolerance parsing; factual truth explicitly distinguished | Implemented & Verified |
+
 New decisions must be added here with rationale and status.
+
 
