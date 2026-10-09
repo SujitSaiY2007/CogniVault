@@ -6,10 +6,16 @@ from collections import deque
 from pathlib import Path
 from .models import (
     ConceptRecord,
+    Difficulty,
     EvidenceUnit,
+    MisconceptionSignal,
     Modality,
     PrerequisiteLink,
+    Question,
+    QuestionOption,
+    QuestionType,
     SourceRecord,
+    TopicMasteryRecord,
     TopicRecord,
 )
 
@@ -90,6 +96,67 @@ CREATE TABLE IF NOT EXISTS concept_prerequisites(
     PRIMARY KEY(concept_id, prerequisite_concept_id),
     FOREIGN KEY(concept_id) REFERENCES concepts(concept_id) ON DELETE CASCADE,
     FOREIGN KEY(prerequisite_concept_id) REFERENCES concepts(concept_id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS learner_states(
+    learner_id TEXT NOT NULL,
+    topic_id TEXT NOT NULL,
+    p_mastery REAL NOT NULL,
+    attempts INTEGER NOT NULL,
+    correct INTEGER NOT NULL,
+    recent_correctness_json TEXT NOT NULL,
+    last_seen TEXT,
+    PRIMARY KEY(learner_id, topic_id)
+);
+CREATE TABLE IF NOT EXISTS questions(
+    question_id TEXT PRIMARY KEY,
+    topic_id TEXT NOT NULL,
+    concept_id TEXT,
+    evidence_ids_json TEXT NOT NULL,
+    difficulty TEXT NOT NULL,
+    question_type TEXT NOT NULL,
+    prompt TEXT NOT NULL,
+    options_json TEXT NOT NULL,
+    expected_answer TEXT NOT NULL,
+    tolerance REAL,
+    solution TEXT NOT NULL,
+    verification_status TEXT NOT NULL,
+    verification_reason TEXT,
+    fingerprint TEXT NOT NULL,
+    repetition_count INTEGER NOT NULL DEFAULT 0,
+    metadata_json TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS learner_interactions(
+    interaction_id TEXT PRIMARY KEY,
+    learner_id TEXT NOT NULL,
+    question_id TEXT NOT NULL,
+    topic_id TEXT NOT NULL,
+    user_answer TEXT NOT NULL,
+    is_correct INTEGER NOT NULL,
+    score REAL NOT NULL,
+    feedback TEXT NOT NULL,
+    timestamp TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS misconceptions(
+    signal_id TEXT PRIMARY KEY,
+    learner_id TEXT NOT NULL,
+    topic_id TEXT NOT NULL,
+    concept_id TEXT,
+    suspected_misconception TEXT NOT NULL,
+    error_count INTEGER NOT NULL,
+    confidence REAL NOT NULL,
+    remediation_concept_id TEXT,
+    remediation_evidence_ids_json TEXT NOT NULL,
+    remediation_note TEXT NOT NULL,
+    created_at TEXT
+);
+CREATE TABLE IF NOT EXISTS error_signals(
+    signal_key TEXT PRIMARY KEY,
+    learner_id TEXT NOT NULL,
+    topic_id TEXT NOT NULL,
+    concept_id TEXT NOT NULL,
+    error_pattern TEXT NOT NULL,
+    occurrence_count INTEGER NOT NULL,
+    last_occurred TEXT
 );
 """
 
@@ -456,3 +523,296 @@ class EvidenceDB:
             sql += " LIMIT ?"
             params.append(int(limit))
         return self.conn.execute(sql, params).fetchall()
+
+    # --- Learner States (BKT) ---
+    def save_learner_mastery(self, record: TopicMasteryRecord):
+        self.conn.execute(
+            "INSERT OR REPLACE INTO learner_states (learner_id, topic_id, p_mastery, attempts, correct, recent_correctness_json, last_seen) VALUES (?,?,?,?,?,?,?)",
+            (
+                record.learner_id,
+                record.topic_id,
+                float(record.p_mastery),
+                int(record.attempts),
+                int(record.correct),
+                json.dumps(record.recent_correctness),
+                record.last_seen,
+            )
+        )
+        self.conn.commit()
+
+    def get_learner_mastery(self, learner_id: str, topic_id: str) -> TopicMasteryRecord | None:
+        row = self.conn.execute(
+            "SELECT learner_id, topic_id, p_mastery, attempts, correct, recent_correctness_json, last_seen FROM learner_states WHERE learner_id=? AND topic_id=?",
+            (learner_id, topic_id)
+        ).fetchone()
+        if not row:
+            return None
+        return TopicMasteryRecord(
+            learner_id=row[0],
+            topic_id=row[1],
+            p_mastery=float(row[2]),
+            attempts=int(row[3]),
+            correct=int(row[4]),
+            recent_correctness=json.loads(row[5]),
+            last_seen=row[6],
+        )
+
+    def get_all_learner_masteries(self, learner_id: str) -> list[TopicMasteryRecord]:
+        rows = self.conn.execute(
+            "SELECT learner_id, topic_id, p_mastery, attempts, correct, recent_correctness_json, last_seen FROM learner_states WHERE learner_id=? ORDER BY topic_id",
+            (learner_id,)
+        ).fetchall()
+        return [
+            TopicMasteryRecord(
+                learner_id=r[0],
+                topic_id=r[1],
+                p_mastery=float(r[2]),
+                attempts=int(r[3]),
+                correct=int(r[4]),
+                recent_correctness=json.loads(r[5]),
+                last_seen=r[6],
+            )
+            for r in rows
+        ]
+
+    # --- Questions ---
+    def add_question(self, q: Question):
+        options_data = [opt.model_dump() for opt in q.options]
+        self.conn.execute(
+            "INSERT OR REPLACE INTO questions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                q.question_id,
+                q.topic_id,
+                q.concept_id,
+                json.dumps(q.evidence_ids),
+                q.difficulty.value,
+                q.question_type.value,
+                q.prompt,
+                json.dumps(options_data),
+                q.expected_answer,
+                q.tolerance,
+                q.solution,
+                q.verification_status,
+                q.verification_reason,
+                q.fingerprint,
+                q.repetition_count,
+                json.dumps(q.metadata),
+            )
+        )
+        self.conn.commit()
+
+    def get_question(self, question_id: str) -> Question | None:
+        row = self.conn.execute(
+            "SELECT question_id, topic_id, concept_id, evidence_ids_json, difficulty, question_type, prompt, options_json, expected_answer, tolerance, solution, verification_status, verification_reason, fingerprint, repetition_count, metadata_json FROM questions WHERE question_id=?",
+            (question_id,)
+        ).fetchone()
+        if not row:
+            return None
+        raw_options = json.loads(row[7])
+        options = [QuestionOption(**opt) for opt in raw_options]
+        return Question(
+            question_id=row[0],
+            topic_id=row[1],
+            concept_id=row[2],
+            evidence_ids=json.loads(row[3]),
+            difficulty=Difficulty(row[4]),
+            question_type=QuestionType(row[5]),
+            prompt=row[6],
+            options=options,
+            expected_answer=row[8],
+            tolerance=row[9],
+            solution=row[10],
+            verification_status=row[11],
+            verification_reason=row[12],
+            fingerprint=row[13],
+            repetition_count=int(row[14]),
+            metadata=json.loads(row[15]),
+        )
+
+    def get_questions_for_topic(self, topic_id: str, verified_only: bool = True) -> list[Question]:
+        sql = "SELECT question_id, topic_id, concept_id, evidence_ids_json, difficulty, question_type, prompt, options_json, expected_answer, tolerance, solution, verification_status, verification_reason, fingerprint, repetition_count, metadata_json FROM questions WHERE topic_id=?"
+        params = [topic_id]
+        if verified_only:
+            sql += " AND verification_status='verified'"
+        sql += " ORDER BY question_id"
+        rows = self.conn.execute(sql, params).fetchall()
+        out = []
+        for row in rows:
+            raw_options = json.loads(row[7])
+            options = [QuestionOption(**opt) for opt in raw_options]
+            out.append(
+                Question(
+                    question_id=row[0],
+                    topic_id=row[1],
+                    concept_id=row[2],
+                    evidence_ids=json.loads(row[3]),
+                    difficulty=Difficulty(row[4]),
+                    question_type=QuestionType(row[5]),
+                    prompt=row[6],
+                    options=options,
+                    expected_answer=row[8],
+                    tolerance=row[9],
+                    solution=row[10],
+                    verification_status=row[11],
+                    verification_reason=row[12],
+                    fingerprint=row[13],
+                    repetition_count=int(row[14]),
+                    metadata=json.loads(row[15]),
+                )
+            )
+        return out
+
+    def all_questions(self, verified_only: bool = False) -> list[Question]:
+        sql = "SELECT question_id, topic_id, concept_id, evidence_ids_json, difficulty, question_type, prompt, options_json, expected_answer, tolerance, solution, verification_status, verification_reason, fingerprint, repetition_count, metadata_json FROM questions"
+        if verified_only:
+            sql += " WHERE verification_status='verified'"
+        sql += " ORDER BY question_id"
+        rows = self.conn.execute(sql).fetchall()
+        out = []
+        for row in rows:
+            raw_options = json.loads(row[7])
+            options = [QuestionOption(**opt) for opt in raw_options]
+            out.append(
+                Question(
+                    question_id=row[0],
+                    topic_id=row[1],
+                    concept_id=row[2],
+                    evidence_ids=json.loads(row[3]),
+                    difficulty=Difficulty(row[4]),
+                    question_type=QuestionType(row[5]),
+                    prompt=row[6],
+                    options=options,
+                    expected_answer=row[8],
+                    tolerance=row[9],
+                    solution=row[10],
+                    verification_status=row[11],
+                    verification_reason=row[12],
+                    fingerprint=row[13],
+                    repetition_count=int(row[14]),
+                    metadata=json.loads(row[15]),
+                )
+            )
+        return out
+
+    # --- Learner Interactions ---
+    def record_interaction(self, interaction_id: str, learner_id: str, question_id: str, topic_id: str, user_answer: str, is_correct: bool, score: float, feedback: str, timestamp: str | None = None) -> str:
+        from datetime import datetime, timezone
+        ts = timestamp or datetime.now(timezone.utc).isoformat()
+        self.conn.execute(
+            "INSERT OR REPLACE INTO learner_interactions VALUES (?,?,?,?,?,?,?,?,?)",
+            (
+                interaction_id,
+                learner_id,
+                question_id,
+                topic_id,
+                user_answer,
+                1 if is_correct else 0,
+                float(score),
+                feedback,
+                ts,
+            )
+        )
+        self.conn.commit()
+        return interaction_id
+
+    def get_interactions(self, learner_id: str, topic_id: str | None = None) -> list[dict]:
+        sql = "SELECT interaction_id, learner_id, question_id, topic_id, user_answer, is_correct, score, feedback, timestamp FROM learner_interactions WHERE learner_id=?"
+        params = [learner_id]
+        if topic_id:
+            sql += " AND topic_id=?"
+            params.append(topic_id)
+        sql += " ORDER BY timestamp ASC"
+        rows = self.conn.execute(sql, params).fetchall()
+        return [
+            {
+                "interaction_id": r[0],
+                "learner_id": r[1],
+                "question_id": r[2],
+                "topic_id": r[3],
+                "user_answer": r[4],
+                "is_correct": bool(r[5]),
+                "score": float(r[6]),
+                "feedback": r[7],
+                "timestamp": r[8],
+            }
+            for r in rows
+        ]
+
+    # --- Error Signals & Misconceptions ---
+    def record_error_signal(self, learner_id: str, topic_id: str, concept_id: str, error_pattern: str) -> int:
+        from datetime import datetime, timezone
+        key = f"{learner_id}:{topic_id}:{concept_id}:{error_pattern}"
+        now = datetime.now(timezone.utc).isoformat()
+        row = self.conn.execute("SELECT occurrence_count FROM error_signals WHERE signal_key=?", (key,)).fetchone()
+        if row:
+            new_count = int(row[0]) + 1
+            self.conn.execute("UPDATE error_signals SET occurrence_count=?, last_occurred=? WHERE signal_key=?", (new_count, now, key))
+        else:
+            new_count = 1
+            self.conn.execute("INSERT INTO error_signals VALUES (?,?,?,?,?,?,?)", (key, learner_id, topic_id, concept_id, error_pattern, new_count, now))
+        self.conn.commit()
+        return new_count
+
+    def get_error_signal_count(self, learner_id: str, topic_id: str, concept_id: str, error_pattern: str | None = None) -> int:
+        if error_pattern:
+            key = f"{learner_id}:{topic_id}:{concept_id}:{error_pattern}"
+            row = self.conn.execute("SELECT occurrence_count FROM error_signals WHERE signal_key=?", (key,)).fetchone()
+            return int(row[0]) if row else 0
+        rows = self.conn.execute("SELECT occurrence_count FROM error_signals WHERE learner_id=? AND topic_id=? AND concept_id=?", (learner_id, topic_id, concept_id)).fetchall()
+        return sum(int(r[0]) for r in rows)
+
+    def reset_error_signal(self, learner_id: str, topic_id: str, concept_id: str):
+        self.conn.execute("DELETE FROM error_signals WHERE learner_id=? AND topic_id=? AND concept_id=?", (learner_id, topic_id, concept_id))
+        self.conn.commit()
+
+    def add_misconception(self, m: MisconceptionSignal):
+        self.conn.execute(
+            "INSERT OR REPLACE INTO misconceptions VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                m.signal_id,
+                m.learner_id,
+                m.topic_id,
+                m.concept_id,
+                m.suspected_misconception,
+                int(m.error_count),
+                float(m.confidence),
+                m.remediation_concept_id,
+                json.dumps(m.remediation_evidence_ids),
+                m.remediation_note,
+                m.created_at,
+            )
+        )
+        self.conn.commit()
+
+    def get_active_misconceptions(self, learner_id: str, topic_id: str | None = None) -> list[MisconceptionSignal]:
+        sql = "SELECT signal_id, learner_id, topic_id, concept_id, suspected_misconception, error_count, confidence, remediation_concept_id, remediation_evidence_ids_json, remediation_note, created_at FROM misconceptions WHERE learner_id=?"
+        params = [learner_id]
+        if topic_id:
+            sql += " AND topic_id=?"
+            params.append(topic_id)
+        sql += " ORDER BY created_at DESC"
+        rows = self.conn.execute(sql, params).fetchall()
+        return [
+            MisconceptionSignal(
+                signal_id=r[0],
+                learner_id=r[1],
+                topic_id=r[2],
+                concept_id=r[3],
+                suspected_misconception=r[4],
+                error_count=int(r[5]),
+                confidence=float(r[6]),
+                remediation_concept_id=r[7],
+                remediation_evidence_ids=json.loads(r[8]),
+                remediation_note=r[9],
+                created_at=r[10],
+            )
+            for r in rows
+        ]
+
+    def clear_misconceptions(self, learner_id: str, topic_id: str | None = None):
+        if topic_id:
+            self.conn.execute("DELETE FROM misconceptions WHERE learner_id=? AND topic_id=?", (learner_id, topic_id))
+        else:
+            self.conn.execute("DELETE FROM misconceptions WHERE learner_id=?", (learner_id,))
+        self.conn.commit()
+

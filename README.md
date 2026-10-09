@@ -10,25 +10,28 @@
 
 ## Project Status
 
-**Phase:** Chat 0 — Project Lock & Foundation  
-**Status:** LOCKED — ready for Chat 1  
+**Phase:** Chat 02 — Intelligence Core  
+**Status:** COMPLETE & VERIFIED — ready for Chat 03  
 **Repository:** SujitSaiY2007/CogniVault  
-**Default branch:** main
+**Default branch:** main  
+**Active branch:** chat02-intelligence-core  
 
 GitHub is the canonical source of truth.
 
-## Chat 0 Technical Lock
+## Technical Lock
 
-The authoritative foundation specification is:
+The authoritative technical specifications are:
 
 - docs/CHAT0_TECHNICAL_LOCK.md
+- docs/CHAT01_IMPLEMENTATION_STATUS.md
+- docs/CHAT02_IMPLEMENTATION_STATUS.md
 - docs/PRIOR_ART_AND_POSITIONING.md
 
 These documents define the locked MVP, architecture, evidence model, tutor behavior, assessment verification, BKT learner model, misconception policy, evaluation methodology, security boundary, demo flow, and chat sequence.
 
 ## Core Product Loop
 
-Course Materials → Multimodal Evidence Extraction → Source-Linked Knowledge Base → Evidence Retrieval → Grounded Tutor → Verified Adaptive Assessment → Learner Model / Misconception Signals → Personalized Next Action → Updated Learner State
+Course Materials → Multimodal Evidence Extraction → Source-Linked Knowledge Base → Evidence Retrieval → Sufficiency Gate → Grounded Tutor → Verified Adaptive Assessment → Learner Model (BKT) / Misconception Signals → Personalized Next Action → Updated Learner State
 
 ## Locked MVP
 
@@ -83,36 +86,23 @@ No unnecessary microservices, Kubernetes, custom foundation-model training or mu
 - PROJECT_STATE.md — verified project state.
 - CURRENT_OBJECTIVE.md — active objective and exit status.
 - CURRENT_HANDOFF.md — precise continuation state.
-- DECISION_LOG.md — locked decisions and rationale.
+- DECISION_LOG.md — locked decisions and rationale (D-001 to D-035).
 - REQUIREMENTS_TRACEABILITY.md — requirement → implementation → test mapping.
 - ARCHITECTURE.md — system architecture.
-- TEST_SPECIFICATION.md — acceptance tests.
+- TEST_SPECIFICATION.md — acceptance tests (G1–G5, A1–A4, L1–L3, S1–S2).
 - HALLUCINATION_CONTROL.md — grounding and abstention policy.
 - SECURITY_AND_USAGE_POLICY.md — secrets, privacy and usage controls.
 - EVALUATION_PROTOCOL.md — benchmark methodology.
 - DEMO_PLAN.md — demo sequence.
 - SUBMISSION_PLAN.md — final audit and submission checklist.
-- docs/CHAT0_TECHNICAL_LOCK.md — authoritative Chat 0 technical specification.
+- docs/CHAT0_TECHNICAL_LOCK.md — authoritative technical specification.
+- docs/CHAT01_IMPLEMENTATION_STATUS.md — Chat 01 status report.
+- docs/CHAT02_IMPLEMENTATION_STATUS.md — Chat 02 status report.
 - docs/PRIOR_ART_AND_POSITIONING.md — prior-art and competitive-positioning record.
-- docs/ — detailed documentation.
-- app/ — application code; currently scaffold only.
-- tests/ — automated/acceptance tests; currently scaffold only.
-- evaluation/ — evaluation artifacts; currently scaffold only.
-- data/ — corpus/evaluation data area; currently scaffold only.
-
-## Development Rule
-
-No phase is considered complete merely because code exists.
-
-A phase is complete only when:
-
-- implementation is present,
-- automated tests pass,
-- acceptance tests are executed,
-- documentation is updated,
-- no known blocker remains,
-- Git history records the work,
-- PROJECT_STATE and CURRENT_HANDOFF are updated.
+- app/ — application code (ingestion, retrieval, tutor, sufficiency, assessment, BKT, misconceptions, recommendations).
+- tests/ — automated/acceptance tests (75 passing tests covering K1–K10 and G1–G5, A1–A4, L1–L3, S2).
+- evaluation/ — evaluation artifacts area (benchmark runner in Chat 03).
+- data/ — corpus/evaluation data area.
 
 ## Secrets
 
@@ -124,13 +114,13 @@ Cognivault uses established ideas including RAG, multimodal extraction, intellig
 
 The project does not claim these techniques as inventions. Any stronger project-specific novelty claim must be supported by evidence.
 
-## Chat 01 Developer Usage
+## Developer Usage
 
 ### 1. Environment Setup & Installation
 ```bash
 python -m venv .venv
 # On Windows:
-.venv\Scripts\activate
+.\.venv\Scripts\activate
 # On Linux/macOS:
 source .venv/bin/activate
 
@@ -138,70 +128,117 @@ pip install -e .
 ```
 
 ### 2. Test Execution
-Run all automated unit and acceptance tests (K1–K10):
+Run all 75 automated unit and acceptance tests (K1–K10, G1–G5, A1–A4, L1–L3, S2):
 ```bash
 pytest -v
 ```
 
-### 3. Evidence Ingestion
-Ingest textbooks, slide decks, and lecture transcripts into SQLite:
+### 3. Ingestion & Retrieval (Knowledge Foundation)
 ```python
 from app.db import EvidenceDB
 from app.ingest import ingest_pdf, ingest_pptx, ingest_transcript
+from app.retrieval import HybridRetriever, build_embeddings
+from app.source_resolver import resolve
 
 db = EvidenceDB("cognivault.sqlite")
 
-# Ingest PDF textbook (extracts text chunks and figures with page provenance)
-pdf_source_id = ingest_pdf("textbook.pdf", db)
+# Ingest multimodal learning material
+pdf_sid = ingest_pdf("textbook.pdf", db)
+pptx_sid = ingest_pptx("lecture.pptx", db)
+vid_sid = ingest_transcript("transcript.txt", db)
 
-# Ingest PPTX slide deck (extracts slide text and embedded images with slide provenance)
-pptx_source_id = ingest_pptx("lecture.pptx", db)
-
-# Ingest lecture transcript (supports [mm:ss], [hh:mm:ss], mm:ss formats)
-vid_source_id = ingest_transcript("transcript.txt", db)
-```
-
-### 4. Embedding Indexing
-Generate and persist embeddings in SQLite:
-```python
-from app.retrieval import build_embeddings
-
-# Persists normalized embeddings into SQLite without committed binaries
+# Build embeddings and query
 build_embeddings(db)
-```
-
-### 5. Deterministic Hybrid Retrieval
-Query using SQLite FTS5 lexical search, semantic embeddings, or deterministic hybrid fusion:
-```python
-from app.retrieval import HybridRetriever
-
 retriever = HybridRetriever(db)
 results, trace = retriever.search("Newton second law", k=5, mode="hybrid")
 
-for r in results:
-    print(r.evidence_id, r.score, r.location, r.snippet[:100])
-
-# Machine-readable retrieval trace
-print("Unsupported:", trace.unsupported, "Reason:", trace.reason)
+# Resolve provenance
+if results:
+    prov = resolve(results[0].evidence_id, db)
+    print(prov["source_title"], prov["location"], prov["text"])
 ```
 
-### 6. Exact Provenance Resolution
-Resolve any retrieved evidence ID back to its original source location:
+### 4. Grounded Tutor & Sufficiency Gate
 ```python
-from app.source_resolver import resolve
+from app.tutor import GroundedTutor
+from app.sufficiency import check_sufficiency
 
-provenance = resolve(results[0].evidence_id, db)
-print(provenance["source_path"], provenance["location"], provenance["text"])
+tutor = GroundedTutor(db)
+
+# Grounded query with citations
+resp = tutor.answer("What is Newton's Second Law?")
+print("Answer:", resp.answer)
+for c in resp.citations:
+    print(f"Citation: {c.evidence_id} ({c.modality}) -> {c.location}")
+
+# Off-material query (abstains automatically)
+off_resp = tutor.answer("Quantum teleportation black hole")
+print("Unsupported?", off_resp.support_status == "unsupported")
+```
+
+### 5. Verified Assessment & Corrective Feedback
+```python
+from app.assessment import AssessmentEngine
+from app.models import Difficulty, LearnerSubmission, QuestionOption
+
+engine = AssessmentEngine(db)
+
+# Create & verify question
+q = engine.build_and_verify_question(
+    question_id="q_math_01",
+    topic_id="Algebra",
+    prompt="What is the quadratic formula?",
+    expected_answer="A",
+    evidence_ids=[results[0].evidence_id],
+    difficulty=Difficulty.medium,
+    options=[
+        QuestionOption(key="A", text="x = (-b +- sqrt(b^2 - 4ac)) / (2a)"),
+        QuestionOption(key="B", text="x = -b / 2a")
+    ],
+    solution="The quadratic formula solves ax^2 + bx + c = 0."
+)
+
+# Adaptive question selection with repetition suppression
+selected_q = engine.select_adaptive_question("Algebra", served_question_ids=["q_prev"])
+
+# Evaluate submission
+sub = LearnerSubmission(learner_id="student_1", question_id="q_math_01", topic_id="Algebra", answer="B")
+eval_res = engine.evaluate_submission(sub, q)
+print("Correct?", eval_res.is_correct)
+print("Feedback:", eval_res.feedback)
+```
+
+### 6. BKT Learner Modeling, Misconceptions & Recommendations
+```python
+from app.learner_model import LearnerStateManager
+from app.misconceptions import MisconceptionDetector
+from app.recommendation import AdaptiveRecommendationEngine
+
+# Update Bayesian Knowledge Tracing state
+mgr = LearnerStateManager(db)
+mastery = mgr.record_response("student_1", "Algebra", is_correct=False)
+print(f"Topic Mastery: {mastery.p_mastery:.4f} (Attempts: {mastery.attempts})")
+
+# Misconception tracking (triggers on repeated errors)
+detector = MisconceptionDetector(db, error_threshold=2)
+signal = detector.analyze_attempt("student_1", "Algebra", "Quadratic Roots", is_correct=False)
+if signal:
+    print("Misconception Detected:", signal.suspected_misconception)
+    print("Remediation Concept:", signal.remediation_concept_id)
+
+# Targeted next-action recommendation
+rec_engine = AdaptiveRecommendationEngine(db)
+rec = rec_engine.recommend("student_1", active_topic_id="Algebra")
+print("Recommended Action:", rec.recommended_action)
+print("Difficulty:", rec.difficulty)
+print("Rationale:", rec.rationale)
 ```
 
 ## Next Phase
 
-**Chat 2 — Intelligence Core**
+**Chat 3 — Product & Evaluation**
 
-Building on the verified Chat 01 evidence foundation, Chat 2 will implement:
-- Grounded tutor response engine with evidence citation mapping.
-- Evidence sufficiency gate and explicit abstention.
-- Question generation and deterministic/model-assisted verification.
-- Bayesian Knowledge Tracing (BKT) per-topic learner model.
-- Misconception signal detection and targeted remediation recommendations.
-
+Building on the verified Intelligence Core, Chat 3 will implement:
+- Multi-view Streamlit UI (`app/ui/`) for course setup, evidence explorer, grounded tutor, adaptive assessment, learner profile, and recommendations.
+- Automated benchmark evaluation runner (`evaluation/runner.py`).
+- Scripted simulated learner benchmarks and metric reports.
