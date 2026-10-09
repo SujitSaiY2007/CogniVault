@@ -1,29 +1,22 @@
-# Current Objective — Chat 02 Complete
+# Current Objective — Chat 02 Closure and Chat 03 Entry
 
-## Objective
+## Chat 02 Closure State
 
-Implement and verify the **Intelligence Core** of CogniVault on top of the Chat 01 multimodal evidence foundation.
+**Implementation complete; documentation reconciled; final post-closure regression run is required before Chat 03 implementation begins.**
 
-## Chat 02 Status
+- Canonical repository: `SujitSaiY2007/CogniVault`
+- Chat 02 branch: `chat02-intelligence-core`
+- Last previously reported full test run: 80 passed in 23.99s (reported by Antigravity before the final malformed-grouped-decimal assertions were added).
+- Latest code-only test addition: malformed grouped-decimal regression assertions in `tests/test_assessment.py`; this exact latest HEAD has not yet been rerun by the assistant.
+- The numerical parser already validates comma grouping before stripping separators; the added assertions cover malformed grouped decimals.
+- Mastery policy is locked to `docs/CHAT0_TECHNICAL_LOCK.md` §17: `p < 0.40` foundational review; `0.40 <= p < 0.70` targeted practice; `0.70 <= p <= 0.85` mixed application; `p > 0.85` advance.
+- Missing or under-mastered prerequisites (<0.70) block advancement; a missing record is unverified, not assumed mastered. Exactly 0.70 satisfies prerequisite readiness.
+- Assessment verification scope is structural integrity; it does not independently prove factual domain truth.
 
-**COMPLETE & VERIFIED.** All intelligence core components, data contracts, and acceptance tests have been implemented and verified with zero test failures and zero regressions.
+## Required First Action in the Next Chat
 
-## Implemented & Verified Outputs
-
-- **Evidence Sufficiency Gate (`app/sufficiency.py`):** Relevance score thresholding ($\ge 0.15$), term coverage analysis, and fail-closed abstention.
-- **Grounded Tutor Engine (`app/tutor.py`):** Direct evidence citations, cross-source synthesis, visual & transcript timestamp locators, and fail-closed abstention.
-- **Assessment Generation & Verification (`app/assessment.py`):** Tagged questions, deterministic MCQ/numerical verification, flawed key rejection, repetition suppression via fingerprinting, and evidence-grounded corrective feedback.
-- **Bayesian Knowledge Tracing (`app/learner_model.py`):** Mathematically exact posterior and transition updates ($P(L_0)=0.10, P(T)=0.15, P(S)=0.10, P(G)=0.20$), state persistence, and profile tracking.
-- **Misconception Detection & Remediation (`app/misconceptions.py`):** Error signal accumulation ($\ge 2$ threshold), prerequisite concept resolution, and remedial evidence linking.
-- **Adaptive Recommendation Engine (`app/recommendation.py`):** Mastery policy bands (<0.40 review, 0.40-0.70 practice, 0.70-0.85 mixed, >=0.85 advance), prerequisite graph gating, and active misconception prioritization.
-- **Comprehensive Test Suite:** 75 passing tests (40 Chat 01 baseline tests + 35 Chat 02 unit and acceptance tests covering G1–G5, A1–A4, L1–L3, S2).
-
-## Exit Criteria
-
-All Chat 02 intelligence core capabilities are implemented, 100% of automated and acceptance tests pass, and documentation is reconciled.
-
-**Exit status: SATISFIED.**
+Before Chat 03 implementation, sync the local checkout to the latest `chat02-intelligence-core` remote HEAD, confirm a clean worktree and correct branch, and run the full test suite. If tests fail, fix only regressions introduced by the final malformed-number assertions, rerun the full suite, and commit/push to the same Chat 02 branch. Do not start Chat 03 until the current HEAD is green.
 
 ## Next Objective
 
-**Chat 03 — Product & Evaluation:** Implement Streamlit user interface, benchmark evaluation runner, simulated learner evaluation, and demo orchestration.
+**Chat 03 — Product & Evaluation:** Build the Streamlit product UI, a real Mathematics/Science demo corpus with provenance, a reproducible benchmark runner, and simulated multi-turn learner evaluations with measured metrics. The authoritative task prompt is `NEXT_CHAT_PROMPT.md`.
