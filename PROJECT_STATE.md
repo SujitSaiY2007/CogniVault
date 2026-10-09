@@ -14,7 +14,7 @@ CHAT 02 IMPLEMENTATION COMPLETE; FINAL POST-CLOSURE REGRESSION RERUN REQUIRED BE
 - Current branch: `chat02-intelligence-core`
 - Starting baseline commit: `424ad5617e3d8461e468ddd59d5771decde5e9fe`
 - Last previously reported test execution: **80 passed in 23.99s** (`pytest -v --durations=10`), reported before the final malformed-grouped-decimal assertions were added. Current HEAD requires a fresh full-suite run.
-- Baseline Preservation: All 40 Chat 01 baseline tests preserved with zero regressions; 40 unit and acceptance tests passing.
+- Baseline Preservation: The previously reported 80-test run included the 40-test Chat 01 baseline and 40 Chat 02 tests. Reconfirm the full suite at the current HEAD before Chat 03.
 - Dedicated acceptance harnesses:
   - `tests/acceptance/test_k1_to_k10.py` (K1–K10 all pass)
   - `tests/acceptance/test_chat02_acceptance.py` (G1–G5, A1–A4, L1–L3, S2 all pass)
