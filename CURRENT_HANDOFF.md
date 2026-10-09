@@ -32,14 +32,19 @@ Completed the Chat 02 Intelligence Core and corrective audit. Documentation is b
 - `docs/CHAT0_TECHNICAL_LOCK.md` — Authoritative technical specification.
 - `DECISION_LOG.md` — Decisions D-001 through D-037.
 - `REQUIREMENTS_TRACEABILITY.md` — Requirement-to-verification traceability matrix.
-- `README.md` — Developer usage instructions and current phase state.\n- `NEXT_CHAT_PROMPT.md` — authoritative, task-first Chat 03 implementation prompt.
+- `README.md` — Developer usage instructions and current phase state.
+- `NEXT_CHAT_PROMPT.md` — authoritative, task-first Chat 03 implementation prompt.
 
 ## Scope Boundaries
 
 - Chat 02 delivers the complete intelligence and reasoning core (tutor, sufficiency, assessment, BKT, misconceptions, recommendations).
 - User interface (Streamlit frontend), automated benchmark evaluation runner, and simulated learner benchmarking are strictly reserved for Chat 03.
 
-## Mandatory Gate Before Chat 03\n\nSync to the current remote HEAD of `chat02-intelligence-core`, confirm clean worktree and branch, and run the full test suite. Fix any failures caused by the final numerical comma-grouping regression cases, rerun all tests, and push only to this branch. Do not start Chat 03 implementation until the current HEAD is green.\n\n## Next Chat: Chat 03 — Product & Evaluation
+## Mandatory Gate Before Chat 03
+
+Sync to the current remote HEAD of `chat02-intelligence-core`, confirm clean worktree and branch, and run the full test suite. Fix any failures caused by the final numerical comma-grouping regression cases, rerun all tests, and push only to this branch. Do not start Chat 03 implementation until the current HEAD is green.
+
+## Next Chat: Chat 03 — Product & Evaluation
 
 1. Implement multi-view Streamlit UI (`app/ui/`) covering Course Ingestion, Evidence Explorer, Tutor Chat, Adaptive Assessment, Learner Profile, and Recommendation Views.
 2. Implement evaluation benchmark runner (`evaluation/runner.py`) for automated scoring (precision, recall, faithfulness, abstention rate, question repetition).
