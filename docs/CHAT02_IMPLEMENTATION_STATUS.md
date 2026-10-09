@@ -2,8 +2,8 @@
 
 **Branch:** `chat02-intelligence-core`  
 **Date:** 2026-10-09  
-**Status:** IMPLEMENTED, CORRECTED, AND VERIFIED  
-**Test Suite:** 80 passed in 22.12s (`pytest -v --durations=10`)
+**Status:** IMPLEMENTATION COMPLETE; final post-closure regression rerun pending  
+**Last previously reported test run:** 80 passed in 23.99s (`pytest -v --durations=10`), before final malformed-grouped-decimal assertions; rerun required at current HEAD
 
 ---
 
@@ -56,7 +56,7 @@ tests\test_tutor.py ....                                                 [100%]
 ============================= 80 passed in 22.12s =============================
 ```
 
-All 80 tests passed with zero failures and zero regressions against the 40 baseline tests.
+The previously reported run passed 80 tests with zero failures and preserved the 40-test baseline. Three malformed grouped-decimal assertions were added afterward; this exact HEAD still requires a fresh full-suite run. Do not report the new assertions as executed until Antigravity runs them.
 
 ---
 
@@ -83,7 +83,7 @@ All 80 tests passed with zero failures and zero regressions against the 40 basel
 5. **Assessment Generation & Deterministic Verification (`app/assessment.py`)**
    - Topic-, difficulty-, and evidence-linked questions.
    - Deterministic structural verification: single unambiguous MCQ option matching, option uniqueness, distinct option texts, database evidence existence.
-   - Robust numerical parsing (`parse_numerical_value`) handling integers, decimals, signs, scientific notation, comma-thousands, with strict non-negative finite tolerance enforcement. Rejection of NaN/inf and malformed strings.
+   - Robust numerical parsing (`parse_numerical_value`) handling integers, decimals, signs, scientific notation, comma-thousands, with strict non-negative finite tolerance enforcement. Rejects NaN/inf, malformed numeric strings, and invalid thousands-separator groupings (including malformed grouped decimals; final regression assertions added after the last reported run).
    - Explicit scope boundary: Structural integrity certified; factual domain truth distinguished from syntactic consistency.
 
 6. **Repetition Suppression & Adaptive Selection (`app/assessment.py`)**
@@ -146,5 +146,5 @@ All 80 tests passed with zero failures and zero regressions against the 40 basel
 - **D-034:** Error signal accumulation with threshold $\ge 2$ for misconception diagnosis.
 - **D-035:** Explainable mastery-bracketed recommendation policy with prerequisite graph gating.
 - **D-036:** Explicit unverified prerequisite blocking policy for MVP.
-- **D-037:** Assessment verification structural scope and robust numerical parsing contract.
+- **D-037:** Assessment verification structural scope and robust numerical parsing contract.\n- **D-038:** Strict thousands-separator grouping; malformed comma groupings are rejected instead of silently changed.
 
