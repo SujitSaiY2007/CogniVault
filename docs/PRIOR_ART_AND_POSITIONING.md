@@ -1,3 +1,5 @@
+> **Current status note — 2026-10-10:** This positioning guardrail remains in force for all phase branches and final submission. Chat 01–05 are reported on separate branches; main is the scaffold/control baseline plus documentation synchronization, not the merged application. The current UI redesign does not establish novelty. Do not claim “first”, “novel”, “unique”, zero hallucinations, or real-world learning gains without documented comparative evidence.
+
 # Cognivault — Prior-Art & Competitive Positioning
 
 ## Purpose
