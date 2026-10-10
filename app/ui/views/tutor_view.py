@@ -9,7 +9,6 @@ import streamlit as st
 import pandas as pd
 from app.tutor import GroundedTutor
 from app.ui.components import (
-    _render_html_fragment,
     render_page_header,
     render_section_header,
     render_callout,
@@ -45,7 +44,7 @@ def render_tutor_view(services: dict):
         if st.button("Off-Corpus: French Rev", use_container_width=True, help="Tests fail-closed abstention gate"):
             preset_query = "What were the major economic causes of the French Revolution in 1789?"
 
-    _render_html_fragment("<div style='margin-bottom: 0.75rem;'></div>")
+    st.markdown("<div style='margin-bottom: 0.75rem;'></div>", unsafe_allow_html=True)
 
     # Question Composer Container
     prefill_query = st.session_state.pop("tutor_prefill_query", "")
@@ -74,7 +73,7 @@ def render_tutor_view(services: dict):
             results, trace = tutor.retriever.search(user_query.strip(), k=top_k, mode=retrieval_mode)
             suff_eval = tutor.sufficiency_gate.evaluate(user_query.strip(), results, trace=trace, db=services["db"])
 
-        _render_html_fragment("<div style='margin-bottom: 1.5rem;'></div>")
+        st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
 
         # -------------------------------------------------------------
         # STATE 1: Grounded & Supported Answer
@@ -82,20 +81,30 @@ def render_tutor_view(services: dict):
         if response.support_status == "supported":
             status_col1, status_col2 = st.columns([3, 1])
             with status_col1:
-                _render_html_fragment("""
+                st.markdown(
+                    """
                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <span class="cogni-badge cogni-badge-success">🟢 Grounded in Curriculum Evidence</span>
                         <span style="font-size: 0.88rem; color: #16A34A; font-weight: 500;">Verified against indexed course units</span>
                     </div>
-                    """)
+                    """,
+                    unsafe_allow_html=True
+                )
             with status_col2:
                 if response.is_synthesis:
-                    _render_html_fragment('<div style="text-align: right;"><span class="cogni-badge cogni-badge-indigo">🔄 Cross-Source Synthesis</span></div>')
+                    st.markdown(
+                        '<div style="text-align: right;"><span class="cogni-badge cogni-badge-indigo">🔄 Cross-Source Synthesis</span></div>',
+                        unsafe_allow_html=True
+                    )
                 else:
-                    _render_html_fragment(f'<div style="text-align: right;"><span class="cogni-badge cogni-badge-neutral">Confidence: {response.confidence:.2f}</span></div>')
+                    st.markdown(
+                        f'<div style="text-align: right;"><span class="cogni-badge cogni-badge-neutral">Confidence: {response.confidence:.2f}</span></div>',
+                        unsafe_allow_html=True
+                    )
 
             # Tutor Answer Card
-            _render_html_fragment(f"""
+            st.markdown(
+                f"""
                 <div style="
                     background: #FFFFFF;
                     border: 1px solid #E2E8F0;
@@ -112,7 +121,9 @@ def render_tutor_view(services: dict):
                         {response.answer}
                     </div>
                 </div>
-                """)
+                """,
+                unsafe_allow_html=True
+            )
 
             # Verified Source Citations
             render_section_header("📚 Verified Source Citations", subtitle="Every factual assertion in the response maps directly to these addressable units.")
@@ -152,7 +163,8 @@ def render_tutor_view(services: dict):
                 icon="⚠️"
             )
 
-            _render_html_fragment(f"""
+            st.markdown(
+                f"""
                 <div style="
                     background: #FFFBEB;
                     border: 1px solid #FDE68A;
@@ -168,7 +180,9 @@ def render_tutor_view(services: dict):
                         {response.answer}
                     </div>
                 </div>
-                """)
+                """,
+                unsafe_allow_html=True
+            )
 
         # -------------------------------------------------------------
         # STATE 3: System Error
