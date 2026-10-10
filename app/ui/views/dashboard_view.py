@@ -102,7 +102,7 @@ def render_dashboard_view(services: dict) -> None:
     with col_hero:
         # Large SaaS Welcome Hero Card
         hero_html = textwrap.dedent(f"""
-            <div class="hero-card" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="hero-card dashboard-hero" style="height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;">
                 <div>
                     <div class="card-title" style="font-size: 1.55rem; margin-bottom: 0.45rem;">
                         Welcome to CogniVault
@@ -111,7 +111,7 @@ def render_dashboard_view(services: dict) -> None:
                         Learn with confidence. Ask questions, practice, and explore — all grounded in your course materials.
                     </div>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: auto;">
+                <div class="dashboard-hero-badges" style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.5rem;margin-top:0.6rem;">
                     <span class="cogni-badge cogni-badge-indigo">🛡️ Evidence-backed answers</span>
                     <span class="cogni-badge cogni-badge-teal">🎯 Adaptive practice</span>
                     <span class="cogni-badge cogni-badge-success">📈 Track your progress</span>
@@ -176,204 +176,51 @@ def render_dashboard_view(services: dict) -> None:
     _render_html_fragment("<div style='margin-bottom: 1rem;'></div>")
 
     # -------------------------------------------------------------------------
-    # 4. Main Dashboard Grid: Left (Continue Learning + History), Right (Recs + Quick Actions)
+    # 4. Compact recommendation panel and bottom quick actions.
+    # The resume card above is the single source for continuing course work.
     # -------------------------------------------------------------------------
-    col_main, col_side = st.columns([1.75, 1.25])
+    rec = recommendation_engine.recommend(active_learner)
+    action_label = rec.recommended_action.replace("_", " ").title()
+    status_type = rec.learner_state_evidence.get("status")
+    is_blocked = status_type in ("unverified_prerequisite", "below_threshold") or "prerequisite" in rec.rationale.lower()
+    prereq_topic = rec.learner_state_evidence.get("prerequisite_topic", "")
+    status_variant = "danger" if is_blocked else ("warning" if "review" in rec.recommended_action else "success")
 
-    with col_main:
-        # A. Continue Learning Section
-        with st.container(border=True):
-            render_section_header(
-                title="📖 Continue Learning",
-                subtitle="Your active course curriculum and progress."
-            )
-
-            if interactions or masteries:
-                active_topic_name = interactions[-1]["topic_id"] if interactions else masteries[0].topic_id
-                t_qs = db.get_questions_for_topic(active_topic_name, verified_only=True)
-                t_inter = [i for i in interactions if i["topic_id"] == active_topic_name]
-                t_ans = len({i["question_id"] for i in t_inter})
-                t_pct = int((t_ans / max(1, len(t_qs))) * 100) if t_qs else 0
-                t_mast = (db.get_learner_mastery(active_learner, active_topic_name).p_mastery if db.get_learner_mastery(active_learner, active_topic_name) else 0.10)
-
-                _render_html_fragment(textwrap.dedent(f"""
-                        <div style="background: #F8FAFC; border: 1px solid {BORDER_COLOR}; border-radius: 8px; padding: 1rem; margin-bottom: 0.85rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-                                <span style="font-size: 1.05rem; font-weight: 700; color: {TEXT_PRIMARY};">{active_topic_name}</span>
-                                <span class="cogni-badge cogni-badge-indigo">Mastery: {t_mast:.1%}</span>
-                            </div>
-                            <div style="font-size: 0.86rem; color: {TEXT_SECONDARY}; margin-bottom: 0.5rem;">
-                                Comprehensive topic coverage with deterministic grounding and multi-modal evidence.
-                            </div>
-                            <div style="font-size: 0.82rem; color: {TEXT_MUTED};">
-                                Completed: <strong>{t_ans} of {len(t_qs)} items</strong> ({t_pct}%)
-                            </div>
-                        </div>
-                    """).strip())
-                if st.button("Open Course Practice →", type="primary", key="dash_open_course_practice_btn"):
-                    st.session_state["nav_selection_override"] = "📝 Practice & Assessment"
-                    st.rerun()
-            else:
-                # Default curriculum source
-                primary_source = all_sources[0] if all_sources else None
-                s_title = primary_source.title if primary_source else "STEM Benchmark Curriculum"
-                s_mod = primary_source.modality.upper() if primary_source else "PDF"
-
-                _render_html_fragment(textwrap.dedent(f"""
-                        <div style="background: #F8FAFC; border: 1px solid {BORDER_COLOR}; border-radius: 8px; padding: 1rem; margin-bottom: 0.85rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-                                <span style="font-size: 1.05rem; font-weight: 700; color: {TEXT_PRIMARY};">{s_title}</span>
-                                <span class="cogni-badge cogni-badge-teal">{s_mod}</span>
-                            </div>
-                            <div style="font-size: 0.86rem; color: {TEXT_SECONDARY};">
-                                Verified foundational course material ready for exploration and practice.
-                            </div>
-                        </div>
-                    """).strip())
-                if st.button("Start Course →", type="primary", key="dash_start_primary_course_btn"):
-                    st.session_state["nav_selection_override"] = "📚 Available Courses"
-                    st.rerun()
-
-        # B. Recent History Section (Real interaction records, session-only for guests)
-        with st.container(border=True):
-            render_section_header(
-                title="⏱️ Recent History",
-                subtitle="Recent practice attempts and tutor inquiries during this session."
-            )
-
-            if interactions:
-                recent_list = interactions[-5:][::-1]
-                for item in recent_list:
-                    status_badge = '<span class="cogni-badge cogni-badge-success">✅ Correct</span>' if item["is_correct"] else '<span class="cogni-badge cogni-badge-warning">❌ Needs Review</span>'
-                    ts_str = item["timestamp"][:16].replace("T", " ") if "T" in item["timestamp"] else item["timestamp"]
-                    _render_html_fragment(textwrap.dedent(f"""
-                            <div class="history-row">
-                                <div>
-                                    <span style="font-weight: 600; color: {TEXT_PRIMARY};">{item['topic_id']}</span>
-                                    <div style="font-size: 0.78rem; color: {TEXT_MUTED}; margin-top: 0.15rem;">Score: {item['score']:.0%} • {ts_str}</div>
-                                </div>
-                                <div>{status_badge}</div>
-                            </div>
-                        """).strip())
-            else:
-                render_empty_state(
-                    title="No Recent Activity",
-                    message="Your practice attempts, evidence explorations, and tutor queries will appear here.",
-                    icon="⏱️"
-                )
-
-    with col_side:
-        # C. Recommended Next Step Card
-        with st.container(border=True):
-            render_section_header(
-                title="🎯 Recommended Next Step",
-                subtitle="Adaptive guidance calibrated to your mastery state."
-            )
-
-            rec = recommendation_engine.recommend(active_learner)
-            action_label = rec.recommended_action.replace("_", " ").title()
-            status_type = rec.learner_state_evidence.get("status")
-            is_blocked = status_type in ("unverified_prerequisite", "below_threshold") or "prerequisite" in rec.rationale.lower()
-            prereq_topic = rec.learner_state_evidence.get("prerequisite_topic", "")
-
-            status_variant = "danger" if is_blocked else ("warning" if "review" in rec.recommended_action else "success")
-
-            _render_html_fragment(textwrap.dedent(f"""
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; flex-wrap: wrap;">
-                        <span style="font-size: 1.05rem; font-weight: 700; color: {TEXT_PRIMARY};">{action_label}</span>
-                        <span class="cogni-badge cogni-badge-{status_variant}">Target: {rec.topic_id}</span>
-                        <span class="cogni-badge cogni-badge-neutral">{rec.difficulty.value.upper()}</span>
-                    </div>
-                    <p style="font-size: 0.88rem; color: {TEXT_SECONDARY}; line-height: 1.5; margin-bottom: 0.75rem;">
-                        {rec.rationale}
-                    </p>
-                """).strip())
-
-            if is_blocked and prereq_topic:
-                st.error(f"⛔ **Prerequisite Gate:** Advancement locked until **{prereq_topic}** reaches $P(L) \\ge 0.70$.")
-
-            if st.button(f"Go to {action_label} →", type="primary", use_container_width=True, key="dash_rec_action_btn"):
-                if "tutor" in rec.recommended_action.lower():
-                    st.session_state["nav_selection_override"] = "💬 AI Tutor"
-                else:
-                    st.session_state["nav_selection_override"] = "📝 Practice & Assessment"
-                st.rerun()
-
-        # D. Quick Actions Grid (2x2)
-        with st.container(border=True):
-            render_section_header(
-                title="⚡ Quick Actions",
-                subtitle="Fast shortcuts to key learning capabilities."
-            )
-
-            qa_col1, qa_col2 = st.columns(2)
-            with qa_col1:
-                _render_html_fragment(textwrap.dedent(f"""
-                        <div class="quick-action-card">
-                            <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">💬</div>
-                            <div style="font-weight: 700; color: {TEXT_PRIMARY}; font-size: 0.95rem;">Ask AI Tutor</div>
-                            <div style="font-size: 0.82rem; color: {TEXT_SECONDARY}; margin-top: 0.2rem;">Strict citation grounding</div>
-                        </div>
-                    """).strip())
-                if st.button("Launch Tutor", use_container_width=True, key="dash_qa_tutor"):
-                    st.session_state["nav_selection_override"] = "💬 AI Tutor"
-                    st.rerun()
-
-                _render_html_fragment("<div style='margin-top: 0.5rem;'></div>")
-
-                _render_html_fragment(textwrap.dedent(f"""
-                        <div class="quick-action-card">
-                            <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">🔍</div>
-                            <div style="font-weight: 700; color: {TEXT_PRIMARY}; font-size: 0.95rem;">Evidence Vault</div>
-                            <div style="font-size: 0.82rem; color: {TEXT_SECONDARY}; margin-top: 0.2rem;">Explore slides & locators</div>
-                        </div>
-                    """).strip())
-                if st.button("Explore Evidence", use_container_width=True, key="dash_qa_evidence"):
-                    st.session_state["nav_selection_override"] = "📚 Available Courses"
-                    st.rerun()
-
-            with qa_col2:
-                _render_html_fragment(textwrap.dedent(f"""
-                        <div class="quick-action-card">
-                            <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">📝</div>
-                            <div style="font-weight: 700; color: {TEXT_PRIMARY}; font-size: 0.95rem;">Practice Test</div>
-                            <div style="font-size: 0.82rem; color: {TEXT_SECONDARY}; margin-top: 0.2rem;">Adaptive BKT assessment</div>
-                        </div>
-                    """).strip())
-                if st.button("Start Practice", use_container_width=True, key="dash_qa_practice"):
-                    st.session_state["nav_selection_override"] = "📝 Practice & Assessment"
-                    st.rerun()
-
-                _render_html_fragment("<div style='margin-top: 0.5rem;'></div>")
-
-                _render_html_fragment(textwrap.dedent(f"""
-                        <div class="quick-action-card">
-                            <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">🎯</div>
-                            <div style="font-weight: 700; color: {TEXT_PRIMARY}; font-size: 0.95rem;">Recommendations</div>
-                            <div style="font-size: 0.82rem; color: {TEXT_SECONDARY}; margin-top: 0.2rem;">View prerequisite trees</div>
-                        </div>
-                    """).strip())
-                if st.button("View Guidance", use_container_width=True, key="dash_qa_recs"):
-                    st.session_state["nav_selection_override"] = "🎯 Recommendations"
-                    st.rerun()
-
-    # -------------------------------------------------------------------------
-    # 5. Bottom Onboarding / Profile Setup Banner
-    # -------------------------------------------------------------------------
-    _render_html_fragment(textwrap.dedent(f"""
-            <div class="onboarding-banner">
-                <div>
-                    <span style="font-size: 1.05rem; font-weight: 700; color: {TEXT_PRIMARY};">
-                        👋 New to CogniVault? Set up your learning profile
-                    </span>
-                    <p style="margin: 0.25rem 0 0 0; font-size: 0.88rem; color: {TEXT_SECONDARY};">
-                        Select your standard/grade and interests to receive calibrated difficulty and personalized course recommendations.
-                    </p>
-                </div>
+    with st.container(border=True):
+        render_section_header(title="🎯 Recommended Next Step", subtitle="Adaptive guidance calibrated to your mastery state.")
+        _render_html_fragment(textwrap.dedent(f"""
+            <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.35rem;">
+              <span style="font-size:1rem;font-weight:700;color:{TEXT_PRIMARY};">{action_label}</span>
+              <span class="cogni-badge cogni-badge-{status_variant}">Target: {rec.topic_id}</span>
+              <span class="cogni-badge cogni-badge-neutral">{rec.difficulty.value.upper()}</span>
             </div>
+            <p style="font-size:0.85rem;color:{TEXT_SECONDARY};line-height:1.4;margin:0.25rem 0 0.5rem 0;">{rec.rationale}</p>
         """).strip())
-    col_ob1, _ = st.columns([1.5, 3])
-    with col_ob1:
-        if st.button("Set Up Profile →", type="primary", use_container_width=True, key="dash_onboarding_profile_btn"):
+        if is_blocked and prereq_topic:
+            st.warning(f"Prerequisite gate: advancement is locked until {prereq_topic} reaches the required mastery threshold.")
+        if st.button(f"Go to {action_label} →", type="primary", key="dash_rec_action_btn"):
+            st.session_state["nav_selection_override"] = "💬 AI Tutor" if "tutor" in rec.recommended_action.lower() else "📝 Practice & Assessment"
+            st.rerun()
+
+    # Quick Actions are the final dashboard section and use compact equal-width cards.
+    with st.container(border=True):
+        render_section_header(title="⚡ Quick Actions", subtitle="Fast shortcuts to key learning capabilities.")
+        qa_cols = st.columns(4)
+        quick_actions = [
+            ("💬", "Ask AI Tutor", "Launch Tutor", "💬 AI Tutor", "dash_qa_tutor"),
+            ("📝", "Practice Test", "Start Practice", "📝 Practice & Assessment", "dash_qa_practice"),
+            ("🔍", "Evidence Vault", "Explore Evidence", "📚 Available Courses", "dash_qa_evidence"),
+            ("🎯", "Recommendations", "View Guidance", "🎯 Recommendations", "dash_qa_recommendations"),
+        ]
+        for col, (emoji, title, button_label, destination, key) in zip(qa_cols, quick_actions):
+            with col:
+                _render_html_fragment(f'<div class="quick-action-card dashboard-quick-action"><span style="font-size:1.1rem;">{emoji}</span><strong>{title}</strong></div>')
+                if st.button(button_label, use_container_width=True, key=key):
+                    st.session_state["nav_selection_override"] = destination
+                    st.rerun()
+
+    with st.expander("👋 Set up your learning profile", expanded=False):
+        st.caption("Choose your standard/grade and interests for calibrated difficulty and personalized recommendations.")
+        if st.button("Set Up Profile →", key="dash_onboarding_profile_btn"):
             st.session_state["nav_selection_override"] = "📊 My Progress"
             st.rerun()
