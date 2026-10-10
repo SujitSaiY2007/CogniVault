@@ -18,7 +18,7 @@ All 5 core deliverables were implemented, tested, and verified:
 2. **Reproducible Math & Science Corpus (`data/corpus/`, `data/corpus_manifest.json`, `app/corpus.py`):** Multi-modal educational materials (PDF with embedded figures, PPTX slides, lecture transcripts, and prerequisite topologies) with SHA-256 provenance manifests, parser metadata, and CC0-1.0 public domain test fixture licensing.
 3. **Deterministic Evaluation Runner (`evaluation/runner.py`):** An offline benchmark runner measuring retrieval precision/recall, fail-closed abstention, answer leakage, citation addressability, source-resolved locator accuracy, and recommendation policy accuracy over fixed datasets with explicit denominators.
 4. **Simulated Multi-Turn Learner Evaluations (`evaluation/simulate_learners.py`):** Validates 6 distinct learner trajectories across Bayesian Knowledge Tracing (BKT) bands and compares dynamic difficulty shifts against a non-personalized baseline.
-5. **Comprehensive Integration & Acceptance Test Suite:** 99 out of 99 tests passing locally and deterministically without network or API dependency.
+5. **Comprehensive Integration & Acceptance Test Suite:** 100 out of 100 tests passing locally and deterministically without network or API dependency.
 
 ---
 
@@ -46,8 +46,8 @@ A curated, synthetic educational corpus designed for secondary school STEM curri
 
 ### Deliverable 3 — Deterministic Evaluation Runner (`evaluation/runner.py`)
 Deterministic offline evaluation measuring:
-- **Retrieval Precision@3:** Fraction of top-3 retrieved items matching ground-truth source or evidence IDs across evaluated queries.
-- **Retrieval Recall@3:** Fraction of expected source evidence retrieved in top-3 candidates.
+- **Retrieval Precision@3:** Fraction of top-3 retrieved items matching exact expected evidence IDs (`expected_evidence_ids`) with dynamic denominator $\min(3, |\text{Retrieved}|)$ across evaluated queries.
+- **Retrieval Recall@3:** Number of expected evidence items retrieved in top-3 divided by the total number of exact expected evidence items (`expected_evidence_ids`) across evaluated queries.
 - **Supported Answer Rate:** Fraction of valid curriculum queries answered with grounded citations.
 - **Unsupported Abstention Rate:** Fraction of off-corpus queries where the sufficiency gate explicitly abstains.
 - **Unsupported Leakage Rate:** Fraction of off-corpus queries erroneously answered as course-supported.
@@ -79,8 +79,8 @@ Generated via `evaluation/runner.py` over `evaluation/benchmark_dataset.json` (2
 | **Supported Answer Rate** | $\frac{\text{Supported Grounded Answers}}{\text{Total Supported Test Queries}}$ (8/8) | **100.0%** (1.000) | $\ge 95\%$ |
 | **Unsupported Abstention Rate** | $\frac{\text{Abstained Queries}}{\text{Total Unsupported Test Queries}}$ (3/3) | **100.0%** (1.000) | $100.0\%$ |
 | **Unsupported Answer Leakage Rate** | $\frac{\text{Erroneously Answered Queries}}{\text{Total Unsupported Test Queries}}$ (0/3) | **0.0%** (0.000) | $0.0\%$ |
-| **Retrieval Precision@3** | $\frac{\|\text{Retrieved top-3} \cap \text{Expected evidence}\|}{\min(3, \|\text{Retrieved}\|)}$ across 8 evaluated queries | **39.58%** (0.3958) | $\ge 35\%$ |
-| **Retrieval Recall@3** | $\frac{\|\text{Retrieved top-3} \cap \text{Expected evidence}\|}{\|\text{Expected evidence}\|}$ across 8 evaluated queries | **100.0%** (1.000) | $\ge 90\%$ |
+| **Retrieval Precision@3** | $\frac{\|\text{Retrieved top-3} \cap \text{Expected evidence}\|}{\min(3, \|\text{Retrieved}\|)}$ across 8 evaluated queries based on exact `expected_evidence_ids` | **39.58%** (0.3958) | $\ge 35\%$ |
+| **Retrieval Recall@3** | $\frac{\|\text{Retrieved top-3} \cap \text{Expected evidence}\|}{\|\text{Expected evidence}\|}$ across 8 evaluated queries based on exact `expected_evidence_ids` | **100.0%** (1.000) | $\ge 90\%$ |
 | **Grounded Faithfulness Proxy** | Token overlap ratio between reference answer concepts & grounded response | **96.88%** (0.9688) | $\ge 90\%$ |
 | **Citation Addressability Rate** | $\frac{\text{Addressable Evidence IDs}}{\text{Total Citations Issued}}$ (21/21) | **100.0%** (1.000) | $100.0\%$ |
 | **Source-Resolved Locator Accuracy** | $\frac{\text{Citations with Valid Resolved Locators}}{\text{Total Citations Issued}}$ (21/21) | **100.0%** (1.000) | $100.0\%$ |
@@ -106,27 +106,27 @@ rootdir: C:\Users\sujit\CogniVault
 configfile: pyproject.toml
 testpaths: tests
 plugins: anyio-4.15.1
-collected 99 items
+collected 100 items
 
 tests\acceptance\test_chat02_acceptance.py .............                 [ 13%]
 tests\acceptance\test_chat03_acceptance.py .........                     [ 22%]
 tests\acceptance\test_k1_to_k10.py ..........                            [ 32%]
 tests\test_assessment.py .........                                       [ 41%]
-tests\test_evaluation_runner.py .......                                  [ 48%]
-tests\test_evidence_continuity.py ....                                   [ 52%]
-tests\test_ingestion.py ..                                               [ 54%]
-tests\test_learner_bkt.py ....                                           [ 58%]
-tests\test_misconceptions.py ..                                          [ 60%]
-tests\test_models_db.py .....                                            [ 65%]
-tests\test_pdf_pptx.py .....                                             [ 70%]
-tests\test_recommendations.py ...                                        [ 73%]
-tests\test_retrieval.py ...........                                      [ 84%]
-tests\test_source_resolver.py ...                                        [ 87%]
-tests\test_sufficiency.py .....                                          [ 92%]
-tests\test_tutor.py ....                                                 [ 96%]
+tests\test_evaluation_runner.py ........                                 [ 49%]
+tests\test_evidence_continuity.py ....                                   [ 53%]
+tests\test_ingestion.py ..                                               [ 55%]
+tests\test_learner_bkt.py ....                                           [ 59%]
+tests\test_misconceptions.py ..                                          [ 61%]
+tests\test_models_db.py .....                                            [ 66%]
+tests\test_pdf_pptx.py .....                                             [ 71%]
+tests\test_recommendations.py ...                                        [ 74%]
+tests\test_retrieval.py ...........                                      [ 85%]
+tests\test_source_resolver.py ...                                        [ 88%]
+tests\test_sufficiency.py .....                                          [ 93%]
+tests\test_tutor.py ....                                                 [ 97%]
 tests\test_ui_service_integration.py ...                                 [100%]
 
-============================= 99 passed in 59.04s =============================
+============================ 100 passed in 35.67s =============================
 ```
 
 ---

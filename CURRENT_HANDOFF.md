@@ -8,12 +8,12 @@ Completed Chat 03: Product & Evaluation end-to-end and finalized all driver revi
 
 - **Repository:** `SujitSaiY2007/CogniVault`
 - **Active Branch:** `chat03-product-evaluation` (branched from verified `chat02-intelligence-core` at `fbdce9d824ea7384b3bf13ff3a79e217cee4a1bd`).
-- **Automated Test Suite:** **99 passed in 59.04s** (`pytest -v --durations=10`).
+- **Automated Test Suite:** **100 passed in 35.67s** (`pytest -v --durations=10`).
 - **Acceptance Harnesses:**
   - `tests/acceptance/test_k1_to_k10.py` (K1–K10 Core Vault Ingestion: **10/10 PASS**)
   - `tests/acceptance/test_chat02_acceptance.py` (G1–G5, A1–A4, L1–L3, S2 Intelligence Core: **13/13 PASS**)
   - `tests/acceptance/test_chat03_acceptance.py` (U1–U9 End-to-End Product & Benchmark Integration: **9/9 PASS**)
-  - `tests/test_evaluation_runner.py` (Benchmark dataset, repetition alternative/fallback, citation locator verification, and partial retrieval regression: **7/7 PASS**)
+  - `tests/test_evaluation_runner.py` (Benchmark dataset, repetition alternative/fallback, citation locator verification, and duplicate-safe retrieval regression: **8/8 PASS**)
   - `tests/test_ui_service_integration.py` (Streamlit UI views & state machine integrity: **3/3 PASS**)
 - **Baseline Preservation:** All 40 Chat 01 baseline tests and 40 Chat 02 core tests preserved and passing green without regressions.
 

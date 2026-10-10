@@ -35,11 +35,14 @@ def compute_retrieval_precision_recall_at_k(
     k: int = 3
 ) -> tuple[float, float]:
     """
-    Compute Precision@K and Recall@K based on exact expected evidence IDs.
-    - Precision@K = |Retrieved top-K ∩ Expected evidence| / min(K, len(retrieved_ids))
-    - Recall@K = |Retrieved top-K ∩ Expected evidence| / |Expected evidence|
+    Compute Precision@K and Recall@K based on exact expected evidence IDs,
+    ensuring duplicate retrieved IDs cannot inflate precision or recall.
+    - Precision@K = |Unique retrieved top-K ∩ Expected evidence| / min(K, len(unique_retrieved_top_k))
+    - Recall@K = |Unique retrieved top-K ∩ Expected evidence| / |Expected evidence|
     """
-    top_k = retrieved_ids[:k]
+    # Deduplicate retrieved IDs preserving rank order
+    unique_retrieved: list[str] = list(dict.fromkeys(retrieved_ids))
+    top_k = unique_retrieved[:k]
     exp_set = set(expected_evidence_ids)
     if not exp_set:
         return 0.0, 1.0

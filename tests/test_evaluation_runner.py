@@ -205,3 +205,35 @@ def test_retrieval_partial_recall_and_fewer_results_precision():
     assert prec_0 == 0.0
     assert rec_0 == 0.0
 
+
+def test_retrieval_duplicate_expected_evidence_safety():
+    """
+    Regression test validating that duplicate occurrences of an expected evidence ID
+    in the retrieved list do NOT inflate precision or recall.
+    """
+    exp_eids = ["doc_a:e00001", "doc_b:e00002"]
+
+    # Scenario 1: A list where doc_a:e00001 is duplicated 3 times
+    # Without deduplication, recall would be 3/2 = 1.50 and precision 3/3 = 1.00
+    # With duplicate-safety, unique retrieved is ["doc_a:e00001"], so:
+    # - exactly 1 unique expected item is retrieved (doc_a:e00001)
+    # - recall = 1 / 2 = 0.50
+    # - precision = 1 / min(3, 1) = 1.00
+    retrieved_dups = ["doc_a:e00001", "doc_a:e00001", "doc_a:e00001"]
+    prec_dup, rec_dup = compute_retrieval_precision_recall_at_k(retrieved_dups, exp_eids, k=3)
+    assert rec_dup == pytest.approx(0.50, rel=1e-3)
+    assert prec_dup == pytest.approx(1.00, rel=1e-3)
+
+    # Scenario 2: doc_a:e00001 duplicated with another unrelated document
+    # Retrieved: ["doc_a:e00001", "doc_a:e00001", "unrelated:e00003"]
+    # Unique retrieved: ["doc_a:e00001", "unrelated:e00003"] (len 2)
+    # Expected: 2 items
+    # - unique relevant retrieved = 1 (doc_a:e00001)
+    # - recall = 1 / 2 = 0.50 (NOT 2/2 = 1.00!)
+    # - precision = 1 / min(3, 2) = 1 / 2 = 0.50 (NOT 2/3 = 0.67!)
+    retrieved_mixed = ["doc_a:e00001", "doc_a:e00001", "unrelated:e00003"]
+    prec_mix, rec_mix = compute_retrieval_precision_recall_at_k(retrieved_mixed, exp_eids, k=3)
+    assert rec_mix == pytest.approx(0.50, rel=1e-3)
+    assert prec_mix == pytest.approx(0.50, rel=1e-3)
+
+
