@@ -13,7 +13,6 @@ import pandas as pd
 from app.ingest import ingest_file
 from app.corpus import seed_database_from_corpus, get_corpus_manifest
 from app.ui.components import (
-    _render_html_fragment,
     render_page_header,
     render_section_header,
     render_metric_card,
@@ -49,7 +48,7 @@ def render_ingestion_view(services: dict):
     with col_m4:
         render_metric_card("Verified Questions", len(verified_questions), subtext="100% Structural integrity", badge="Practice Items", badge_variant="success")
 
-    _render_html_fragment("<div style='margin-bottom: 1.5rem;'></div>")
+    st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
 
     # Ingestion Actions: Upload and Seed Corpus
     col1, col2 = st.columns([1.2, 1])
@@ -57,13 +56,16 @@ def render_ingestion_view(services: dict):
     with col1:
         with st.container(border=True):
             render_section_header("Upload Course Material", subtitle="Extract text, slide structures, timestamps, and embedded diagrams.")
-            _render_html_fragment("""
+            st.markdown(
+                """
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
                     <span class="cogni-badge cogni-badge-neutral">📄 PDF (Text & Figures)</span>
                     <span class="cogni-badge cogni-badge-neutral">📊 PPTX (Slides & Notes)</span>
                     <span class="cogni-badge cogni-badge-neutral">⏱️ Transcripts ([hh:mm:ss])</span>
                 </div>
-                """)
+                """,
+                unsafe_allow_html=True
+            )
             uploaded_files = st.file_uploader(
                 "Select educational documents to index",
                 type=["pdf", "pptx", "txt"],
@@ -106,7 +108,7 @@ def render_ingestion_view(services: dict):
                     )
                     st.rerun()
 
-    _render_html_fragment("<div style='margin-bottom: 1rem;'></div>")
+    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
     # Display Current Ingested Sources & Manifest Summary
     render_section_header("📚 Currently Indexed Course Sources", subtitle="Every factual unit in CogniVault links directly to these indexed files.")
