@@ -8,6 +8,7 @@ from __future__ import annotations
 import streamlit as st
 from app.models import Modality
 from app.ui.components import (
+    _render_html_fragment,
     render_page_header,
     render_section_header,
     render_metric_card,
@@ -51,7 +52,7 @@ def render_evidence_view(services: dict):
     with col_m4:
         render_metric_card("Associated Topics", len(all_topics), subtext="Curriculum breadth", badge="Taxonomy", badge_variant="success")
 
-    st.markdown("<div style='margin-bottom: 1.25rem;'></div>", unsafe_allow_html=True)
+    _render_html_fragment("<div style='margin-bottom: 1.25rem;'></div>")
 
     # Search and Filter Workspace Card
     with st.container(border=True):
@@ -123,31 +124,24 @@ def render_evidence_view(services: dict):
         with st.container(border=True):
             header_col1, header_col2 = st.columns([2.5, 1.2])
             with header_col1:
-                st.markdown(
-                    f"""
+                _render_html_fragment(f"""
                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
                         <span class="cogni-badge cogni-badge-neutral" style="font-family: monospace;">{ev.evidence_id}</span>
                         <strong style="color: #18233B; font-size: 1.05rem;">{source_title}</strong>
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                    """)
                 if source_path:
                     st.caption(f"Source file: `{source_path}`")
             with header_col2:
-                st.markdown(
-                    f"""
+                _render_html_fragment(f"""
                     <div style="display: flex; justify-content: flex-end; gap: 0.4rem; align-items: center;">
                         <span class="cogni-badge cogni-badge-neutral">{ev.modality.value.upper()}</span>
                         <span class="cogni-badge cogni-badge-{loc_variant}">{loc_badge}</span>
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                    """)
 
             # Excerpt Box
-            st.markdown(
-                f"""
+            _render_html_fragment(f"""
                 <div style="
                     background-color: #F8FAFC;
                     border-left: 3px solid #CBD5E1;
@@ -160,9 +154,7 @@ def render_evidence_view(services: dict):
                 ">
                     {ev.text}
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+                """)
 
             # If image asset present, safely render image
             if ev.asset_id:
@@ -187,12 +179,9 @@ def render_evidence_view(services: dict):
                 tag_parts.append(f"**Prerequisites:** {', '.join(ev.prerequisites)}")
 
             if tag_parts:
-                st.markdown(
-                    f"<div style='font-size: 0.82rem; color: #64748B; margin-top: 0.35rem;'>"
+                _render_html_fragment(f"<div style='font-size: 0.82rem; color: #64748B; margin-top: 0.35rem;'>"
                     + " &nbsp;|&nbsp; ".join(tag_parts)
-                    + "</div>",
-                    unsafe_allow_html=True
-                )
+                    + "</div>")
 
     if len(filtered) > 50:
         st.info("Displaying first 50 results. Refine search query to inspect specific units.")
