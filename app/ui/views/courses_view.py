@@ -1,7 +1,8 @@
-"""Human-friendly course library for indexed learning resources."""
+"""Student-facing course catalogue with resources organized inside each course."""
 from __future__ import annotations
 
 from pathlib import Path
+import uuid
 import streamlit as st
 
 from app.ui.components import render_page_header, render_empty_state, render_section_header
@@ -11,8 +12,7 @@ def _resolve_source_path(raw_path: str) -> Path | None:
     candidate = Path(raw_path).expanduser()
     candidates = [candidate]
     if not candidate.is_absolute():
-        candidates.append(Path.cwd() / candidate)
-        candidates.append(Path(__file__).resolve().parents[3] / candidate)
+        candidates.extend([Path.cwd() / candidate, Path(__file__).resolve().parents[3] / candidate])
     for path in candidates:
         try:
             if path.is_file():
@@ -22,105 +22,131 @@ def _resolve_source_path(raw_path: str) -> Path | None:
     return None
 
 
+def _mime_for(path: Path) -> str:
+    return {
+        ".pdf": "application/pdf",
+        ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ".txt": "text/plain",
+    }.get(path.suffix.lower(), "application/octet-stream")
+
+
 def render_courses_view(services: dict) -> None:
     db = services["db"]
+    courses = db.all_courses()
     sources = list(db.all_sources())
 
     render_page_header(
-        title="Your Course Library",
-        description="Open the original learning materials used by CogniVault, see what has been indexed, or add and manage resources.",
-        badge_text="Learning Library",
+        title="Available Courses",
+        description="Choose a course to explore its learning materials. Each course groups related resources, topics, and practice.",
+        badge_text="Course catalogue",
         badge_variant="teal",
     )
 
-    add_col, count_col = st.columns([1, 2])
-    with add_col:
-        if st.button("＋ Add course material", type="primary", use_container_width=True):
+    with st.expander("＋ Create a course", expanded=not courses):
+        with st.form("create_course_form", clear_on_submit=True):
+            title = st.text_input("Course name", placeholder="e.g., Mathematics")
+            description = st.text_area("What will learners study?", placeholder="A short course description")
+            submitted = st.form_submit_button("Create course", type="primary")
+            if submitted:
+                if not title.strip():
+                    st.error("Enter a course name.")
+                else:
+                    try:
+                        db.create_course(f"course_{uuid.uuid4().hex[:12]}", title, description)
+                        st.success(f"Created course: {title.strip()}")
+                        st.rerun()
+                    except Exception as exc:
+                        st.error(f"Could not create this course: {exc}")
+
+    if not courses:
+        render_empty_state(
+            title="No courses yet",
+            description="Create your first course, then add PDFs, slide decks, or transcripts as learning materials.",
+            icon="🎓",
+        )
+        if st.button("Add learning materials", type="primary"):
             st.session_state["nav_selection_override"] = "➕ New Course"
             st.rerun()
-    with count_col:
-        st.caption(f"{len(sources)} resource{'s' if len(sources) != 1 else ''} available in this local library")
-
-    st.info(
-        "A resource is a PDF, slide deck, transcript, or other supported file. "
-        "CogniVault indexes its content for grounded answers; this page helps you find the original file."
-    )
-
-    if not sources:
-        render_empty_state(
-            title="Your library is empty",
-            description="Add a PDF, PowerPoint, or text transcript to start building your course library.",
-            icon="📚",
-        )
         return
 
-    query = st.text_input("Search your library", placeholder="Search by course or file name…", key="course_library_search")
-    filtered = [
-        source for source in sources
-        if not query.strip() or query.strip().lower() in source.title.lower()
-        or query.strip().lower() in Path(source.path).name.lower()
-    ]
-    render_section_header("Learning resources", subtitle="Choose a resource to open its original file or inspect its indexed content.", badge_text=f"{len(filtered)} found")
+    query = st.text_input("Find a course", placeholder="Search course names or descriptions…", key="available_course_search")
+    visible = [c for c in courses if not query.strip() or query.casefold() in c["title"].casefold() or query.casefold() in c["description"].casefold()]
+    st.caption(f"{len(visible)} course{'s' if len(visible) != 1 else ''} · {sum(c['resource_count'] for c in courses)} course-resource links")
 
-    if not filtered:
-        st.warning("No resources match that search. Try another title or clear the search.")
+    if not visible:
+        st.info("No courses match that search.")
         return
 
-    for source in filtered:
-        evidence_count = len(db.get_evidence_for_source(source.source_id))
-        path = _resolve_source_path(source.path)
+    for course in visible:
         with st.container(border=True):
-            title_col, meta_col = st.columns([3, 1])
+            title_col, count_col = st.columns([4, 1])
             with title_col:
-                st.markdown(f"### {source.title}")
-                st.caption(f"{source.modality.value.upper()} · {evidence_count} searchable learning excerpts")
-                st.caption(f"File: {Path(source.path).name}")
-            with meta_col:
-                st.metric("Learning excerpts", evidence_count)
+                st.subheader(f"🎓 {course['title']}")
+                st.write(course["description"] or "Learning materials and practice for this course.")
+            with count_col:
+                st.metric("Materials", course["resource_count"])
 
-            action_cols = st.columns([1.15, 1.15, 1.1, 2])
-            with action_cols[0]:
-                if path:
-                    try:
-                        st.download_button(
-                            "⬇ Download original",
-                            data=path.read_bytes(),
-                            file_name=path.name,
-                            mime="application/pdf" if path.suffix.lower() == ".pdf" else (
-                                "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-                                if path.suffix.lower() == ".pptx" else "text/plain"
-                            ),
-                            key=f"download_{source.source_id}",
-                            use_container_width=True,
-                        )
-                    except OSError:
-                        st.warning("Original file cannot be read from disk.")
+            resources = db.get_course_resources(course["course_id"])
+            if resources:
+                st.markdown("**Course materials**")
+                for source in resources:
+                    resource_col, action_col = st.columns([4, 1])
+                    with resource_col:
+                        st.write(f"📄 {source.title}")
+                        st.caption(f"{source.modality.value.upper()} · {len(db.get_evidence_for_source(source.source_id))} searchable excerpts")
+                    with action_col:
+                        path = _resolve_source_path(source.path)
+                        if path:
+                            try:
+                                st.download_button(
+                                    "Open / Download",
+                                    data=path.read_bytes(),
+                                    file_name=path.name,
+                                    mime=_mime_for(path),
+                                    key=f"course_download_{course['course_id']}_{source.source_id}",
+                                    use_container_width=True,
+                                )
+                            except OSError:
+                                st.caption("File unavailable")
+                        else:
+                            st.caption("Original file unavailable")
+                        if st.button("View content", key=f"course_evidence_{course['course_id']}_{source.source_id}", use_container_width=True):
+                            st.session_state["library_source_filter"] = source.source_id
+                            st.session_state["nav_selection_override"] = "🔎 Evidence Explorer"
+                            st.rerun()
+                        if st.button("Remove from course", key=f"course_unlink_{course['course_id']}_{source.source_id}", use_container_width=True):
+                            db.remove_source_from_course(course["course_id"], source.source_id)
+                            st.rerun()
+            else:
+                st.info("No materials have been added to this course yet.")
+
+            available = [s for s in sources if s.source_id not in {r.source_id for r in resources}]
+            with st.expander("＋ Add existing material to this course"):
+                if not available:
+                    st.caption("No unassigned resources are available. Upload materials using New Course in the sidebar, then return here.")
                 else:
-                    st.button("Original unavailable", disabled=True, key=f"missing_{source.source_id}", use_container_width=True)
-            with action_cols[1]:
-                if st.button("View excerpts", key=f"view_{source.source_id}", use_container_width=True):
-                    st.session_state["library_source_filter"] = source.source_id
-                    st.session_state["nav_selection_override"] = "🔎 Evidence Explorer"
-                    st.rerun()
-            with action_cols[2]:
-                with st.popover("Manage", use_container_width=True):
-                    st.caption("Removing a resource also removes its indexed excerpts and questions that cite those excerpts. The original file on disk is not deleted.")
-                    confirmed = st.checkbox("I understand; remove this resource from CogniVault", key=f"confirm_delete_{source.source_id}")
-                    if st.button("Remove from library", key=f"delete_{source.source_id}", type="secondary", disabled=not confirmed, use_container_width=True):
-                        try:
-                            if db.delete_source(source.source_id):
-                                st.session_state.pop(f"confirm_delete_{source.source_id}", None)
-                                st.success(f"Removed {source.title} from the indexed library.")
-                                st.rerun()
-                            else:
-                                st.error("This resource was already removed.")
-                        except Exception as exc:
-                            st.error(f"Could not remove this resource: {exc}")
+                    labels = {f"{s.title} · {s.modality.value.upper()}": s.source_id for s in available}
+                    selected = st.multiselect(
+                        "Choose uploaded materials",
+                        options=list(labels),
+                        key=f"assign_materials_{course['course_id']}",
+                    )
+                    if st.button("Add selected materials", key=f"assign_submit_{course['course_id']}", type="primary", disabled=not selected):
+                        for label in selected:
+                            db.assign_source_to_course(course["course_id"], labels[label])
+                        st.rerun()
 
-            with st.expander("Resource details"):
-                st.write("**Where it is stored**")
-                st.code(str(path) if path else source.path, language=None)
-                st.write("**Integrity checksum (SHA-256)**")
-                st.code(source.sha256, language=None)
-                st.write("**Resource ID**")
-                st.code(source.source_id, language=None)
+    st.divider()
+    with st.expander("Resource library (advanced)"):
+        st.caption("Uploaded files not yet organized into a course are listed here. Add them to a course above.")
+        assigned_ids = {r.source_id for c in courses for r in db.get_course_resources(c["course_id"])}
+        unassigned = [s for s in sources if s.source_id not in assigned_ids]
+        if not unassigned:
+            st.success("Every uploaded resource is assigned to at least one course.")
+        else:
+            for source in unassigned:
+                st.write(f"📄 **{source.title}** — {source.modality.value.upper()}")
+                st.caption(source.path)
+        if st.button("Upload learning materials", type="primary", key="course_library_upload"):
+            st.session_state["nav_selection_override"] = "➕ New Course"
+            st.rerun()
