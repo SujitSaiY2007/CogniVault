@@ -26,6 +26,7 @@ from app.ui.state import get_services, init_session_state
 from app.ui.views.dashboard_view import render_dashboard_view
 from app.ui.views.ingestion_view import render_ingestion_view
 from app.ui.views.evidence_view import render_evidence_view
+from app.ui.views.courses_view import render_courses_view
 from app.ui.views.tutor_view import render_tutor_view
 from app.ui.views.assessment_view import render_assessment_view
 import textwrap
@@ -36,6 +37,7 @@ from app.ui.views.evaluation_view import render_evaluation_view
 # Unnumbered Navigation Hierarchy (CogniVault 2.0)
 NAV_HOME = "🏠 Home"
 NAV_COURSES = "📚 Available Courses"
+NAV_EVIDENCE = "🔎 Evidence Explorer"
 NAV_NEW_COURSE = "➕ New Course"
 NAV_TUTOR = "💬 AI Tutor"
 NAV_ASSESSMENT = "📝 Practice & Assessment"
@@ -46,6 +48,7 @@ NAV_EVALUATION = "🧪 Evaluation"
 NAV_OPTIONS = [
     NAV_HOME,
     NAV_COURSES,
+    NAV_EVIDENCE,
     NAV_NEW_COURSE,
     NAV_TUTOR,
     NAV_ASSESSMENT,
@@ -60,8 +63,8 @@ ROUTE_ALIASES = {
     "1. Course Setup": NAV_NEW_COURSE,
     "Course Setup": NAV_NEW_COURSE,
     "New Course": NAV_NEW_COURSE,
-    "2. Evidence Explorer": NAV_COURSES,
-    "Evidence Explorer": NAV_COURSES,
+    "2. Evidence Explorer": NAV_EVIDENCE,
+    "Evidence Explorer": NAV_EVIDENCE,
     "Available Courses": NAV_COURSES,
     "3. Grounded AI Tutor": NAV_TUTOR,
     "Grounded AI Tutor": NAV_TUTOR,
@@ -143,6 +146,8 @@ def main():
     if nav_choice == NAV_HOME:
         render_dashboard_view(services)
     elif nav_choice == NAV_COURSES:
+        render_courses_view(services)
+    elif nav_choice == NAV_EVIDENCE:
         render_evidence_view(services)
     elif nav_choice == NAV_NEW_COURSE:
         render_ingestion_view(services)
