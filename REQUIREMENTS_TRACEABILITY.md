@@ -21,7 +21,8 @@ This maps the Track D project brief to implementation, tests, and evidence. Ever
 | Video timestamp grounding | Transcript segment parsing and timestamp citations (`app/ingest.py`, `app/tutor.py`) | `test_k4_transcript_timestamp_evidence`, `test_g3_video_timestamp_grounding` | Implemented & Verified |
 | Evaluation runner | Retrieval, faithfulness, abstention, assessment benchmark runner (`evaluation/runner.py`) | `evaluation/runner.py`, `test_evaluation_runner.py`, `test_chat03_acceptance.py` | Implemented & Verified |
 | Simulated learners | Scripted multi-turn learner profiles benchmark (`evaluation/simulate_learners.py`) | `evaluation/simulate_learners.py`, `test_chat03_acceptance.py` | Implemented & Verified |
-| UX/demo | Streamlit tutor, assessment, learner, recommendations, evidence, and benchmark views (`app/ui/`) | `app/ui/main.py`, `test_ui_service_integration.py` (`test_all_seven_streamlit_views_render_without_exceptions`), `test_chat03_acceptance.py` | Implemented & Verified |
+| UX/demo | CogniVault 2.0 Streamlit UI: theme.py, components.py, dashboard_view.py, and all 7 module views (`app/ui/`) | `app/ui/main.py`, `test_ui_service_integration.py` (`test_all_seven_streamlit_views_render_without_exceptions`), AppTest | Implemented & Verified |
+
 | Security & Failure Closure | Environment secrets, synthetic accounts, fail-closed boundaries | `test_s2_failure_closure`, secret scans | Implemented & Verified |
 
 All 19 core requirements are fully implemented and verified across the complete automated test suite (102/102 passing tests) and deterministic evaluation benchmarks.

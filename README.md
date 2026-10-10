@@ -10,11 +10,11 @@
 
 ## Project Status
 
-**Phase:** Chat 04 — Final Demo Verification, Polish & Submission Readiness  
-**Status:** READY FOR SUBMISSION (102/102 tests passing green, benchmark suite operational, simulated learner evaluations verified, Streamlit demo active across all 7 views)  
+**Phase:** Chat 05 — CogniVault 2.0 Complete UI Redesign  
+**Status:** READY FOR SUBMISSION (102/102 tests passing green, CogniVault 2.0 light design system active, executive dashboard + 7 module views verified with zero exceptions, benchmark suite operational, simulated learner evaluations verified)  
 **Repository:** SujitSaiY2007/CogniVault  
 **Default branch:** main  
-**Active branch:** chat04-final-demo-submission  
+**Active branch:** chat05-ui-overhaul  
 
 GitHub is the canonical source of truth.
 
@@ -28,7 +28,9 @@ The authoritative technical specifications are:
 - docs/CHAT03_IMPLEMENTATION_STATUS.md
 - docs/CHAT04_BASELINE_REPORT.md
 - docs/CHAT04_FINAL_STATUS.md
+- docs/CHAT05_UI_OVERHAUL_REPORT.md
 - docs/PRIOR_ART_AND_POSITIONING.md
+
 
 These documents define the locked MVP, architecture, evidence model, tutor behavior, assessment verification, BKT learner model, misconception policy, evaluation methodology, security boundary, demo flow, and chat sequence.
 
@@ -104,8 +106,10 @@ No unnecessary microservices, Kubernetes, custom foundation-model training or mu
 - docs/CHAT03_IMPLEMENTATION_STATUS.md — Chat 03 status report.
 - docs/CHAT04_BASELINE_REPORT.md — Chat 04 baseline evidence report.
 - docs/CHAT04_FINAL_STATUS.md — Chat 04 final verification report.
+- docs/CHAT05_UI_OVERHAUL_REPORT.md — Chat 05 CogniVault 2.0 UI overhaul implementation report.
 - docs/PRIOR_ART_AND_POSITIONING.md — prior-art and competitive-positioning record.
-- app/ui/ — Streamlit user interface (main.py + 7 views).
+- app/ui/ — Streamlit user interface (main.py + executive dashboard + 7 module views, custom light design system in theme.py and components.py).
+
 - app/ — application code (ingestion, retrieval, tutor, sufficiency, assessment, BKT, misconceptions, recommendations).
 - tests/ — automated unit, acceptance, and AppTest integration tests (102 tests passing).
 - evaluation/ — benchmark dataset, runner, and simulation evaluation suite.

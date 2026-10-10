@@ -12,25 +12,32 @@ import pandas as pd
 
 from evaluation.runner import EvaluationRunner
 from evaluation.simulate_learners import run_all_simulations
+from app.ui.components import (
+    render_page_header,
+    render_section_header,
+    render_metric_card,
+    render_callout,
+    render_empty_state,
+)
 
 
 def render_evaluation_view(services: dict):
     db = services["db"]
-    st.header("🧪 Deterministic Evaluation & Benchmark Runner")
-    st.markdown(
-        """
-        Evaluate CogniVault against reproducible, offline ground-truth benchmarks.
-        All metrics are strictly calculated from deterministic checks and verifiable curriculum evidence.
-        """
+
+    render_page_header(
+        title="Deterministic Benchmark & Evaluation Suite",
+        description="Offline, reproducible evaluation suite verifying retrieval precision, fail-closed abstention, 100% citation addressability, BKT state transitions, and multi-turn learner simulations.",
+        badge_text="Module 7",
+        badge_variant="indigo"
     )
 
-    tab1, tab2, tab3 = st.tabs(["📊 Benchmark Suite", "🤖 Simulated Learner Trajectories", "📜 Metric Definitions & Protocols"])
+    tab1, tab2, tab3 = st.tabs(["📊 Benchmark Suite", "🤖 Simulated Learner Trajectories", "📜 Metric Definitions & Disclosures"])
 
     # -----------------------------------------------------------------------
     # TAB 1: Benchmark Suite
     # -----------------------------------------------------------------------
     with tab1:
-        col_run, col_file = st.columns([1, 1])
+        col_run, col_info = st.columns([1, 2])
         with col_run:
             run_btn = st.button("🚀 Run Full Benchmark Suite", type="primary", use_container_width=True)
 
@@ -38,7 +45,7 @@ def render_evaluation_view(services: dict):
         data = None
 
         if run_btn:
-            with st.spinner("Executing deterministic benchmark runner over test dataset..."):
+            with st.spinner("Executing deterministic benchmark runner over test cases..."):
                 runner = EvaluationRunner(db=db)
                 runner.run_benchmark(output_path=benchmark_file)
                 st.success("✅ Benchmark execution completed successfully!")
@@ -48,49 +55,78 @@ def render_evaluation_view(services: dict):
                 data = json.load(f)
 
         if not data:
-            st.info("No benchmark results found. Click **'Run Full Benchmark Suite'** to execute.")
+            render_empty_state(
+                title="No Benchmark Results Found",
+                description="Click 'Run Full Benchmark Suite' above to execute the deterministic evaluation over the benchmark test dataset.",
+                icon="🧪"
+            )
         else:
             metrics = data.get("metrics", {})
-            st.markdown(f"**Benchmark Version:** `{data.get('benchmark_version', '1.0.0')}` | **Evaluated Test Cases:** `{data.get('total_test_cases', 0)}` | **Timestamp:** `{data.get('benchmark_timestamp', '')}`")
+            total_cases = data.get("total_test_cases", 0)
+            ver = data.get("benchmark_version", "1.0.0")
+            ts = data.get("benchmark_timestamp", "")[:19].replace("T", " ")
 
-            # Metric Cards Row 1: Retrieval & Sufficiency
-            st.markdown("### 📊 Benchmark Metrics")
+            with col_info:
+                st.markdown(
+                    f"""
+                    <div style="padding-top: 0.35rem; font-size: 0.88rem; color: #64748B;">
+                        <strong>Version:</strong> <code>{ver}</code> &nbsp;|&nbsp;
+                        <strong>Evaluated Cases:</strong> <code>{total_cases}</code> &nbsp;|&nbsp;
+                        <strong>Timestamp:</strong> <code>{ts}</code>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            st.markdown("<div style='margin-bottom: 1.25rem;'></div>", unsafe_allow_html=True)
+
+            # Metric Cards Row 1: Retrieval & Gating
+            render_section_header("Retrieval & Sufficiency Gating", subtitle="Measures accuracy of candidate retrieval and precision of gatekeeping decisions.")
             r1_cols = st.columns(4)
             with r1_cols[0]:
-                st.metric("Supported Answer Rate", f"{metrics.get('supported_answer_rate', 0.0):.2%}")
+                render_metric_card("Supported Answer Rate", f"{metrics.get('supported_answer_rate', 0.0):.1%}", subtext="In-corpus queries", badge="Tutor", badge_variant="indigo")
             with r1_cols[1]:
-                st.metric("Abstention Rate", f"{metrics.get('unsupported_abstention_rate', 0.0):.2%}")
+                render_metric_card("Abstention Rate", f"{metrics.get('unsupported_abstention_rate', 0.0):.1%}", subtext="Off-corpus queries", badge="Safety", badge_variant="warning")
             with r1_cols[2]:
-                st.metric("Retrieval Precision@3", f"{metrics.get('retrieval_precision_at_3', 0.0):.2%}")
+                render_metric_card("Retrieval Precision@3", f"{metrics.get('retrieval_precision_at_3', 0.0):.1%}", subtext="Relevant / Retrieved", badge="Retrieval", badge_variant="teal")
             with r1_cols[3]:
-                st.metric("Retrieval Recall@3", f"{metrics.get('retrieval_recall_at_3', 0.0):.2%}")
+                render_metric_card("Retrieval Recall@3", f"{metrics.get('retrieval_recall_at_3', 0.0):.1%}", subtext="Relevant / Expected", badge="Recall", badge_variant="teal")
 
-            # Metric Cards Row 2: Faithfulness, Citations, & Repetition
+            st.markdown("<div style='margin-bottom: 0.75rem;'></div>", unsafe_allow_html=True)
+
+            # Metric Cards Row 2: Faithfulness, Citations, & Zero-Leakage
+            render_section_header("Citation Integrity & Leakage Prevention", subtitle="Verifies that all citations point to physical documents and no off-corpus information is fabricated.")
             r2_cols = st.columns(4)
             with r2_cols[0]:
-                st.metric("Faithfulness Proxy", f"{metrics.get('grounded_faithfulness_proxy', 0.0):.2%}")
+                render_metric_card("Faithfulness Proxy", f"{metrics.get('grounded_faithfulness_proxy', 0.0):.1%}", subtext="Supported reasoning", badge="Factual", badge_variant="indigo")
             with r2_cols[1]:
-                st.metric("Citation Addressability", f"{metrics.get('citation_addressability_rate', 0.0):.2%}")
+                render_metric_card("Citation Addressability", f"{metrics.get('citation_addressability_rate', 0.0):.1%}", subtext="Valid IDs & sources", badge="Provenance", badge_variant="success")
             with r2_cols[2]:
-                st.metric("Locator Accuracy", f"{metrics.get('source_resolved_locator_accuracy', metrics.get('citation_locator_accuracy', 0.0)):.2%}")
+                loc_acc = metrics.get('source_resolved_locator_accuracy', metrics.get('citation_locator_accuracy', 0.0))
+                render_metric_card("Locator Accuracy", f"{loc_acc:.1%}", subtext="Page/slide/time match", badge="Locators", badge_variant="success")
             with r2_cols[3]:
-                st.metric("Leakage Rate", f"{metrics.get('unsupported_leakage_rate', 0.0):.2%}")
+                leak_val = metrics.get('unsupported_leakage_rate', 0.0)
+                render_metric_card("Leakage Rate", f"{leak_val:.1%}", subtext="Hallucinations admitted", badge="Zero Target", badge_variant="success" if leak_val == 0 else "danger")
+
+            st.markdown("<div style='margin-bottom: 0.75rem;'></div>", unsafe_allow_html=True)
 
             # Metric Cards Row 3: Assessment, BKT, & Policy
+            render_section_header("Assessment Engine & BKT Learner Modeling", subtitle="Structural verification of question items, BKT posterior calculation, and repetition gating.")
             r3_cols = st.columns(4)
             with r3_cols[0]:
-                st.metric("Question Verification", f"{metrics.get('question_verification_accuracy', 0.0):.2%}")
+                render_metric_card("Question Verification", f"{metrics.get('question_verification_accuracy', 0.0):.1%}", subtext="Structural integrity", badge="Assessment", badge_variant="indigo")
             with r3_cols[1]:
-                st.metric("BKT Numerical Accuracy", f"{metrics.get('bkt_numerical_accuracy', 0.0):.2%}")
+                render_metric_card("BKT Numerical Accuracy", f"{metrics.get('bkt_numerical_accuracy', 0.0):.1%}", subtext="Exact math transitions", badge="BKT", badge_variant="teal")
             with r3_cols[2]:
-                st.metric("Policy Bracket Accuracy", f"{metrics.get('recommendation_policy_accuracy', 0.0):.2%}")
+                render_metric_card("Policy Bracket Accuracy", f"{metrics.get('recommendation_policy_accuracy', 0.0):.1%}", subtext="Deterministic brackets", badge="Policy", badge_variant="indigo")
             with r3_cols[3]:
-                st.metric("Repetition Control", "✅ Passed" if metrics.get('repetition_control_pass') else "❌ Failed")
+                passed_rep = metrics.get('repetition_control_pass')
+                render_metric_card("Repetition Control", "Passed" if passed_rep else "Failed", subtext="Prevents duplicate items", badge="Anti-Repeat", badge_variant="success" if passed_rep else "danger")
 
-            st.divider()
+            st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
 
             # Detailed Query-by-Query Results Table
-            st.subheader("📋 Supported & Unsupported Q&A Test Details")
+            render_section_header("📋 Query-Level Grounding & Abstention Audit", subtitle="Individual test case traces confirming expected vs actual response statuses.")
             details = data.get("details", {})
             tutor_items = details.get("tutor_and_retrieval", [])
 
@@ -112,20 +148,14 @@ def render_evaluation_view(services: dict):
             if qa_rows:
                 st.dataframe(pd.DataFrame(qa_rows), use_container_width=True, hide_index=True)
 
-            with st.expander("📦 View Full Raw Benchmark Results JSON"):
+            with st.expander("📦 View Full Raw Benchmark Results JSON", expanded=False):
                 st.json(data)
 
     # -----------------------------------------------------------------------
     # TAB 2: Simulated Learner Trajectories
     # -----------------------------------------------------------------------
     with tab2:
-        st.subheader("Multi-Turn Simulated Learner Evaluations")
-        st.markdown(
-            """
-            Simulated learner models evaluate CogniVault's adaptive pedagogical loops across distinct learner personas
-            and compare against a non-personalized baseline.
-            """
-        )
+        render_section_header("Multi-Turn Simulated Learner Trajectories", subtitle="Evaluates adaptive pedagogical policy across 6 learner personas against a non-personalized baseline.")
 
         sim_file = Path("evaluation/simulation_results.json")
         sim_data = None
@@ -141,46 +171,53 @@ def render_evaluation_view(services: dict):
                 sim_data = json.load(f)
 
         if not sim_data:
-            st.info("No simulation records found. Click **'Re-Run Multi-Turn Learner Simulations'** to execute.")
+            render_empty_state(
+                title="No Simulation Records Found",
+                description="Click 'Re-Run Multi-Turn Learner Simulations' to execute and evaluate simulated learner personas.",
+                icon="🤖"
+            )
         else:
             scenarios = sim_data.get("scenarios", {})
-
-            # Baseline Comparison Highlights
-            st.markdown("### 📈 Adaptive Policy vs Fixed Non-Personalized Baseline")
             base_comp = sim_data.get("baseline_comparison", {})
-            st.info(f"**Measurement Scope:** {base_comp.get('measurement_scope', 'Policy behavior contrast')}")
+
+            render_callout(
+                title="Measurement Scope Disclosure",
+                message=base_comp.get('measurement_scope', 'Policy behavior contrast between adaptive policy and static baseline.'),
+                variant="indigo",
+                icon="ℹ️"
+            )
 
             b_cols = st.columns(2)
             with b_cols[0]:
                 with st.container(border=True):
                     st.markdown("#### 🟢 CogniVault Adaptive Policy")
-                    st.write("- **Advancing:** Dynamically escalates from Easy → Medium → Hard as $P(L) > 0.85$.")
-                    st.write("- **Struggling:** Safely clamps to Easy Foundational Review ($P(L) < 0.40$).")
-                    st.write("- **Misconceptions:** Instantly diverts to prerequisite remediation.")
-                    st.write("- **Prerequisites:** Blocks advancement if prerequisite unverified or $<0.70$.")
+                    st.write("- **Advancing Learner:** Dynamically escalates from Easy → Medium → Hard as $P(L) > 0.85$.")
+                    st.write("- **Struggling Learner:** Safely clamps to Easy Foundational Review when $P(L) < 0.40$.")
+                    st.write("- **Misconception Routing:** Instantly diverts to prerequisite foundational remediation.")
+                    st.write("- **Prerequisite Gatekeeper:** Strictly blocks advance topics if prerequisite $P(L) < 0.70$.")
             with b_cols[1]:
                 with st.container(border=True):
                     st.markdown("#### ⚪ Non-Personalized Baseline")
                     st.write("- **Static Difficulty:** Always serves Medium difficulty regardless of performance.")
-                    st.write("- **No Remediation:** Ignores repeated misconception errors.")
+                    st.write("- **No Remediation:** Ignores repeated misconception error patterns.")
                     st.write("- **No Prerequisite Gating:** Attempts advanced topics without foundational readiness.")
 
-            st.divider()
+            st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
-            # Detailed Scenario Viewers
+            # Scenario Viewers
             for name, scenario in scenarios.items():
-                with st.expander(f"👤 Scenario: {name.replace('_', ' ').title()}", expanded=False):
+                with st.expander(f"👤 Persona: {name.replace('_', ' ').title()}", expanded=False):
                     if isinstance(scenario, list):
                         st.dataframe(pd.DataFrame(scenario), use_container_width=True, hide_index=True)
                     elif isinstance(scenario, dict):
                         st.json(scenario)
 
-
     # -----------------------------------------------------------------------
     # TAB 3: Metric Definitions & Protocol Disclosures
     # -----------------------------------------------------------------------
     with tab3:
-        st.subheader("📜 Formal Metric Definitions & Mathematical Formulas")
+        render_section_header("Formal Metric Definitions & Mathematical Formulas", subtitle="Rigorous mathematical formulas governing CogniVault's deterministic evaluation pipeline.")
+
         st.markdown(
             r"""
             1. **Retrieval Precision@K:**
@@ -205,11 +242,24 @@ def render_evaluation_view(services: dict):
             """
         )
 
-        st.subheader("⚠️ Engineering & Scientific Disclosures")
-        st.warning(
-            """
-            - **Structural Integrity vs Factual Ground Truth:** Question verification certifies strict single-key matching, valid tolerances, prompt length, and evidence links; it does not constitute external real-world factual proof without LLM/expert validation.
-            - **Simulated Trajectories vs Real Learning Gains:** Simulated learner evaluations demonstrate mathematical and policy compliance; they do not measure real human student learning gains.
-            - **Deterministic Proxy:** Deterministic test suites run locally and offline without external API latency or non-deterministic drift.
-            """
+        st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
+
+        render_section_header("⚠️ Engineering & Scientific Disclosures", subtitle="Explicit boundaries and verification criteria.")
+        render_callout(
+            title="Structural Integrity vs Factual Ground Truth",
+            message="Question verification certifies strict single-key matching, valid tolerances, prompt length, and evidence links; it does not constitute external real-world factual proof without LLM/expert validation.",
+            variant="warning",
+            icon="⚠️"
+        )
+        render_callout(
+            title="Simulated Trajectories vs Real Learning Gains",
+            message="Simulated learner evaluations demonstrate mathematical and policy compliance under controlled behavioral inputs; they do not measure real human student learning gains.",
+            variant="neutral",
+            icon="ℹ️"
+        )
+        render_callout(
+            title="Deterministic Offline Execution",
+            message="All test suites run locally and offline against fixed SQLite fixtures, ensuring zero external API latency, zero quota consumption, and zero non-deterministic drift.",
+            variant="indigo",
+            icon="🔒"
         )

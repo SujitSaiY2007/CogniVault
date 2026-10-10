@@ -11,6 +11,13 @@ from app.models import Difficulty, LearnerSubmission, QuestionType
 from app.assessment import AssessmentEngine
 from app.learner_model import BKTModel
 from app.misconceptions import MisconceptionDetector
+from app.ui.components import (
+    render_page_header,
+    render_section_header,
+    render_metric_card,
+    render_callout,
+    render_empty_state,
+)
 
 
 def render_assessment_view(services: dict):
@@ -19,30 +26,33 @@ def render_assessment_view(services: dict):
     bkt: BKTModel = services["bkt"]
     misconceptions: MisconceptionDetector = services["misconceptions"]
 
-    st.header("📝 Adaptive Assessment & Verified Practice")
-    st.markdown(
-        """
-        Practice curriculum topics through structurally verified questions.
-        CogniVault adaptively serves items based on your current Bayesian Knowledge Tracing (BKT) mastery band
-        and prevents unhelpful question repetition.
-        """
+    render_page_header(
+        title="Adaptive Assessment & Verified Practice",
+        description="Practice curriculum topics through structurally verified questions. Items are selected adaptively based on your Bayesian Knowledge Tracing (BKT) mastery band to prevent repetition.",
+        badge_text="Module 4",
+        badge_variant="indigo"
     )
 
-    # Learner and Topic Selection Header
     all_topics = [t.name for t in db.all_topics()]
     if not all_topics:
-        st.warning("No topics available in database. Please seed or ingest curriculum material first.")
+        render_empty_state(
+            title="Curriculum Topics Not Found",
+            description="No topics available in database. Please seed or ingest curriculum materials first in Course Setup.",
+            icon="📂"
+        )
         return
 
-    col_learner, col_topic, col_diff = st.columns([1, 1, 1])
-    with col_learner:
-        learner_id = st.text_input("Active Learner ID", value=st.session_state.active_learner_id)
-        st.session_state.active_learner_id = learner_id
-    with col_topic:
-        active_topic = st.selectbox("Active Topic", all_topics, index=0)
-        st.session_state.active_topic_id = active_topic
-    with col_diff:
-        diff_choice = st.selectbox("Target Difficulty", ["Adaptive (Auto)", "Easy", "Medium", "Hard"])
+    # Learner and Topic Selection Header Card
+    with st.container(border=True):
+        col_learner, col_topic, col_diff = st.columns([1, 1, 1])
+        with col_learner:
+            learner_id = st.text_input("Active Learner ID", value=st.session_state.active_learner_id)
+            st.session_state.active_learner_id = learner_id
+        with col_topic:
+            active_topic = st.selectbox("Curriculum Topic", all_topics, index=0)
+            st.session_state.active_topic_id = active_topic
+        with col_diff:
+            diff_choice = st.selectbox("Difficulty Policy", ["Adaptive (Auto)", "Easy", "Medium", "Hard"])
 
     target_diff = None
     if diff_choice == "Easy":
@@ -55,26 +65,37 @@ def render_assessment_view(services: dict):
     # Current Mastery Display for this topic
     mastery_rec = db.get_learner_mastery(learner_id, active_topic)
     p_mastery = mastery_rec.p_mastery if mastery_rec else 0.10
+    attempts_cnt = mastery_rec.attempts if mastery_rec else 0
+    correct_cnt = mastery_rec.correct if mastery_rec else 0
 
     if p_mastery < 0.40:
         band_name = "Foundational Review (Easy)"
-        band_color = "red"
+        badge_var = "danger"
     elif p_mastery < 0.70:
         band_name = "Targeted Practice (Medium)"
-        band_color = "orange"
+        badge_var = "warning"
     elif p_mastery <= 0.85:
         band_name = "Mixed Application (Medium)"
-        band_color = "blue"
+        badge_var = "indigo"
     else:
         band_name = "Advance Topic (Hard)"
-        band_color = "green"
+        badge_var = "success"
 
-    st.markdown(
-        f"**Learner:** `{learner_id}` | **Current Mastery $P(L)$:** `{p_mastery:.4f}` | "
-        f"**Mastery Band:** :{band_color}[{band_name}]"
-    )
+    # Mastery KPI Bar
+    col_k1, col_k2, col_k3, col_k4 = st.columns(4)
+    with col_k1:
+        render_metric_card("Mastery P(L)", f"{p_mastery:.4f}", subtext="Posterior belief", badge="BKT", badge_variant="indigo")
+    with col_k2:
+        render_metric_card("Active Policy Band", band_name.split(" ")[0], subtext=band_name, badge=diff_choice, badge_variant=badge_var)
+    with col_k3:
+        render_metric_card("Total Attempts", attempts_cnt, subtext=f"{correct_cnt} correct answers", badge="Practice", badge_variant="neutral")
+    with col_k4:
+        acc_pct = (correct_cnt / attempts_cnt * 100) if attempts_cnt > 0 else 0.0
+        render_metric_card("Accuracy Rate", f"{acc_pct:.1f}%", subtext="Historical performance", badge="Score", badge_variant="teal")
 
-    # Next Question Button
+    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
+
+    # Next Question Controls
     col_fetch, col_clear = st.columns([2, 1])
     with col_fetch:
         if st.button("🎯 Fetch Next Adaptive Question", type="primary", use_container_width=True):
@@ -89,34 +110,73 @@ def render_assessment_view(services: dict):
                 st.session_state.current_question = q
                 st.session_state.last_evaluation = None
             else:
-                st.warning("No verified questions available for the selected topic and difficulty.")
+                st.warning("No verified questions available for the selected topic and difficulty band.")
 
     with col_clear:
-        if st.button("🔄 Reset Served Questions", use_container_width=True):
+        if st.button("🔄 Reset Question History", use_container_width=True):
             st.session_state.served_question_ids = []
             st.info("Question repetition history cleared for this session.")
 
-    st.divider()
+    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
     # Render Current Question Card
     q = st.session_state.get("current_question")
     if not q:
-        st.info("Click **'Fetch Next Adaptive Question'** above to start your practice session.")
+        render_empty_state(
+            title="No Active Question Loaded",
+            description="Click 'Fetch Next Adaptive Question' above to load a verified item adapted to your current mastery state.",
+            icon="📝"
+        )
         return
 
     with st.container(border=True):
-        header_cols = st.columns([3, 1, 1])
+        header_cols = st.columns([2.5, 1, 1])
         with header_cols[0]:
-            st.markdown(f"### Question `{q.question_id}`")
+            st.markdown(
+                f"""
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                    <span class="cogni-badge cogni-badge-neutral">{q.question_id}</span>
+                    <strong style="color: #18233B; font-size: 1.1rem;">{active_topic}</strong>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
             if q.concept_id:
-                st.caption(f"**Concept:** {q.concept_id}")
+                st.caption(f"Target Concept: **{q.concept_id}**")
         with header_cols[1]:
-            st.markdown(f"**Difficulty:** `{q.difficulty.value.upper()}`")
-            st.markdown(f"**Type:** `{q.question_type.value.upper()}`")
+            st.markdown(
+                f"""
+                <div style="display: flex; gap: 0.4rem; justify-content: flex-end;">
+                    <span class="cogni-badge cogni-badge-neutral">{q.difficulty.value.upper()}</span>
+                    <span class="cogni-badge cogni-badge-neutral">{q.question_type.value.upper()}</span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
         with header_cols[2]:
-            st.success("✅ **Verified**\n(Structural Integrity)")
+            st.markdown(
+                '<div style="text-align: right;"><span class="cogni-badge cogni-badge-success">✅ Verified Item</span></div>',
+                unsafe_allow_html=True
+            )
 
-        st.markdown(f"#### {q.prompt}")
+        st.markdown(
+            f"""
+            <div style="
+                background: #F8FAFC;
+                border: 1px solid #E2E8F0;
+                border-radius: 8px;
+                padding: 1.1rem 1.25rem;
+                margin: 0.75rem 0 1.25rem 0;
+                font-size: 1.05rem;
+                font-weight: 500;
+                color: #18233B;
+                line-height: 1.5;
+            ">
+                {q.prompt}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
         # Form for answering
         user_answer = ""
@@ -129,7 +189,7 @@ def render_assessment_view(services: dict):
         else:
             user_answer = st.text_input("Enter your answer:", key=f"short_{q.question_id}")
 
-        if st.button("Submit Answer", type="primary", key=f"submit_{q.question_id}"):
+        if st.button("🚀 Submit Answer", type="primary", key=f"submit_{q.question_id}", use_container_width=True):
             if not user_answer.strip():
                 st.error("Please enter or select an answer before submitting.")
             else:
@@ -145,11 +205,11 @@ def render_assessment_view(services: dict):
                 st.session_state.last_evaluation = evaluation
 
                 # 2. Update BKT state
-                bkt_res = bkt.record_observation(learner_id, q.topic_id, evaluation.is_correct)
+                bkt.record_observation(learner_id, q.topic_id, evaluation.is_correct)
 
                 # 3. Check / update misconception tracking
                 concept_id = q.concept_id or q.topic_id
-                misc_signal = misconceptions.analyze_attempt(
+                misconceptions.analyze_attempt(
                     learner_id,
                     q.topic_id,
                     concept_id,
@@ -166,15 +226,29 @@ def render_assessment_view(services: dict):
     # Display Feedback & Explanations if evaluated
     eval_res = st.session_state.get("last_evaluation")
     if eval_res and q and eval_res.question_id == q.question_id:
-        st.divider()
+        st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
         if eval_res.is_correct:
-            st.success(f"### 🎉 {eval_res.feedback}")
+            render_callout(
+                title="Correct Answer!",
+                message=eval_res.feedback,
+                variant="success",
+                icon="🎉"
+            )
         else:
-            st.error(f"### ❌ {eval_res.feedback}")
+            render_callout(
+                title="Incorrect Attempt",
+                message=eval_res.feedback,
+                variant="danger",
+                icon="❌"
+            )
 
-        # Citations Linked to Question
+        # Show Solution and Citations Linked to Question
+        if q.solution:
+            with st.expander("💡 View Detailed Solution & Step-by-Step Explanation", expanded=True):
+                st.write(q.solution)
+
         if eval_res.citations:
-            st.subheader("📖 Evidence Provenance for This Question")
+            render_section_header("📖 Evidence Provenance for This Question", subtitle="Verified source units certifying this question's answer.")
             for cite in eval_res.citations:
                 loc = cite.location
                 loc_str = f"Page {loc.get('page', '')}" if "page" in loc else (f"Slide {loc.get('slide', '')}" if "slide" in loc else "Locator")
@@ -184,4 +258,4 @@ def render_assessment_view(services: dict):
         # Show updated BKT Mastery Score
         updated_rec = db.get_learner_mastery(learner_id, q.topic_id)
         if updated_rec:
-            st.info(f"📊 **Updated Topic Mastery $P(L)$:** `{updated_rec.p_mastery:.4f}` (Attempts: {updated_rec.attempts}, Correct: {updated_rec.correct})")
+            st.success(f"📊 **Updated Topic Mastery $P(L)$:** `{updated_rec.p_mastery:.4f}` (Attempts: {updated_rec.attempts}, Correct: {updated_rec.correct})")

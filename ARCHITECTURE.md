@@ -69,7 +69,14 @@ Use mastery, difficulty readiness, prerequisite readiness, recent errors, miscon
 
 Run fixed benchmark cases and simulated learner sessions. Store raw outputs and calculated metrics for reproducibility.
 
+### 11. Presentation Layer (CogniVault 2.0)
+
+- **Design System:** Light visual system with centralized tokens and global CSS (`app/ui/theme.py`).
+- **Component System:** Reusable component library (`app/ui/components.py`) rendering standardized page headers, KPI metric cards, alert callouts, friendly empty states, and citation blocks.
+- **Navigation Shell:** 8-view modular architecture (`app/ui/main.py`) featuring an executive landing dashboard (`app/ui/views/dashboard_view.py`) and 7 specialized functional views with sidebar telemetry.
+
 ## Technology Boundary
+
 
 - Python
 - Streamlit

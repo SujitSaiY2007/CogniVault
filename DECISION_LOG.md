@@ -49,8 +49,13 @@
 | D-044 | Source Evidence Resolution Method (`get_evidence_for_source`) | Adds explicit `get_evidence_for_source` method to `EvidenceDB` for source evidence chunk counting in Course Ingestion view without schema modifications | Implemented & Verified |
 | D-045 | Learner State Manager Service Wiring & Observation Alias | Wires `LearnerStateManager` into UI service container and provides `record_observation` alias to ensure assessment submissions persist BKT state updates | Implemented & Verified |
 | D-046 | Multi-Thread SQLite Connection & Automated 7-View AppTest | Sets `check_same_thread=False` on SQLite connection for Streamlit thread safety and incorporates `test_all_seven_streamlit_views_render_without_exceptions` into the permanent test suite | Implemented & Verified |
+| D-047 | CogniVault 2.0 Light Design System & Visual Tokens | Replaces dark mode with a cohesive light visual system (`#F7F8FC` canvas, `#FFFFFF` surfaces, `#18233B` deep navy typography, `#4F46E5` indigo primary, `#0D9488` teal supporting, accessible status colors) | Implemented & Verified |
+| D-048 | Reusable Component Library Architecture (`app/ui/components.py`) | Modularizes UI presentation (headers, metric cards, badges, callouts, empty states, citation cards) to eliminate ad-hoc CSS/HTML duplication | Implemented & Verified |
+| D-049 | Executive Learning Overview & Dashboard View | Adds a dedicated landing dashboard (`app/ui/views/dashboard_view.py`) featuring curriculum KPIs, active learner mastery, prescribed actions, prerequisite lock warnings, and quick module shortcuts | Implemented & Verified |
+| D-050 | Automated 8-View AppTest Walkthrough Coverage | Expands `test_all_seven_streamlit_views_render_without_exceptions` to validate all 8 views (Dashboard + 7 modules) with 15s timeout, guaranteeing 100% exception-free execution | Implemented & Verified |
 
 New decisions must be added here with rationale and status.
+
 
 
 

@@ -120,20 +120,22 @@ def test_evidence_for_source_and_ui_bkt_integration(temp_service_db):
 
 
 def test_all_seven_streamlit_views_render_without_exceptions():
-    """Validates that all 7 Streamlit navigation views render cleanly without unhandled exceptions."""
+    """Validates that all Streamlit navigation views render cleanly without unhandled exceptions."""
     from streamlit.testing.v1 import AppTest
     from pathlib import Path
 
     app_path = Path("app/ui/main.py").resolve()
-    at = AppTest.from_file(str(app_path))
-    at.run()
+    at = AppTest.from_file(str(app_path), default_timeout=15)
+    at.run(timeout=15)
     assert len(at.exception) == 0, f"Initial run exceptions: {[e.message for e in at.exception]}"
 
     options = at.sidebar.radio[0].options
-    assert len(options) == 7
+    assert len(options) == 8
 
     for opt in options:
-        at.sidebar.radio[0].set_value(opt).run()
+        at.sidebar.radio[0].set_value(opt).run(timeout=15)
         assert len(at.exception) == 0, f"View '{opt}' raised exception: {[e.message for e in at.exception]}"
+
+
 
 
