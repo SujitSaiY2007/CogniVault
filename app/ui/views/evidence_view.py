@@ -8,6 +8,7 @@ from __future__ import annotations
 import streamlit as st
 from app.models import Modality
 from app.ui.components import (
+    _render_html_fragment,
     render_page_header,
     render_section_header,
     render_metric_card,
@@ -51,7 +52,7 @@ def render_evidence_view(services: dict):
     with col_m4:
         render_metric_card("Associated Topics", len(all_topics), subtext="Curriculum breadth", badge="Taxonomy", badge_variant="success")
 
-    st.markdown("<div style='margin-bottom: 1.25rem;'></div>", unsafe_allow_html=True)
+    _render_html_fragment("<div style='margin-bottom: 1.25rem;'></div>")
 
     # Search and Filter Workspace Card
     with st.container(border=True):
@@ -187,12 +188,9 @@ def render_evidence_view(services: dict):
                 tag_parts.append(f"**Prerequisites:** {', '.join(ev.prerequisites)}")
 
             if tag_parts:
-                st.markdown(
-                    f"<div style='font-size: 0.82rem; color: #64748B; margin-top: 0.35rem;'>"
+                _render_html_fragment(f"<div style='font-size: 0.82rem; color: #64748B; margin-top: 0.35rem;'>"
                     + " &nbsp;|&nbsp; ".join(tag_parts)
-                    + "</div>",
-                    unsafe_allow_html=True
-                )
+                    + "</div>")
 
     if len(filtered) > 50:
         st.info("Displaying first 50 results. Refine search query to inspect specific units.")
