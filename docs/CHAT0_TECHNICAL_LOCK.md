@@ -1,3 +1,5 @@
+> **Historical record notice — 2026-10-10:** This file preserves the original Chat 0 foundation specification and rationale. Its original status (“implementation specification for Chat 1”), claim that the repository contains documentation/scaffolding only, and final instruction that Chat 1 is next are historical and superseded by the later Chat 01–05 phase reports and the current project-control documents. The later application work is on separate phase branches; it has not been merged into main. For the current task, use `../PROJECT_STATE.md`, `../CURRENT_OBJECTIVE.md`, `../CURRENT_HANDOFF.md`, and `../NEXT_CHAT_PROMPT.md`. Do not erase this historical technical rationale.
+
 # Cognivault — Chat 0 Technical Lock
 
 **Status:** FOUNDATION LOCK — implementation specification for Chat 1  
