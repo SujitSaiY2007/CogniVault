@@ -9,6 +9,7 @@ import streamlit as st
 import pandas as pd
 from app.recommendation import AdaptiveRecommendationEngine
 from app.ui.components import (
+    _render_html_fragment,
     render_page_header,
     render_section_header,
     render_metric_card,
@@ -149,7 +150,7 @@ def render_recommendations_view(services: dict):
                         unsafe_allow_html=True
                     )
 
-    st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
+    _render_html_fragment("<div style='margin-bottom: 1.5rem;'></div>")
 
     # 2. Prerequisite Topology & Gatekeeper Audit
     render_section_header(
