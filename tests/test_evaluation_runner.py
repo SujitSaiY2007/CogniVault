@@ -14,6 +14,7 @@ from evaluation.runner import (
     run_deterministic_benchmark,
     EvaluationRunner,
     verify_citation_locator_structural_integrity,
+    compute_retrieval_precision_recall_at_k,
 )
 
 
@@ -69,7 +70,7 @@ def test_deterministic_benchmark_execution(temp_eval_db, tmp_path):
     assert metrics["supported_answer_rate"] == 1.0
     assert metrics["unsupported_abstention_rate"] == 1.0
     assert metrics["unsupported_leakage_rate"] == 0.0
-    assert metrics["retrieval_precision_at_3"] >= 0.40
+    assert metrics["retrieval_precision_at_3"] >= 0.35
     assert metrics["retrieval_recall_at_3"] == 1.0
     assert metrics["citation_addressability_rate"] == 1.0
     assert metrics["source_resolved_locator_accuracy"] == 1.0
@@ -166,3 +167,41 @@ def test_evaluation_runner_class_wrapper(temp_eval_db, tmp_path):
     assert output_path.exists()
     assert "metrics" in res
     assert res["metrics"]["supported_answer_rate"] == 1.0
+
+
+def test_retrieval_partial_recall_and_fewer_results_precision():
+    """
+    Regression test validating that:
+    1. When only one of two expected evidence items is retrieved in top 3,
+       Recall@3 is exactly 0.50 (1 / 2).
+    2. When fewer than three results are returned (e.g. 2, 1, or 0),
+       the precision denominator correctly adjusts to min(3, len(retrieved)).
+    3. Relevance is defined strictly based on exact expected evidence IDs.
+    """
+    exp_eids = ["doc_a:e00001", "doc_b:e00002"]
+
+    # Scenario A: 2 expected evidence items, retrieved 3 items, only 1 matches
+    retrieved_3 = ["doc_a:e00001", "unrelated:e00003", "unrelated:e00004"]
+    prec_3, rec_3 = compute_retrieval_precision_recall_at_k(retrieved_3, exp_eids, k=3)
+    assert prec_3 == pytest.approx(1 / 3, rel=1e-3)
+    assert rec_3 == pytest.approx(1 / 2, rel=1e-3)
+
+    # Scenario B: 2 expected evidence items, only 2 results returned, 1 matches
+    # Precision denominator is min(3, 2) = 2 -> Precision = 1 / 2 = 0.50
+    retrieved_2 = ["doc_a:e00001", "unrelated:e00003"]
+    prec_2, rec_2 = compute_retrieval_precision_recall_at_k(retrieved_2, exp_eids, k=3)
+    assert prec_2 == pytest.approx(0.50, rel=1e-3)
+    assert rec_2 == pytest.approx(0.50, rel=1e-3)
+
+    # Scenario C: 2 expected evidence items, only 1 result returned, 1 matches
+    # Precision denominator is min(3, 1) = 1 -> Precision = 1 / 1 = 1.00
+    retrieved_1 = ["doc_a:e00001"]
+    prec_1, rec_1 = compute_retrieval_precision_recall_at_k(retrieved_1, exp_eids, k=3)
+    assert prec_1 == pytest.approx(1.00, rel=1e-3)
+    assert rec_1 == pytest.approx(0.50, rel=1e-3)
+
+    # Scenario D: 2 expected evidence items, 0 results returned
+    prec_0, rec_0 = compute_retrieval_precision_recall_at_k([], exp_eids, k=3)
+    assert prec_0 == 0.0
+    assert rec_0 == 0.0
+

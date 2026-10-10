@@ -2,18 +2,18 @@
 
 ## Last Completed Action
 
-Completed Chat 03: Product & Evaluation end-to-end and finalized the driver review audit. Built and verified the interactive 7-module Streamlit UI (`app/ui/`), multi-modal STEM corpus (`app/corpus.py` & `data/corpus/`), reproducible deterministic evaluation runner (`evaluation/runner.py`), multi-turn simulated learner trajectory benchmark (`evaluation/simulate_learners.py`), and comprehensive integration test suite (`tests/acceptance/test_chat03_acceptance.py`, `tests/test_evaluation_runner.py`, `tests/test_ui_service_integration.py`).
+Completed Chat 03: Product & Evaluation end-to-end and finalized all driver review evaluation and provenance corrections. Built and verified the interactive 7-module Streamlit UI (`app/ui/`), multi-modal STEM corpus (`app/corpus.py` & `data/corpus/`), reproducible deterministic evaluation runner (`evaluation/runner.py`), multi-turn simulated learner trajectory benchmark (`evaluation/simulate_learners.py`), and comprehensive integration test suite (`tests/acceptance/test_chat03_acceptance.py`, `tests/test_evaluation_runner.py`, `tests/test_ui_service_integration.py`).
 
 ## Verified Repository State
 
 - **Repository:** `SujitSaiY2007/CogniVault`
 - **Active Branch:** `chat03-product-evaluation` (branched from verified `chat02-intelligence-core` at `fbdce9d824ea7384b3bf13ff3a79e217cee4a1bd`).
-- **Automated Test Suite:** **98 passed in 28.69s** (`pytest -v --durations=10`).
+- **Automated Test Suite:** **99 passed in 59.04s** (`pytest -v --durations=10`).
 - **Acceptance Harnesses:**
   - `tests/acceptance/test_k1_to_k10.py` (K1–K10 Core Vault Ingestion: **10/10 PASS**)
   - `tests/acceptance/test_chat02_acceptance.py` (G1–G5, A1–A4, L1–L3, S2 Intelligence Core: **13/13 PASS**)
   - `tests/acceptance/test_chat03_acceptance.py` (U1–U9 End-to-End Product & Benchmark Integration: **9/9 PASS**)
-  - `tests/test_evaluation_runner.py` (Benchmark dataset, repetition alternative/fallback, citation locator verification, and runner: **6/6 PASS**)
+  - `tests/test_evaluation_runner.py` (Benchmark dataset, repetition alternative/fallback, citation locator verification, and partial retrieval regression: **7/7 PASS**)
   - `tests/test_ui_service_integration.py` (Streamlit UI views & state machine integrity: **3/3 PASS**)
 - **Baseline Preservation:** All 40 Chat 01 baseline tests and 40 Chat 02 core tests preserved and passing green without regressions.
 
@@ -38,7 +38,7 @@ Completed Chat 03: Product & Evaluation end-to-end and finalized the driver revi
    - 28 test cases across 5 functional suites (`evaluation/benchmark_dataset.json`).
    - 100% supported answer rate on in-corpus queries (8/8).
    - 100% abstention rate (3/3) and 0.0% leakage (0/3) on off-material / out-of-corpus queries.
-   - 50.00% retrieval precision@3 and 100% retrieval recall@3.
+   - 39.58% retrieval precision@3 (strictly based on exact evidence IDs and dynamic denominator $\min(3, \|\text{Retrieved}\|)$) and 100% retrieval recall@3.
    - 100% citation addressability (21/21) and 100% source-resolved locator accuracy (21/21).
    - Repetition control verified for both alternative question selection and pool exhaustion fallback.
    - Exact numerical BKT posterior verification ($< 10^{-4}$ tolerance) and recommendation policy verification.

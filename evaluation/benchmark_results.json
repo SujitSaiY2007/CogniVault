@@ -1,12 +1,12 @@
 {
-  "benchmark_timestamp": "2026-10-10T06:29:39.458213+00:00",
+  "benchmark_timestamp": "2026-10-10T06:54:53.964552+00:00",
   "benchmark_version": "1.0.0",
   "total_test_cases": 28,
   "metrics": {
     "supported_answer_rate": 1.0,
     "unsupported_abstention_rate": 1.0,
     "unsupported_leakage_rate": 0.0,
-    "retrieval_precision_at_3": 0.5,
+    "retrieval_precision_at_3": 0.3958,
     "retrieval_recall_at_3": 1.0,
     "grounded_faithfulness_proxy": 0.9688,
     "citation_addressability_rate": 1.0,
@@ -31,8 +31,8 @@
     "supported_answer_rate": "Fraction of in-corpus questions answered with grounded citations",
     "unsupported_abstention_rate": "Fraction of out-of-corpus questions where sufficiency gate explicitly abstained",
     "unsupported_leakage_rate": "Fraction of out-of-corpus questions erroneously answered as course-supported",
-    "retrieval_precision_at_3": "Fraction of top-3 retrieved items matching expected source or evidence IDs across evaluated cases",
-    "retrieval_recall_at_3": "Fraction of expected source evidence captured in top-3 candidates across evaluated cases",
+    "retrieval_precision_at_3": "Fraction of top-3 retrieved items matching exact expected evidence IDs (with denominator min(3, len(retrieved)))",
+    "retrieval_recall_at_3": "Number of expected evidence items retrieved in top-3 divided by total number of expected evidence items",
     "grounded_faithfulness_proxy": "Token overlap ratio between reference answer concepts and grounded response",
     "citation_addressability_rate": "Fraction of cited evidence IDs existing and resolvable in SQLite EvidenceDB",
     "source_resolved_locator_accuracy": "Fraction of emitted citations whose location fields match source-resolved locators in EvidenceDB",
@@ -135,7 +135,7 @@
           "biology_cell_lecture:e00002"
         ],
         "citations_count": 2,
-        "precision_at_3": 1.0,
+        "precision_at_3": 0.3333,
         "recall_at_3": 1.0,
         "token_containment_score": 1.0
       },
@@ -150,7 +150,7 @@
           "physics_mechanics:e00001"
         ],
         "citations_count": 1,
-        "precision_at_3": 0.6667,
+        "precision_at_3": 0.5,
         "recall_at_3": 1.0,
         "token_containment_score": 1.0
       },
@@ -220,7 +220,7 @@
         "actual_valid": false,
         "passed": true,
         "failure_reasons": [
-          "Expected answer 'Z' does not match any valid option key ['A', 'B'] or option text"
+          "Expected answer 'Z' does not match any valid option key ['B', 'A'] or option text"
         ]
       },
       {

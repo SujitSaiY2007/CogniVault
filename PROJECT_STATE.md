@@ -6,19 +6,19 @@ Chat 03 — Product & Evaluation
 
 ## Status
 
-CHAT 03 IMPLEMENTATION COMPLETE & VERIFIED (98/98 test suite passing, benchmark evaluation operational, multi-turn learner simulations verified, Streamlit UI active)
+CHAT 03 IMPLEMENTATION COMPLETE & VERIFIED (99/99 test suite passing, benchmark evaluation operational, multi-turn learner simulations verified, Streamlit UI active)
 
 ## Verified Repository State
 
 - **Repository:** `SujitSaiY2007/CogniVault`
 - **Current branch:** `chat03-product-evaluation`
 - **Base commit:** `fbdce9d824ea7384b3bf13ff3a79e217cee4a1bd` (HEAD of `chat02-intelligence-core`)
-- **Test execution:** **98 passed in 28.69s** (`pytest -v --durations=10`)
+- **Test execution:** **99 passed in 59.04s** (`pytest -v --durations=10`)
 - **Dedicated acceptance harnesses:**
   - `tests/acceptance/test_k1_to_k10.py` (K1–K10 all pass, 10 tests)
   - `tests/acceptance/test_chat02_acceptance.py` (G1–G5, A1–A4, L1–L3, S2 all pass, 13 tests)
   - `tests/acceptance/test_chat03_acceptance.py` (Full Chat 03 E2E acceptance, 9 tests)
-  - `tests/test_evaluation_runner.py` (Benchmark dataset, repetition control, locator verification, and runner, 6 tests)
+  - `tests/test_evaluation_runner.py` (Benchmark dataset, repetition control, locator verification, and partial retrieval regression, 7 tests)
   - `tests/test_ui_service_integration.py` (UI service container and simulations, 3 tests)
 
 ## Implemented & Verified Capabilities
@@ -32,7 +32,7 @@ CHAT 03 IMPLEMENTATION COMPLETE & VERIFIED (98/98 test suite passing, benchmark 
 4. **Reproducible Mathematics & Science Corpus (Chat 03):**
    - Curated multi-modal educational corpus (`physics_mechanics.pdf` with visual diagrams, `waves_optics.pptx`, `mathematics_calculus.pdf`, `biology_cell_lecture.txt`) and manifest in `data/corpus/` with CC0-1.0 public domain test fixture licensing and parser metadata.
 5. **Deterministic Benchmark Runner (Chat 03):**
-   - Offline evaluation runner in `evaluation/runner.py` measuring retrieval precision@3 (50.00%), recall@3 (100%), supported-answer rate (100%), unsupported abstention rate (100%), unsupported leakage rate (0%), citation addressability (100%), source-resolved locator accuracy (100%), and policy accuracy (100%).
+   - Offline evaluation runner in `evaluation/runner.py` measuring retrieval precision@3 (39.58%), recall@3 (100%), supported-answer rate (100%), unsupported abstention rate (100%), unsupported leakage rate (0%), citation addressability (100%), source-resolved locator accuracy (100%), and policy accuracy (100%).
 6. **Multi-Turn Simulated Learner Evaluations (Chat 03):**
    - 6 simulated learner trajectories in `evaluation/simulate_learners.py` verifying advancing, struggling, mixed, misconception, prerequisite-gated, and boundary behaviors against a static non-personalized baseline.
 

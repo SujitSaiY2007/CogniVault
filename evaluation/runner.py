@@ -29,6 +29,28 @@ from app.sufficiency import EvidenceSufficiencyGate
 from app.tutor import GroundedTutor
 
 
+def compute_retrieval_precision_recall_at_k(
+    retrieved_ids: list[str],
+    expected_evidence_ids: list[str],
+    k: int = 3
+) -> tuple[float, float]:
+    """
+    Compute Precision@K and Recall@K based on exact expected evidence IDs.
+    - Precision@K = |Retrieved top-K ∩ Expected evidence| / min(K, len(retrieved_ids))
+    - Recall@K = |Retrieved top-K ∩ Expected evidence| / |Expected evidence|
+    """
+    top_k = retrieved_ids[:k]
+    exp_set = set(expected_evidence_ids)
+    if not exp_set:
+        return 0.0, 1.0
+
+    relevant_in_top_k = [eid for eid in top_k if eid in exp_set]
+    precision_denom = min(k, len(top_k))
+    precision = (len(relevant_in_top_k) / precision_denom) if precision_denom > 0 else 0.0
+    recall = len(relevant_in_top_k) / len(exp_set)
+    return precision, recall
+
+
 def verify_citation_locator_structural_integrity(
     citation_loc: dict[str, Any],
     resolved_loc: dict[str, Any]
@@ -145,20 +167,15 @@ def run_deterministic_benchmark(
             if resp.support_status == "supported" and resp.is_grounded and len(resp.citations) > 0:
                 supported_correct += 1
 
-            # Precision & Recall @ 3
-            exp_sources = set(tc.get("expected_source_ids", []))
-            if "expected_source_id" in tc:
-                exp_sources.add(tc["expected_source_id"])
-            exp_eids = set(tc.get("expected_evidence_ids", []))
-
-            if exp_sources or exp_eids:
+            # Precision & Recall @ 3 based on exact expected evidence IDs
+            exp_eids = tc.get("expected_evidence_ids", [])
+            if exp_eids:
                 retrieval_cases_evaluated += 1
-                relevant_in_top3 = [
-                    eid for eid in retrieved_ids
-                    if any(eid.startswith(src) for src in exp_sources) or eid in exp_eids
-                ]
-                precision_k = len(relevant_in_top3) / 3.0
-                recall_k = 1.0 if len(relevant_in_top3) > 0 else 0.0
+                precision_k, recall_k = compute_retrieval_precision_recall_at_k(
+                    retrieved_ids=retrieved_ids,
+                    expected_evidence_ids=exp_eids,
+                    k=3
+                )
                 retrieval_precision_sum += precision_k
                 retrieval_recall_sum += recall_k
                 case_detail["precision_at_3"] = round(precision_k, 4)
@@ -372,8 +389,8 @@ def run_deterministic_benchmark(
             "supported_answer_rate": "Fraction of in-corpus questions answered with grounded citations",
             "unsupported_abstention_rate": "Fraction of out-of-corpus questions where sufficiency gate explicitly abstained",
             "unsupported_leakage_rate": "Fraction of out-of-corpus questions erroneously answered as course-supported",
-            "retrieval_precision_at_3": "Fraction of top-3 retrieved items matching expected source or evidence IDs across evaluated cases",
-            "retrieval_recall_at_3": "Fraction of expected source evidence captured in top-3 candidates across evaluated cases",
+            "retrieval_precision_at_3": "Fraction of top-3 retrieved items matching exact expected evidence IDs (with denominator min(3, len(retrieved)))",
+            "retrieval_recall_at_3": "Number of expected evidence items retrieved in top-3 divided by total number of expected evidence items",
             "grounded_faithfulness_proxy": "Token overlap ratio between reference answer concepts and grounded response",
             "citation_addressability_rate": "Fraction of cited evidence IDs existing and resolvable in SQLite EvidenceDB",
             "source_resolved_locator_accuracy": "Fraction of emitted citations whose location fields match source-resolved locators in EvidenceDB",
