@@ -224,6 +224,40 @@ class EvidenceDB:
             for r in rows
         ]
 
+    def delete_source(self, source_id: str) -> bool:
+        """Remove one source and its derived evidence records transactionally."""
+        source = self.get_source(source_id)
+        if source is None:
+            return False
+        evidence_ids = [
+            row[0] for row in self.conn.execute(
+                "SELECT evidence_id FROM evidence WHERE source_id=?", (source_id,)
+            ).fetchall()
+        ]
+        try:
+            self.conn.execute("BEGIN")
+            for evidence_id in evidence_ids:
+                # Questions citing this evidence are no longer valid once its source is removed.
+                question_rows = self.conn.execute(
+                    "SELECT question_id FROM questions WHERE evidence_ids_json LIKE ?",
+                    (f'%"{evidence_id}"%',)
+                ).fetchall()
+                for (question_id,) in question_rows:
+                    self.conn.execute("DELETE FROM learner_interactions WHERE question_id=?", (question_id,))
+                    self.conn.execute("DELETE FROM questions WHERE question_id=?", (question_id,))
+                self.conn.execute("DELETE FROM evidence_fts WHERE evidence_id=?", (evidence_id,))
+                self.conn.execute("DELETE FROM embeddings WHERE evidence_id=?", (evidence_id,))
+                self.conn.execute("DELETE FROM assets WHERE evidence_id=?", (evidence_id,))
+                self.conn.execute("DELETE FROM evidence_concepts WHERE evidence_id=?", (evidence_id,))
+                self.conn.execute("DELETE FROM evidence_topics WHERE evidence_id=?", (evidence_id,))
+                self.conn.execute("DELETE FROM evidence WHERE evidence_id=?", (evidence_id,))
+            self.conn.execute("DELETE FROM sources WHERE source_id=?", (source_id,))
+            self.conn.commit()
+            return True
+        except Exception:
+            self.conn.rollback()
+            raise
+
     # --- Evidence ---
     def add_evidence(self, e: EvidenceUnit):
         self.conn.execute(
