@@ -2,18 +2,18 @@
 
 ## Last Completed Action
 
-Completed Chat 03: Product & Evaluation end-to-end. Built and verified the interactive 7-module Streamlit UI (`app/ui/`), multi-modal STEM corpus (`app/corpus.py` & `data/corpus/`), reproducible deterministic evaluation runner (`evaluation/runner.py`), multi-turn simulated learner trajectory benchmark (`evaluation/simulate_learners.py`), and integration test suite (`tests/acceptance/test_chat03_acceptance.py`, `tests/test_evaluation_runner.py`, `tests/test_ui_service_integration.py`).
+Completed Chat 03: Product & Evaluation end-to-end and finalized the driver review audit. Built and verified the interactive 7-module Streamlit UI (`app/ui/`), multi-modal STEM corpus (`app/corpus.py` & `data/corpus/`), reproducible deterministic evaluation runner (`evaluation/runner.py`), multi-turn simulated learner trajectory benchmark (`evaluation/simulate_learners.py`), and comprehensive integration test suite (`tests/acceptance/test_chat03_acceptance.py`, `tests/test_evaluation_runner.py`, `tests/test_ui_service_integration.py`).
 
 ## Verified Repository State
 
 - **Repository:** `SujitSaiY2007/CogniVault`
-- **Active Branch:** `chat03-product-evaluation` (branched from verified `chat02-intelligence-core` at `fbdce9d9b626e5e8eeb678c18ea69cb7ee2d2427`).
-- **Automated Test Suite:** **95 passed in 24.05s** (`pytest -v --durations=10`).
+- **Active Branch:** `chat03-product-evaluation` (branched from verified `chat02-intelligence-core` at `fbdce9d824ea7384b3bf13ff3a79e217cee4a1bd`).
+- **Automated Test Suite:** **98 passed in 28.69s** (`pytest -v --durations=10`).
 - **Acceptance Harnesses:**
   - `tests/acceptance/test_k1_to_k10.py` (K1–K10 Core Vault Ingestion: **10/10 PASS**)
   - `tests/acceptance/test_chat02_acceptance.py` (G1–G5, A1–A4, L1–L3, S2 Intelligence Core: **13/13 PASS**)
   - `tests/acceptance/test_chat03_acceptance.py` (U1–U9 End-to-End Product & Benchmark Integration: **9/9 PASS**)
-  - `tests/test_evaluation_runner.py` (Benchmark execution & metrics verification: **3/3 PASS**)
+  - `tests/test_evaluation_runner.py` (Benchmark dataset, repetition alternative/fallback, citation locator verification, and runner: **6/6 PASS**)
   - `tests/test_ui_service_integration.py` (Streamlit UI views & state machine integrity: **3/3 PASS**)
 - **Baseline Preservation:** All 40 Chat 01 baseline tests and 40 Chat 02 core tests preserved and passing green without regressions.
 
@@ -27,22 +27,24 @@ Completed Chat 03: Product & Evaluation end-to-end. Built and verified the inter
    - `assessment_view.py`: Adaptive question presenter, deterministic answer verifier, and instant feedback.
    - `learner_view.py`: Real-time Bayesian Knowledge Tracing topic mastery cards and misconception diagnosis viewer.
    - `recommendations_view.py`: Explainable next-action recommendations with prerequisite graph visualizer.
-   - `evaluation_view.py`: In-app benchmark dashboard rendering live accuracy, faithfulness, and abstention metrics.
+   - `evaluation_view.py`: In-app benchmark dashboard rendering live accuracy, faithfulness, source-resolved locators, and abstention metrics.
 2. **STEM Multi-Modal Corpus (`app/corpus.py` & `data/corpus/`):**
    - PDF with embedded vector diagram (`physics_mechanics.pdf`).
    - PPTX lecture slides with speaker notes (`waves_optics.pptx`).
    - Pure mathematical PDF (`mathematics_calculus.pdf`).
    - Timestamped video/audio transcript (`biology_cell_lecture.txt`).
-   - Corpus manifest (`data/corpus_manifest.json`) and database seeder (`seed_benchmark_corpus`).
+   - Corpus manifest (`data/corpus_manifest.json`) and database seeder (`seed_database_from_corpus`) with CC0-1.0 public domain test fixture licensing and parser metadata.
 3. **Deterministic Evaluation Runner (`evaluation/runner.py`):**
    - 28 test cases across 5 functional suites (`evaluation/benchmark_dataset.json`).
-   - 100% supported answer rate on in-corpus queries.
-   - 100% abstention rate and 0.0% leakage on off-material / out-of-corpus queries.
-   - 100% citation addressability and locator verification.
+   - 100% supported answer rate on in-corpus queries (8/8).
+   - 100% abstention rate (3/3) and 0.0% leakage (0/3) on off-material / out-of-corpus queries.
+   - 50.00% retrieval precision@3 and 100% retrieval recall@3.
+   - 100% citation addressability (21/21) and 100% source-resolved locator accuracy (21/21).
+   - Repetition control verified for both alternative question selection and pool exhaustion fallback.
    - Exact numerical BKT posterior verification ($< 10^{-4}$ tolerance) and recommendation policy verification.
-   - Output persisted at `evaluation/benchmark_results.json`.
+   - Output persisted at `evaluation/benchmark_results.json` with explicit metric denominators.
 4. **Simulated Learner Trajectories (`evaluation/simulate_learners.py`):**
-   - 3 distinct learner profiles (Struggling Learner `learner_alpha`, Fast Learner `learner_beta`, Misconception Candidate `learner_gamma`) simulated across 15 turns.
+   - 6 scenarios (`consistently_correct`, `consistently_incorrect`, `mixed_performance`, `misconception_remediation`, `prerequisite_gating`, `boundary_values`) comparing dynamic difficulty shifts against a non-personalized baseline.
    - Output persisted at `evaluation/simulation_results.json`.
 
 ## Authoritative Documentation

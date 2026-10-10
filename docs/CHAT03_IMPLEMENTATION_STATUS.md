@@ -3,7 +3,7 @@
 **Project:** CogniVault — Evidence-First Adaptive Learning  
 **Track:** Track D — Personalized Tutoring & Adaptive Learning  
 **Phase:** Chat 03 — Product & Evaluation  
-**Base Branch & Commit:** `chat02-intelligence-core` (`fbdce9d9b626e5e8eeb678c18ea69cb7ee2d2427`)  
+**Base Branch & Commit:** `chat02-intelligence-core` (`fbdce9d824ea7384b3bf13ff3a79e217cee4a1bd`)  
 **Active Working Branch:** `chat03-product-evaluation`  
 **Execution Environment:** Windows (PowerShell), Python 3.12.4, PyMuPDF 1.25.3, python-pptx 1.0.2, sentence-transformers 3.4.1, streamlit 1.65.0, pytest 8.4.2  
 
@@ -15,10 +15,10 @@ Chat 03 has completed the transition of CogniVault from an intelligence core int
 
 All 5 core deliverables were implemented, tested, and verified:
 1. **Functional Streamlit Demo UI (`app/ui/`):** A 7-module interactive web application connecting directly to backend services (`get_services()`).
-2. **Reproducible Math & Science Corpus (`data/corpus/`, `data/corpus_manifest.json`, `app/corpus.py`):** Multi-modal educational materials (PDF with embedded figures, PPTX slides, lecture transcripts, and prerequisite topologies) with SHA-256 provenance manifests.
-3. **Deterministic Evaluation Runner (`evaluation/runner.py`):** An offline benchmark runner measuring retrieval precision/recall, fail-closed abstention, answer leakage, citation validity, and policy accuracy over fixed datasets.
+2. **Reproducible Math & Science Corpus (`data/corpus/`, `data/corpus_manifest.json`, `app/corpus.py`):** Multi-modal educational materials (PDF with embedded figures, PPTX slides, lecture transcripts, and prerequisite topologies) with SHA-256 provenance manifests, parser metadata, and CC0-1.0 public domain test fixture licensing.
+3. **Deterministic Evaluation Runner (`evaluation/runner.py`):** An offline benchmark runner measuring retrieval precision/recall, fail-closed abstention, answer leakage, citation addressability, source-resolved locator accuracy, and recommendation policy accuracy over fixed datasets with explicit denominators.
 4. **Simulated Multi-Turn Learner Evaluations (`evaluation/simulate_learners.py`):** Validates 6 distinct learner trajectories across Bayesian Knowledge Tracing (BKT) bands and compares dynamic difficulty shifts against a non-personalized baseline.
-5. **Comprehensive Integration & Acceptance Test Suite:** 95 out of 95 tests passing locally and deterministically without network or API dependency.
+5. **Comprehensive Integration & Acceptance Test Suite:** 98 out of 98 tests passing locally and deterministically without network or API dependency.
 
 ---
 
@@ -42,20 +42,21 @@ A curated, synthetic educational corpus designed for secondary school STEM curri
 - **`data/corpus/waves_optics.pptx`:** Covers Wave Speed ($v = f \cdot \lambda$), Law of Reflection, and Snell's Law ($n_1 \sin\theta_1 = n_2 \sin\theta_2$) across slide structures.
 - **`data/corpus/mathematics_calculus.pdf`:** Covers Algebraic Quadratic Formula ($x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$) and Differential Calculus Power Rule ($\frac{d}{dx}x^n = n x^{n-1}$).
 - **`data/corpus/biology_cell_lecture.txt`:** Time-stamped lecture transcript covering Mitochondria ATP synthesis and Chloroplast photosynthesis.
-- **`data/corpus_manifest.json`:** Manifest documenting file paths, titles, modalities, subjects, grades, licenses (Public Domain / CC-BY-4.0 Equivalent), and SHA-256 digests.
+- **`data/corpus_manifest.json`:** Manifest documenting file paths, titles, modalities, subjects, grades, synthetic provenance, parser/extractor versions, and SHA-256 digests.
 
 ### Deliverable 3 — Deterministic Evaluation Runner (`evaluation/runner.py`)
 Deterministic offline evaluation measuring:
-- **Retrieval Precision@3:** Fraction of top-3 retrieved items matching ground-truth source.
+- **Retrieval Precision@3:** Fraction of top-3 retrieved items matching ground-truth source or evidence IDs across evaluated queries.
 - **Retrieval Recall@3:** Fraction of expected source evidence retrieved in top-3 candidates.
 - **Supported Answer Rate:** Fraction of valid curriculum queries answered with grounded citations.
 - **Unsupported Abstention Rate:** Fraction of off-corpus queries where the sufficiency gate explicitly abstains.
-- **Unsupported Leakage Rate:** Fraction of off-corpus queries erroneously answered.
-- **Citation Addressability Rate:** Fraction of cited evidence IDs existing in SQLite `evidence` table.
-- **Citation Locator Accuracy:** Fraction of citations containing verified page, slide, or timestamp locators.
+- **Unsupported Leakage Rate:** Fraction of off-corpus queries erroneously answered as course-supported.
+- **Citation Addressability Rate:** Fraction of cited evidence IDs existing in SQLite `EvidenceDB`.
+- **Source-Resolved Locator Accuracy:** Fraction of emitted citations whose location fields match source-resolved locators in `EvidenceDB`.
 - **Question Verification Accuracy:** Structural verification pass/reject behavior on valid vs malformed questions.
 - **BKT Numerical Accuracy:** Exact match of BKT posterior transitions against analytical equations within $10^{-4}$.
 - **Recommendation Policy Accuracy:** Exact match of recommended pedagogical actions and difficulties against mastery band rules.
+- **Repetition Control:** Verifies that alternative questions are selected when available and graceful fallback occurs on pool exhaustion.
 
 ### Deliverable 4 — Simulated Multi-Turn Learner Evaluation (`evaluation/simulate_learners.py`)
 Simulated learner scenarios verifying policy compliance:
@@ -71,22 +72,22 @@ Simulated learner scenarios verifying policy compliance:
 
 ## 3. Measured Benchmark Results
 
-Generated via `evaluation/runner.py` over `evaluation/benchmark_dataset.json`:
+Generated via `evaluation/runner.py` over `evaluation/benchmark_dataset.json` (28 total test cases):
 
 | Metric | Formula / Definition | Measured Score | Target |
 |---|---|---|---|
-| **Supported Answer Rate** | $\frac{\text{Supported Grounded Answers}}{\text{Total Supported Test Queries}}$ | **100.0%** (1.000) | $\ge 95\%$ |
-| **Unsupported Abstention Rate** | $\frac{\text{Abstained Queries}}{\text{Total Unsupported Test Queries}}$ | **100.0%** (1.000) | $100.0\%$ |
-| **Unsupported Answer Leakage Rate** | $\frac{\text{Erroneously Answered Queries}}{\text{Total Unsupported Test Queries}}$ | **0.0%** (0.000) | $0.0\%$ |
-| **Retrieval Precision@3** | $\frac{\|\text{Retrieved} \cap \text{Expected}\|}{\min(3, \|\text{Retrieved}\|)}$ | **47.62%** (0.4762) | $\ge 40\%$ |
-| **Retrieval Recall@3** | $\frac{\|\text{Retrieved} \cap \text{Expected}\|}{\|\text{Expected}\|}$ | **100.0%** (1.000) | $\ge 90\%$ |
+| **Supported Answer Rate** | $\frac{\text{Supported Grounded Answers}}{\text{Total Supported Test Queries}}$ (8/8) | **100.0%** (1.000) | $\ge 95\%$ |
+| **Unsupported Abstention Rate** | $\frac{\text{Abstained Queries}}{\text{Total Unsupported Test Queries}}$ (3/3) | **100.0%** (1.000) | $100.0\%$ |
+| **Unsupported Answer Leakage Rate** | $\frac{\text{Erroneously Answered Queries}}{\text{Total Unsupported Test Queries}}$ (0/3) | **0.0%** (0.000) | $0.0\%$ |
+| **Retrieval Precision@3** | $\frac{\|\text{Retrieved} \cap \text{Expected}\|}{\min(3, \|\text{Retrieved}\|)}$ across 8 evaluated queries | **50.00%** (0.5000) | $\ge 40\%$ |
+| **Retrieval Recall@3** | $\frac{\|\text{Retrieved} \cap \text{Expected}\|}{\|\text{Expected}\|}$ across 8 evaluated queries | **100.0%** (1.000) | $\ge 90\%$ |
 | **Grounded Faithfulness Proxy** | Token overlap ratio between reference answer concepts & grounded response | **96.88%** (0.9688) | $\ge 90\%$ |
-| **Citation Addressability Rate** | $\frac{\text{Addressable Evidence IDs}}{\text{Total Citations Issued}}$ | **100.0%** (1.000) | $100.0\%$ |
-| **Citation Locator Accuracy** | $\frac{\text{Citations with Valid Locator}}{\text{Total Citations Issued}}$ | **100.0%** (1.000) | $100.0\%$ |
-| **Question Verification Accuracy** | $\frac{\text{Correct Pass/Reject Decisions}}{\text{Total Question Items Tested}}$ | **100.0%** (1.000) | $100.0\%$ |
-| **BKT Numerical Accuracy** | $\frac{\text{Posterior Transitions within } 10^{-4}}{\text{Total BKT Observations Tested}}$ | **100.0%** (1.000) | $100.0\%$ |
-| **Policy Bracket Accuracy** | $\frac{\text{Correct Action \& Difficulty Assignments}}{\text{Total Policy Test Cases}}$ | **100.0%** (1.000) | $100.0\%$ |
-| **Repetition Control Pass** | Non-repetition of served questions when alternatives exist | **Passed** (True) | Pass |
+| **Citation Addressability Rate** | $\frac{\text{Addressable Evidence IDs}}{\text{Total Citations Issued}}$ (21/21) | **100.0%** (1.000) | $100.0\%$ |
+| **Source-Resolved Locator Accuracy** | $\frac{\text{Citations with Valid Resolved Locators}}{\text{Total Citations Issued}}$ (21/21) | **100.0%** (1.000) | $100.0\%$ |
+| **Question Verification Accuracy** | $\frac{\text{Correct Pass/Reject Decisions}}{\text{Total Question Items Tested}}$ (6/6) | **100.0%** (1.000) | $100.0\%$ |
+| **BKT Numerical Accuracy** | $\frac{\text{Posterior Transitions within } 10^{-4}}{\text{Total BKT Observations Tested}}$ (5/5) | **100.0%** (1.000) | $100.0\%$ |
+| **Policy Bracket Accuracy** | $\frac{\text{Correct Action \& Difficulty Assignments}}{\text{Total Policy Test Cases}}$ (6/6) | **100.0%** (1.000) | $100.0\%$ |
+| **Repetition Control Pass** | Alternative selected when available & pool exhaustion fallback | **Passed** (True) | Pass |
 
 ---
 
@@ -105,27 +106,27 @@ rootdir: C:\Users\sujit\CogniVault
 configfile: pyproject.toml
 testpaths: tests
 plugins: anyio-4.15.1
-collected 95 items
+collected 98 items
 
 tests\acceptance\test_chat02_acceptance.py .............                 [ 13%]
-tests\acceptance\test_chat03_acceptance.py .........                     [ 23%]
-tests\acceptance\test_k1_to_k10.py ..........                            [ 33%]
-tests\test_assessment.py .........                                       [ 43%]
-tests\test_evaluation_runner.py ...                                      [ 46%]
-tests\test_evidence_continuity.py ....                                   [ 50%]
-tests\test_ingestion.py ..                                               [ 52%]
-tests\test_learner_bkt.py ....                                           [ 56%]
-tests\test_misconceptions.py ..                                          [ 58%]
-tests\test_models_db.py .....                                            [ 64%]
-tests\test_pdf_pptx.py .....                                             [ 69%]
-tests\test_recommendations.py ...                                        [ 72%]
+tests\acceptance\test_chat03_acceptance.py .........                     [ 22%]
+tests\acceptance\test_k1_to_k10.py ..........                            [ 32%]
+tests\test_assessment.py .........                                       [ 41%]
+tests\test_evaluation_runner.py ......                                   [ 47%]
+tests\test_evidence_continuity.py ....                                   [ 52%]
+tests\test_ingestion.py ..                                               [ 54%]
+tests\test_learner_bkt.py ....                                           [ 58%]
+tests\test_misconceptions.py ..                                          [ 60%]
+tests\test_models_db.py .....                                            [ 65%]
+tests\test_pdf_pptx.py .....                                             [ 70%]
+tests\test_recommendations.py ...                                        [ 73%]
 tests\test_retrieval.py ...........                                      [ 84%]
 tests\test_source_resolver.py ...                                        [ 87%]
 tests\test_sufficiency.py .....                                          [ 92%]
 tests\test_tutor.py ....                                                 [ 96%]
 tests\test_ui_service_integration.py ...                                 [100%]
 
-============================= 95 passed in 24.05s =============================
+============================= 98 passed in 28.69s =============================
 ```
 
 ---

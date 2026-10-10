@@ -12,7 +12,7 @@ This maps the Track D project brief to implementation, tests, and evidence. Ever
 | Adaptive assessment | Mastery/difficulty/repetition/prerequisite selector (`app/assessment.py`) | `test_a1_tagged_question_metadata`, `test_a3_repetition_suppression`, `test_assessment.py` | Implemented & Verified |
 | Question structural integrity | Deterministic verifier (`app/assessment.py`); checks mapping, parseability, and evidence addressability | `test_a2_incorrect_answer_key_rejected`, `test_assessment.py`, `test_evaluation_runner.py` | Implemented & Verified |
 | Answer verification | Objective deterministic checks + tolerance + rubric (`app/assessment.py`) | `test_a4_corrective_feedback_cites_evidence`, `test_assessment.py` | Implemented & Verified |
-| Repetition control | Question fingerprinting and served candidate suppression (`app/assessment.py`) | `test_a3_repetition_suppression`, `test_assessment.py` | Implemented & Verified |
+| Repetition control | Question fingerprinting and served candidate suppression (`app/assessment.py`) | `test_a3_repetition_suppression`, `test_repetition_suppression_alternative_and_fallback`, `test_assessment.py` | Implemented & Verified |
 | Feedback | Evidence-grounded corrective feedback with citations (`app/assessment.py`) | `test_a4_corrective_feedback_cites_evidence`, `test_assessment.py` | Implemented & Verified |
 | Learner model | Bayesian Knowledge Tracing per topic (`app/learner_model.py`) | `test_l1_learner_profile_divergence`, `test_l2_bkt_session_deterministic_update`, `test_learner_bkt.py` | Implemented & Verified |
 | Misconception support | Error signal accumulation ($\ge 2$) + prerequisite remediation (`app/misconceptions.py`) | `test_l3_targeted_intervention_misconception`, `test_misconceptions.py` | Implemented & Verified |
@@ -24,4 +24,4 @@ This maps the Track D project brief to implementation, tests, and evidence. Ever
 | UX/demo | Streamlit tutor, assessment, learner, recommendations, evidence, and benchmark views (`app/ui/`) | `app/ui/main.py`, `test_ui_service_integration.py`, `test_chat03_acceptance.py` | Implemented & Verified |
 | Security & Failure Closure | Environment secrets, synthetic accounts, fail-closed boundaries | `test_s2_failure_closure`, secret scans | Implemented & Verified |
 
-All 19 core requirements are fully implemented and verified across the complete automated test suite (95/95 passing tests) and deterministic evaluation benchmarks.
+All 19 core requirements are fully implemented and verified across the complete automated test suite (98/98 passing tests) and deterministic evaluation benchmarks.

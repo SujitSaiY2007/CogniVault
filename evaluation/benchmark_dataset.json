@@ -6,7 +6,9 @@
       "case_id": "tc_01_second_law",
       "query": "What is the equation for Newton's Second Law of Motion?",
       "expected_status": "supported",
-      "expected_source_id": "physics_mechanics",
+      "expected_source_ids": ["physics_mechanics"],
+      "expected_evidence_ids": ["physics_mechanics:e00001"],
+      "expected_locators": [{"page": 1}],
       "expected_concepts": ["Second Law"],
       "expected_tokens_in_answer": ["Force", "mass", "acceleration", "F = m * a"]
     },
@@ -14,7 +16,9 @@
       "case_id": "tc_02_kinetic_energy",
       "query": "How is kinetic energy calculated from mass and speed?",
       "expected_status": "supported",
-      "expected_source_id": "physics_mechanics",
+      "expected_source_ids": ["physics_mechanics"],
+      "expected_evidence_ids": ["physics_mechanics:e00002"],
+      "expected_locators": [{"page": 2}],
       "expected_concepts": ["Kinetic Energy"],
       "expected_tokens_in_answer": ["Kinetic Energy", "0.5 * m * v^2"]
     },
@@ -22,7 +26,9 @@
       "case_id": "tc_03_wave_equation",
       "query": "State the wave speed equation relating frequency and wavelength",
       "expected_status": "supported",
-      "expected_source_id": "waves_optics",
+      "expected_source_ids": ["waves_optics"],
+      "expected_evidence_ids": ["waves_optics:e00001"],
+      "expected_locators": [{"slide": 1}],
       "expected_concepts": ["Wave Equation"],
       "expected_tokens_in_answer": ["Wave speed", "v = f * lambda", "frequency", "wavelength"]
     },
@@ -30,7 +36,9 @@
       "case_id": "tc_04_snells_law",
       "query": "What is Snell's Law of Refraction formula?",
       "expected_status": "supported",
-      "expected_source_id": "waves_optics",
+      "expected_source_ids": ["waves_optics"],
+      "expected_evidence_ids": ["waves_optics:e00002"],
+      "expected_locators": [{"slide": 2}],
       "expected_concepts": ["Snell's Law"],
       "expected_tokens_in_answer": ["Snell's Law", "n1 * sin(theta1) = n2 * sin(theta2)"]
     },
@@ -38,7 +46,9 @@
       "case_id": "tc_05_quadratic_formula",
       "query": "What is the quadratic formula to solve standard quadratic equations?",
       "expected_status": "supported",
-      "expected_source_id": "mathematics_calculus",
+      "expected_source_ids": ["mathematics_calculus"],
+      "expected_evidence_ids": ["mathematics_calculus:e00001"],
+      "expected_locators": [{"page": 1}],
       "expected_concepts": ["Quadratic Formula"],
       "expected_tokens_in_answer": ["Quadratic Formula", "x = (-b +- sqrt(b^2 - 4ac)) / (2a)"]
     },
@@ -46,7 +56,9 @@
       "case_id": "tc_06_mitochondria_atp",
       "query": "Which organelle is the powerhouse of the cell producing ATP?",
       "expected_status": "supported",
-      "expected_source_id": "biology_cell_lecture",
+      "expected_source_ids": ["biology_cell_lecture"],
+      "expected_evidence_ids": ["biology_cell_lecture:e00003"],
+      "expected_locators": [{"timestamp": "02:40"}],
       "expected_concepts": ["Mitochondria"],
       "expected_tokens_in_answer": ["Mitochondria", "powerhouse", "ATP"]
     },
@@ -54,7 +66,9 @@
       "case_id": "tc_07_diagram_evidence",
       "query": "Free-body force vector diagram showing normal and gravitational forces",
       "expected_status": "supported",
-      "expected_source_id": "physics_mechanics",
+      "expected_source_ids": ["physics_mechanics"],
+      "expected_evidence_ids": ["physics_mechanics:e00002"],
+      "expected_locators": [{"page": 2}],
       "expected_concepts": ["Work"],
       "expected_tokens_in_answer": ["Figure 1.1", "diagram", "force"]
     },
@@ -63,7 +77,9 @@
       "query": "Wave speed equation and mechanical work done by force",
       "expected_status": "supported",
       "is_synthesis": true,
-      "expected_sources": ["waves_optics", "physics_mechanics"],
+      "expected_source_ids": ["waves_optics", "physics_mechanics"],
+      "expected_evidence_ids": ["waves_optics:e00001", "physics_mechanics:e00002"],
+      "expected_locators": [{"slide": 1}, {"page": 2}],
       "expected_tokens_in_answer": ["v = f * lambda", "W = F * d"]
     },
     {

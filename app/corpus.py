@@ -161,10 +161,18 @@ def build_reproducible_corpus(data_dir: Path) -> dict[str, str]:
     hashes["biology_cell_lecture"] = create_biology_transcript(b_txt)
 
     manifest = {
+        "corpus_id": "cognivault-school-stem-benchmark-v1",
         "corpus_version": "1.0.0",
-        "description": "Reproducible School Mathematics and Science corpus for CogniVault Track D demonstration",
-        "license": "Creative Commons Attribution 4.0 International (CC-BY 4.0) / Public Domain Educational",
-        "provenance_note": "Synthetic curriculum fixtures aligned with standard secondary school Physics, Mathematics, and Biology standards",
+        "description": "Deterministic, reproducible School Mathematics and Science educational corpus fixtures created for CogniVault (Track D: Personalized Tutoring & Adaptive Learning).",
+        "license": "CC0 1.0 Universal (Public Domain Dedication) / MIT License for project-authored synthetic test fixtures",
+        "provenance_type": "project_authored_synthetic",
+        "provenance_note": "Synthetic curriculum fixtures authored specifically for the CogniVault project, aligned with standard secondary school Mathematics (Algebra & Calculus), Physics (Classical Mechanics & Geometric Optics), and Biology (Cell Biology) educational benchmarks.",
+        "parser_and_extractor_metadata": {
+            "pdf_extractor": "PyMuPDF (fitz) v1.24+",
+            "pptx_extractor": "python-pptx v1.0.2+",
+            "transcript_extractor": "CogniVault Timestamped Regex Parser v1.0.0",
+            "chunker_version": "CogniVault Hybrid Structure-Aware Chunker v1.0.0"
+        },
         "sources": [
             {
                 "source_id": "physics_mechanics",
@@ -173,6 +181,9 @@ def build_reproducible_corpus(data_dir: Path) -> dict[str, str]:
                 "subject": "Physics",
                 "grade_level": "Secondary / High School",
                 "modality": "pdf",
+                "extractor": "pymupdf",
+                "author": "CogniVault Project Team",
+                "license": "CC0-1.0 (Public Domain Dedication)",
                 "sha256": hashes["physics_mechanics"],
                 "topics": ["Newtonian Mechanics", "Work and Energy"],
                 "concepts": ["First Law", "Second Law", "Third Law", "Momentum", "Work", "Kinetic Energy"],
@@ -185,6 +196,9 @@ def build_reproducible_corpus(data_dir: Path) -> dict[str, str]:
                 "subject": "Physics",
                 "grade_level": "Secondary / High School",
                 "modality": "pptx",
+                "extractor": "python-pptx",
+                "author": "CogniVault Project Team",
+                "license": "CC0-1.0 (Public Domain Dedication)",
                 "sha256": hashes["waves_optics"],
                 "topics": ["Wave Properties", "Geometric Optics"],
                 "concepts": ["Wave Equation", "Reflection", "Snell's Law", "Refraction"],
@@ -197,6 +211,9 @@ def build_reproducible_corpus(data_dir: Path) -> dict[str, str]:
                 "subject": "Mathematics",
                 "grade_level": "Secondary / High School",
                 "modality": "pdf",
+                "extractor": "pymupdf",
+                "author": "CogniVault Project Team",
+                "license": "CC0-1.0 (Public Domain Dedication)",
                 "sha256": hashes["mathematics_calculus"],
                 "topics": ["Algebra", "Differential Calculus"],
                 "concepts": ["Quadratic Formula", "Discriminant", "Power Rule", "Trig Derivatives"],
@@ -209,6 +226,9 @@ def build_reproducible_corpus(data_dir: Path) -> dict[str, str]:
                 "subject": "Biology",
                 "grade_level": "Secondary / High School",
                 "modality": "text",
+                "extractor": "regex-transcript",
+                "author": "CogniVault Project Team",
+                "license": "CC0-1.0 (Public Domain Dedication)",
                 "sha256": hashes["biology_cell_lecture"],
                 "topics": ["Cell Biology"],
                 "concepts": ["Cell Theory", "Mitochondria", "Chloroplasts", "Nucleus"],

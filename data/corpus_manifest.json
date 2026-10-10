@@ -1,8 +1,16 @@
 {
+  "corpus_id": "cognivault-school-stem-benchmark-v1",
   "corpus_version": "1.0.0",
-  "description": "Reproducible School Mathematics and Science corpus for CogniVault Track D demonstration",
-  "license": "Creative Commons Attribution 4.0 International (CC-BY 4.0) / Public Domain Educational",
-  "provenance_note": "Synthetic curriculum fixtures aligned with standard secondary school Physics, Mathematics, and Biology standards",
+  "description": "Deterministic, reproducible School Mathematics and Science educational corpus fixtures created for CogniVault (Track D: Personalized Tutoring & Adaptive Learning).",
+  "license": "CC0 1.0 Universal (Public Domain Dedication) / MIT License for project-authored synthetic test fixtures",
+  "provenance_type": "project_authored_synthetic",
+  "provenance_note": "Synthetic curriculum fixtures authored specifically for the CogniVault project, aligned with standard secondary school Mathematics (Algebra & Calculus), Physics (Classical Mechanics & Geometric Optics), and Biology (Cell Biology) educational benchmarks.",
+  "parser_and_extractor_metadata": {
+    "pdf_extractor": "PyMuPDF (fitz) v1.24+",
+    "pptx_extractor": "python-pptx v1.0.2+",
+    "transcript_extractor": "CogniVault Timestamped Regex Parser v1.0.0",
+    "chunker_version": "CogniVault Hybrid Structure-Aware Chunker v1.0.0"
+  },
   "sources": [
     {
       "source_id": "physics_mechanics",
@@ -11,6 +19,9 @@
       "subject": "Physics",
       "grade_level": "Secondary / High School",
       "modality": "pdf",
+      "extractor": "pymupdf",
+      "author": "CogniVault Project Team",
+      "license": "CC0-1.0 (Public Domain Dedication)",
       "sha256": "3b2e89b5f8c32c662103e54f682d4a61922a37ed7d94c78204c9edaf7d6897a9",
       "topics": [
         "Newtonian Mechanics",
@@ -33,6 +44,9 @@
       "subject": "Physics",
       "grade_level": "Secondary / High School",
       "modality": "pptx",
+      "extractor": "python-pptx",
+      "author": "CogniVault Project Team",
+      "license": "CC0-1.0 (Public Domain Dedication)",
       "sha256": "e103c86738868103b61b52feebf59c754206c9003c156bc9e20797c90021c5ac",
       "topics": [
         "Wave Properties",
@@ -53,6 +67,9 @@
       "subject": "Mathematics",
       "grade_level": "Secondary / High School",
       "modality": "pdf",
+      "extractor": "pymupdf",
+      "author": "CogniVault Project Team",
+      "license": "CC0-1.0 (Public Domain Dedication)",
       "sha256": "c023b80d0eb5448e70c9e4d76cc900f86b27b49ca327d330de3c2843fab95743",
       "topics": [
         "Algebra",
@@ -73,6 +90,9 @@
       "subject": "Biology",
       "grade_level": "Secondary / High School",
       "modality": "text",
+      "extractor": "regex-transcript",
+      "author": "CogniVault Project Team",
+      "license": "CC0-1.0 (Public Domain Dedication)",
       "sha256": "630f5901aa627005f968bd06290c16cf1f08ee36a5cb71ed1f0dce27faaf0265",
       "topics": [
         "Cell Biology"

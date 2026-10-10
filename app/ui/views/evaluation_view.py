@@ -72,7 +72,7 @@ def render_evaluation_view(services: dict):
             with r2_cols[1]:
                 st.metric("Citation Addressability", f"{metrics.get('citation_addressability_rate', 0.0):.2%}")
             with r2_cols[2]:
-                st.metric("Locator Accuracy", f"{metrics.get('citation_locator_accuracy', 0.0):.2%}")
+                st.metric("Locator Accuracy", f"{metrics.get('source_resolved_locator_accuracy', metrics.get('citation_locator_accuracy', 0.0)):.2%}")
             with r2_cols[3]:
                 st.metric("Leakage Rate", f"{metrics.get('unsupported_leakage_rate', 0.0):.2%}")
 
@@ -92,27 +92,21 @@ def render_evaluation_view(services: dict):
             # Detailed Query-by-Query Results Table
             st.subheader("📋 Supported & Unsupported Q&A Test Details")
             details = data.get("details", {})
-            supp_items = details.get("supported_qa_results", [])
-            unsupp_items = details.get("unsupported_qa_results", [])
+            tutor_items = details.get("tutor_and_retrieval", [])
 
             qa_rows = []
-            for item in supp_items:
+            for item in tutor_items:
+                is_supp = (item.get("expected_status") == "supported")
                 qa_rows.append({
-                    "Query ID": item.get("id"),
-                    "Type": "Supported (In-Corpus)",
+                    "Case ID": item.get("case_id"),
+                    "Type": "Supported (In-Corpus)" if is_supp else "Unsupported (Off-Corpus)",
                     "Query": item.get("query"),
-                    "Pass / Correct": " " if item.get("pass") else "❌",
-                    "Status": item.get("support_status"),
-                    "Citations": len(item.get("citations", [])),
-                })
-            for item in unsupp_items:
-                qa_rows.append({
-                    "Query ID": item.get("id"),
-                    "Type": "Unsupported (Off-Corpus)",
-                    "Query": item.get("query"),
-                    "Pass / Correct": " " if item.get("pass") else "❌",
-                    "Status": item.get("support_status"),
-                    "Citations": len(item.get("citations", [])),
+                    "Expected": item.get("expected_status"),
+                    "Actual": item.get("actual_status"),
+                    "Grounded": " " if item.get("is_grounded") else "❌",
+                    "Citations": item.get("citations_count", 0),
+                    "Precision@3": item.get("precision_at_3", "N/A"),
+                    "Recall@3": item.get("recall_at_3", "N/A"),
                 })
 
             if qa_rows:
