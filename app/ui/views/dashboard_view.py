@@ -8,7 +8,6 @@ from __future__ import annotations
 import textwrap
 import streamlit as st
 from app.ui.components import (
-    _render_html_fragment,
     render_page_header, render_section_header,
     render_metric_card, render_callout, render_empty_state
 )
@@ -49,7 +48,7 @@ def render_dashboard_view(services: dict) -> None:
             do_search = st.button("Ask Tutor", type="primary", use_container_width=True, key="dash_global_search_btn")
         with s_help_col:
             with st.popover("❓", help="CogniVault Principles"):
-                _render_html_fragment("### 🧠 How CogniVault Works")
+                st.markdown("### 🧠 How CogniVault Works")
                 st.markdown(
                     "- **Evidence-First**: Answers are deterministically grounded in indexed textbooks, slides, and transcripts.\n"
                     "- **Zero Hallucination**: Fail-closed abstention when curriculum evidence is insufficient.\n"
@@ -60,12 +59,17 @@ def render_dashboard_view(services: dict) -> None:
         u_col, p_col, log_col, sign_col = st.columns([1.1, 1.2, 0.8, 0.9])
         with u_col:
             st.markdown(
-                '<div style="text-align: center; padding-top: 0.35rem;"><span class="cogni-badge cogni-badge-neutral">👤 Guest</span></div>')
+                '<div style="text-align: center; padding-top: 0.35rem;"><span class="cogni-badge cogni-badge-neutral">👤 Guest</span></div>',
+                unsafe_allow_html=True
+            )
         with p_col:
-            _render_html_fragment('<div style="text-align: center; padding-top: 0.35rem;"><span class="cogni-badge cogni-badge-teal">Free Tier (Local)</span></div>')
+            st.markdown(
+                '<div style="text-align: center; padding-top: 0.35rem;"><span class="cogni-badge cogni-badge-teal">Free Tier (Local)</span></div>',
+                unsafe_allow_html=True
+            )
         with log_col:
             with st.popover("Login"):
-                _render_html_fragment("**Demonstration Session**")
+                st.markdown("**Demonstration Session**")
                 st.info("Local demonstration session active. Multi-device sync will be available in future releases.")
         with sign_col:
             with st.popover("Sign Up"):
@@ -120,7 +124,7 @@ def render_dashboard_view(services: dict) -> None:
                 </div>
             </div>
         """).strip()
-        st.markdown(hero_html)
+        st.markdown(hero_html, unsafe_allow_html=True)
 
     with col_resume:
         # Resume Learning Card (Based on real interactions & masteries)
@@ -128,12 +132,15 @@ def render_dashboard_view(services: dict) -> None:
         masteries = db.get_all_learner_masteries(active_learner)
 
         with st.container(border=True):
-            _render_html_fragment(textwrap.dedent(f"""
+            st.markdown(
+                textwrap.dedent(f"""
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
                         <span class="resume-badge">Resume Learning</span>
                         <span style="font-size: 0.8rem; color: {TEXT_MUTED};">Active Session</span>
                     </div>
-                """).strip())
+                """).strip(),
+                unsafe_allow_html=True
+            )
 
             if interactions or masteries:
                 # Find most recent topic
@@ -152,8 +159,8 @@ def render_dashboard_view(services: dict) -> None:
                 rec_m = db.get_learner_mastery(active_learner, res_topic)
                 mastery_p = rec_m.p_mastery if rec_m else 0.10
 
-                _render_html_fragment(f"### {res_topic}")
-                st.markdown(f"<div style='font-size: 0.85rem; color: {TEXT_SECONDARY}; margin-bottom: 0.6rem;'>STEM Curriculum • Verified Materials</div>")
+                st.markdown(f"### {res_topic}")
+                st.markdown(f"<div style='font-size: 0.85rem; color: {TEXT_SECONDARY}; margin-bottom: 0.6rem;'>STEM Curriculum • Verified Materials</div>", unsafe_allow_html=True)
 
                 st.progress(min(1.0, max(0.05, completion_pct / 100.0)))
                 st.caption(f"**Progress:** {unique_answered}/{total_topic_qs} items ({completion_pct}%) • **Mastery P(L):** `{mastery_p:.1%}`")
@@ -168,13 +175,13 @@ def render_dashboard_view(services: dict) -> None:
                         st.session_state["nav_selection_override"] = "📚 Available Courses"
                         st.rerun()
             else:
-                _render_html_fragment("### Ready to Begin")
-                st.markdown(f"<div style='font-size: 0.88rem; color: {TEXT_SECONDARY}; margin-bottom: 1rem;'>You haven't started an active topic yet. Explore course materials or launch practice to begin.</div>")
+                st.markdown("### Ready to Begin")
+                st.markdown(f"<div style='font-size: 0.88rem; color: {TEXT_SECONDARY}; margin-bottom: 1rem;'>You haven't started an active topic yet. Explore course materials or launch practice to begin.</div>", unsafe_allow_html=True)
                 if st.button("Explore Available Courses →", type="primary", use_container_width=True, key="dash_resume_explore_empty_btn"):
                     st.session_state["nav_selection_override"] = "📚 Available Courses"
                     st.rerun()
 
-    _render_html_fragment("<div style='margin-bottom: 1rem;'></div>")
+    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
     # -------------------------------------------------------------------------
     # 4. Main Dashboard Grid: Left (Continue Learning + History), Right (Recs + Quick Actions)
@@ -197,7 +204,8 @@ def render_dashboard_view(services: dict) -> None:
                 t_pct = int((t_ans / max(1, len(t_qs))) * 100) if t_qs else 0
                 t_mast = (db.get_learner_mastery(active_learner, active_topic_name).p_mastery if db.get_learner_mastery(active_learner, active_topic_name) else 0.10)
 
-                _render_html_fragment(textwrap.dedent(f"""
+                st.markdown(
+                    textwrap.dedent(f"""
                         <div style="background: #F8FAFC; border: 1px solid {BORDER_COLOR}; border-radius: 8px; padding: 1rem; margin-bottom: 0.85rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                                 <span style="font-size: 1.05rem; font-weight: 700; color: {TEXT_PRIMARY};">{active_topic_name}</span>
@@ -210,7 +218,9 @@ def render_dashboard_view(services: dict) -> None:
                                 Completed: <strong>{t_ans} of {len(t_qs)} items</strong> ({t_pct}%)
                             </div>
                         </div>
-                    """).strip())
+                    """).strip(),
+                    unsafe_allow_html=True
+                )
                 if st.button("Open Course Practice →", type="primary", key="dash_open_course_practice_btn"):
                     st.session_state["nav_selection_override"] = "📝 Practice & Assessment"
                     st.rerun()
@@ -220,7 +230,8 @@ def render_dashboard_view(services: dict) -> None:
                 s_title = primary_source.title if primary_source else "STEM Benchmark Curriculum"
                 s_mod = primary_source.modality.upper() if primary_source else "PDF"
 
-                _render_html_fragment(textwrap.dedent(f"""
+                st.markdown(
+                    textwrap.dedent(f"""
                         <div style="background: #F8FAFC; border: 1px solid {BORDER_COLOR}; border-radius: 8px; padding: 1rem; margin-bottom: 0.85rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
                                 <span style="font-size: 1.05rem; font-weight: 700; color: {TEXT_PRIMARY};">{s_title}</span>
@@ -230,7 +241,9 @@ def render_dashboard_view(services: dict) -> None:
                                 Verified foundational course material ready for exploration and practice.
                             </div>
                         </div>
-                    """).strip())
+                    """).strip(),
+                    unsafe_allow_html=True
+                )
                 if st.button("Start Course →", type="primary", key="dash_start_primary_course_btn"):
                     st.session_state["nav_selection_override"] = "📚 Available Courses"
                     st.rerun()
@@ -247,7 +260,8 @@ def render_dashboard_view(services: dict) -> None:
                 for item in recent_list:
                     status_badge = '<span class="cogni-badge cogni-badge-success">✅ Correct</span>' if item["is_correct"] else '<span class="cogni-badge cogni-badge-warning">❌ Needs Review</span>'
                     ts_str = item["timestamp"][:16].replace("T", " ") if "T" in item["timestamp"] else item["timestamp"]
-                    _render_html_fragment(textwrap.dedent(f"""
+                    st.markdown(
+                        textwrap.dedent(f"""
                             <div class="history-row">
                                 <div>
                                     <span style="font-weight: 600; color: {TEXT_PRIMARY};">{item['topic_id']}</span>
@@ -255,7 +269,9 @@ def render_dashboard_view(services: dict) -> None:
                                 </div>
                                 <div>{status_badge}</div>
                             </div>
-                        """).strip())
+                        """).strip(),
+                        unsafe_allow_html=True
+                    )
             else:
                 render_empty_state(
                     title="No Recent Activity",
@@ -279,7 +295,8 @@ def render_dashboard_view(services: dict) -> None:
 
             status_variant = "danger" if is_blocked else ("warning" if "review" in rec.recommended_action else "success")
 
-            _render_html_fragment(textwrap.dedent(f"""
+            st.markdown(
+                textwrap.dedent(f"""
                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; flex-wrap: wrap;">
                         <span style="font-size: 1.05rem; font-weight: 700; color: {TEXT_PRIMARY};">{action_label}</span>
                         <span class="cogni-badge cogni-badge-{status_variant}">Target: {rec.topic_id}</span>
@@ -288,7 +305,9 @@ def render_dashboard_view(services: dict) -> None:
                     <p style="font-size: 0.88rem; color: {TEXT_SECONDARY}; line-height: 1.5; margin-bottom: 0.75rem;">
                         {rec.rationale}
                     </p>
-                """).strip())
+                """).strip(),
+                unsafe_allow_html=True
+            )
 
             if is_blocked and prereq_topic:
                 st.error(f"⛔ **Prerequisite Gate:** Advancement locked until **{prereq_topic}** reaches $P(L) \\ge 0.70$.")
@@ -309,51 +328,63 @@ def render_dashboard_view(services: dict) -> None:
 
             qa_col1, qa_col2 = st.columns(2)
             with qa_col1:
-                _render_html_fragment(textwrap.dedent(f"""
+                st.markdown(
+                    textwrap.dedent(f"""
                         <div class="quick-action-card">
                             <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">💬</div>
                             <div style="font-weight: 700; color: {TEXT_PRIMARY}; font-size: 0.95rem;">Ask AI Tutor</div>
                             <div style="font-size: 0.82rem; color: {TEXT_SECONDARY}; margin-top: 0.2rem;">Strict citation grounding</div>
                         </div>
-                    """).strip())
+                    """).strip(),
+                    unsafe_allow_html=True
+                )
                 if st.button("Launch Tutor", use_container_width=True, key="dash_qa_tutor"):
                     st.session_state["nav_selection_override"] = "💬 AI Tutor"
                     st.rerun()
 
-                _render_html_fragment("<div style='margin-top: 0.5rem;'></div>")
+                st.markdown("<div style='margin-top: 0.5rem;'></div>", unsafe_allow_html=True)
 
-                _render_html_fragment(textwrap.dedent(f"""
+                st.markdown(
+                    textwrap.dedent(f"""
                         <div class="quick-action-card">
                             <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">🔍</div>
                             <div style="font-weight: 700; color: {TEXT_PRIMARY}; font-size: 0.95rem;">Evidence Vault</div>
                             <div style="font-size: 0.82rem; color: {TEXT_SECONDARY}; margin-top: 0.2rem;">Explore slides & locators</div>
                         </div>
-                    """).strip())
+                    """).strip(),
+                    unsafe_allow_html=True
+                )
                 if st.button("Explore Evidence", use_container_width=True, key="dash_qa_evidence"):
                     st.session_state["nav_selection_override"] = "📚 Available Courses"
                     st.rerun()
 
             with qa_col2:
-                _render_html_fragment(textwrap.dedent(f"""
+                st.markdown(
+                    textwrap.dedent(f"""
                         <div class="quick-action-card">
                             <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">📝</div>
                             <div style="font-weight: 700; color: {TEXT_PRIMARY}; font-size: 0.95rem;">Practice Test</div>
                             <div style="font-size: 0.82rem; color: {TEXT_SECONDARY}; margin-top: 0.2rem;">Adaptive BKT assessment</div>
                         </div>
-                    """).strip())
+                    """).strip(),
+                    unsafe_allow_html=True
+                )
                 if st.button("Start Practice", use_container_width=True, key="dash_qa_practice"):
                     st.session_state["nav_selection_override"] = "📝 Practice & Assessment"
                     st.rerun()
 
-                _render_html_fragment("<div style='margin-top: 0.5rem;'></div>")
+                st.markdown("<div style='margin-top: 0.5rem;'></div>", unsafe_allow_html=True)
 
-                _render_html_fragment(textwrap.dedent(f"""
+                st.markdown(
+                    textwrap.dedent(f"""
                         <div class="quick-action-card">
                             <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">🎯</div>
                             <div style="font-weight: 700; color: {TEXT_PRIMARY}; font-size: 0.95rem;">Recommendations</div>
                             <div style="font-size: 0.82rem; color: {TEXT_SECONDARY}; margin-top: 0.2rem;">View prerequisite trees</div>
                         </div>
-                    """).strip())
+                    """).strip(),
+                    unsafe_allow_html=True
+                )
                 if st.button("View Guidance", use_container_width=True, key="dash_qa_recs"):
                     st.session_state["nav_selection_override"] = "🎯 Recommendations"
                     st.rerun()
@@ -361,7 +392,8 @@ def render_dashboard_view(services: dict) -> None:
     # -------------------------------------------------------------------------
     # 5. Bottom Onboarding / Profile Setup Banner
     # -------------------------------------------------------------------------
-    _render_html_fragment(textwrap.dedent(f"""
+    st.markdown(
+        textwrap.dedent(f"""
             <div class="onboarding-banner">
                 <div>
                     <span style="font-size: 1.05rem; font-weight: 700; color: {TEXT_PRIMARY};">
@@ -372,7 +404,9 @@ def render_dashboard_view(services: dict) -> None:
                     </p>
                 </div>
             </div>
-        """).strip())
+        """).strip(),
+        unsafe_allow_html=True
+    )
     col_ob1, _ = st.columns([1.5, 3])
     with col_ob1:
         if st.button("Set Up Profile →", type="primary", use_container_width=True, key="dash_onboarding_profile_btn"):
