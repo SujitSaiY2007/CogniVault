@@ -40,8 +40,14 @@
 
 | D-036 | Unverified prerequisite policy (MVP) | Prerequisites with no learner record block advancement and trigger foundational review on that prerequisite | Implemented & Verified |
 | D-037 | Assessment verification structural scope & numerical parsing contract | Scopes deterministic verifier to structural integrity, single-choice mapping, and robust finite numeric/tolerance parsing; factual truth explicitly distinguished | Implemented & Verified |
-| D-038 | Strict numeric thousands-separator grouping | Commas are accepted only in valid three-digit groups before optional decimals/scientific notation; malformed groupings are rejected rather than silently normalized into a different number | Implemented; final regression assertions added, full-suite rerun pending |
+| D-038 | Strict numeric thousands-separator grouping | Commas are accepted only in valid three-digit groups before optional decimals/scientific notation; malformed groupings are rejected rather than silently normalized into a different number | Implemented & Verified |
+| D-039 | Multimodal School Math & Science Corpus & Manifest | Curates reproducible fixtures (PDF, PPTX, Transcript) with embedded figures, prerequisite links, and SHA-256 provenance manifest | Implemented & Verified |
+| D-040 | Streamlit Multi-View Product Architecture | Modular UI in `app/ui/` with 7 dedicated workflows binding directly to backend services without duplicating business logic | Implemented & Verified |
+| D-041 | Deterministic Evaluation Benchmark Runner | Reproducible offline test runner measuring retrieval precision/recall, abstention, leakage, citation validity, and policy accuracy | Implemented & Verified |
+| D-042 | Multi-Turn Simulated Learner Evaluations | Simulates 6 distinct learner personas (advancing, struggling, mixed, misconception, prerequisite-gated, boundary) vs non-personalized baseline | Implemented & Verified |
+| D-043 | Offline & Deterministic Test Suite Guarantee | All 95 unit, acceptance, benchmark, and UI integration tests execute locally with zero external network or API dependency | Implemented & Verified |
 
 New decisions must be added here with rationale and status.
+
 
 

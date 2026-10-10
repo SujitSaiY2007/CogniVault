@@ -1,0 +1,5 @@
+[00:30] Welcome to Cellular Biology. Today we explore cell structure and primary organelles.
+[01:15] Cell Theory states that all living organisms are composed of one or more cells, and cells are the basic unit of life.
+[02:40] Mitochondria are double-membrane bound organelles known as the powerhouse of the cell, producing ATP via cellular respiration.
+[04:20] Chloroplasts in plant cells carry out photosynthesis, converting light energy and CO2 into glucose and oxygen.
+[05:50] The nucleus houses genetic material in the form of DNA chromatin fibers.

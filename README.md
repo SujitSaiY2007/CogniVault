@@ -10,11 +10,11 @@
 
 ## Project Status
 
-**Phase:** Chat 02 — Intelligence Core  
-**Status:** IMPLEMENTATION COMPLETE; final regression rerun required at current branch HEAD before Chat 03 implementation  
+**Phase:** Chat 03 — Product & Evaluation  
+**Status:** IMPLEMENTATION COMPLETE & VERIFIED (95/95 tests passing, benchmark suite operational, simulated learner evaluations verified, Streamlit demo active)  
 **Repository:** SujitSaiY2007/CogniVault  
 **Default branch:** main  
-**Active branch:** chat02-intelligence-core  
+**Active branch:** chat03-product-evaluation  
 
 GitHub is the canonical source of truth.
 
@@ -25,6 +25,7 @@ The authoritative technical specifications are:
 - docs/CHAT0_TECHNICAL_LOCK.md
 - docs/CHAT01_IMPLEMENTATION_STATUS.md
 - docs/CHAT02_IMPLEMENTATION_STATUS.md
+- docs/CHAT03_IMPLEMENTATION_STATUS.md
 - docs/PRIOR_ART_AND_POSITIONING.md
 
 These documents define the locked MVP, architecture, evidence model, tutor behavior, assessment verification, BKT learner model, misconception policy, evaluation methodology, security boundary, demo flow, and chat sequence.
@@ -86,24 +87,25 @@ No unnecessary microservices, Kubernetes, custom foundation-model training or mu
 - PROJECT_STATE.md — verified project state.
 - CURRENT_OBJECTIVE.md — active objective and exit status.
 - CURRENT_HANDOFF.md — precise continuation state.
-- NEXT_CHAT_PROMPT.md — authoritative task-first prompt for Chat 03.
-- DECISION_LOG.md — locked decisions and rationale (D-001 to D-038).
+- DECISION_LOG.md — locked decisions and rationale (D-001 to D-043).
 - REQUIREMENTS_TRACEABILITY.md — requirement → implementation → test mapping.
 - ARCHITECTURE.md — system architecture.
 - TEST_SPECIFICATION.md — acceptance tests (G1–G5, A1–A4, L1–L3, S1–S2).
 - HALLUCINATION_CONTROL.md — grounding and abstention policy.
 - SECURITY_AND_USAGE_POLICY.md — secrets, privacy and usage controls.
-- EVALUATION_PROTOCOL.md — benchmark methodology.
-- DEMO_PLAN.md — demo sequence.
+- EVALUATION_PROTOCOL.md — benchmark methodology and metric formulas.
+- DEMO_PLAN.md — 7-module interactive demo sequence.
 - SUBMISSION_PLAN.md — final audit and submission checklist.
 - docs/CHAT0_TECHNICAL_LOCK.md — authoritative technical specification.
 - docs/CHAT01_IMPLEMENTATION_STATUS.md — Chat 01 status report.
 - docs/CHAT02_IMPLEMENTATION_STATUS.md — Chat 02 status report.
+- docs/CHAT03_IMPLEMENTATION_STATUS.md — Chat 03 status report.
 - docs/PRIOR_ART_AND_POSITIONING.md — prior-art and competitive-positioning record.
+- app/ui/ — Streamlit user interface (main.py + 7 views).
 - app/ — application code (ingestion, retrieval, tutor, sufficiency, assessment, BKT, misconceptions, recommendations).
-- tests/ — automated/acceptance tests (80 tests in the last reported full run; the latest malformed-number regression assertions require a fresh full-suite run).
-- evaluation/ — evaluation artifacts area (benchmark runner in Chat 03).
-- data/ — corpus/evaluation data area.
+- tests/ — automated unit and acceptance tests (95 tests passing).
+- evaluation/ — benchmark dataset, runner, and simulation evaluation suite.
+- data/ — reproducible school Mathematics & Science corpus and manifest.
 
 ## Secrets
 
@@ -118,7 +120,7 @@ The project does not claim these techniques as inventions. Any stronger project-
 ## Developer Usage
 
 ### 1. Environment Setup & Installation
-```bash
+```powershell
 python -m venv .venv
 # On Windows:
 .\.venv\Scripts\activate
@@ -128,118 +130,20 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-### 2. Test Execution
-Run the complete automated unit and acceptance suite (K1–K10, G1–G5, A1–A4, L1–L3, S2). For the Chat 02 closure verification on Windows, use:
-```bash
-pytest -v
+### 2. Launch Streamlit UI Demo
+```powershell
+streamlit run app/ui/main.py
 ```
 
-### 3. Ingestion & Retrieval (Knowledge Foundation)
-```python
-from app.db import EvidenceDB
-from app.ingest import ingest_pdf, ingest_pptx, ingest_transcript
-from app.retrieval import HybridRetriever, build_embeddings
-from app.source_resolver import resolve
-
-db = EvidenceDB("cognivault.sqlite")
-
-# Ingest multimodal learning material
-pdf_sid = ingest_pdf("textbook.pdf", db)
-pptx_sid = ingest_pptx("lecture.pptx", db)
-vid_sid = ingest_transcript("transcript.txt", db)
-
-# Build embeddings and query
-build_embeddings(db)
-retriever = HybridRetriever(db)
-results, trace = retriever.search("Newton second law", k=5, mode="hybrid")
-
-# Resolve provenance
-if results:
-    prov = resolve(results[0].evidence_id, db)
-    print(prov["source_title"], prov["location"], prov["text"])
+### 3. Run Test Suite
+Run the complete automated test suite (95 tests):
+```powershell
+pytest -v --durations=10
 ```
 
-### 4. Grounded Tutor & Sufficiency Gate
-```python
-from app.tutor import GroundedTutor
-from app.sufficiency import check_sufficiency
-
-tutor = GroundedTutor(db)
-
-# Grounded query with citations
-resp = tutor.answer("What is Newton's Second Law?")
-print("Answer:", resp.answer)
-for c in resp.citations:
-    print(f"Citation: {c.evidence_id} ({c.modality}) -> {c.location}")
-
-# Off-material query (abstains automatically)
-off_resp = tutor.answer("Quantum teleportation black hole")
-print("Unsupported?", off_resp.support_status == "unsupported")
+### 4. Run Deterministic Benchmark Evaluation
+```powershell
+python -m evaluation.runner
+python -m evaluation.simulate_learners
 ```
 
-### 5. Verified Assessment & Corrective Feedback
-```python
-from app.assessment import AssessmentEngine
-from app.models import Difficulty, LearnerSubmission, QuestionOption
-
-engine = AssessmentEngine(db)
-
-# Create & verify question
-q = engine.build_and_verify_question(
-    question_id="q_math_01",
-    topic_id="Algebra",
-    prompt="What is the quadratic formula?",
-    expected_answer="A",
-    evidence_ids=[results[0].evidence_id],
-    difficulty=Difficulty.medium,
-    options=[
-        QuestionOption(key="A", text="x = (-b +- sqrt(b^2 - 4ac)) / (2a)"),
-        QuestionOption(key="B", text="x = -b / 2a")
-    ],
-    solution="The quadratic formula solves ax^2 + bx + c = 0."
-)
-
-# Adaptive question selection with repetition suppression
-selected_q = engine.select_adaptive_question("Algebra", served_question_ids=["q_prev"])
-
-# Evaluate submission
-sub = LearnerSubmission(learner_id="student_1", question_id="q_math_01", topic_id="Algebra", answer="B")
-eval_res = engine.evaluate_submission(sub, q)
-print("Correct?", eval_res.is_correct)
-print("Feedback:", eval_res.feedback)
-```
-
-### 6. BKT Learner Modeling, Misconceptions & Recommendations
-```python
-from app.learner_model import LearnerStateManager
-from app.misconceptions import MisconceptionDetector
-from app.recommendation import AdaptiveRecommendationEngine
-
-# Update Bayesian Knowledge Tracing state
-mgr = LearnerStateManager(db)
-mastery = mgr.record_response("student_1", "Algebra", is_correct=False)
-print(f"Topic Mastery: {mastery.p_mastery:.4f} (Attempts: {mastery.attempts})")
-
-# Misconception tracking (triggers on repeated errors)
-detector = MisconceptionDetector(db, error_threshold=2)
-signal = detector.analyze_attempt("student_1", "Algebra", "Quadratic Roots", is_correct=False)
-if signal:
-    print("Misconception Detected:", signal.suspected_misconception)
-    print("Remediation Concept:", signal.remediation_concept_id)
-
-# Targeted next-action recommendation
-rec_engine = AdaptiveRecommendationEngine(db)
-rec = rec_engine.recommend("student_1", active_topic_id="Algebra")
-print("Recommended Action:", rec.recommended_action)
-print("Difficulty:", rec.difficulty)
-print("Rationale:", rec.rationale)
-```
-
-## Next Phase
-
-**Chat 3 — Product & Evaluation**
-
-Building on the verified Intelligence Core, Chat 3 will implement:
-- Multi-view Streamlit UI (`app/ui/`) for course setup, evidence explorer, grounded tutor, adaptive assessment, learner profile, and recommendations.
-- Automated benchmark evaluation runner (`evaluation/runner.py`).
-- Scripted simulated learner benchmarks and metric reports.

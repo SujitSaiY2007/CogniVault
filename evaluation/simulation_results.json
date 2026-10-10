@@ -1,0 +1,155 @@
+{
+  "timestamp": "2026-10-09T09:09:39.565521+00:00",
+  "scenarios": {
+    "consistently_correct": {
+      "learner_id": "sim_learner_advancing",
+      "turns": [
+        {
+          "turn": 0,
+          "action": "foundational_review",
+          "difficulty": "easy",
+          "p_mastery": 0.1
+        },
+        {
+          "turn": 1,
+          "response": "correct",
+          "p_mastery": 0.4333,
+          "recommended_action": "targeted_practice",
+          "difficulty": "medium",
+          "rationale": "Current topic mastery is developing (0.43 in [0.40, 0.70)). Recommend targeted medium-difficulty practice."
+        },
+        {
+          "turn": 2,
+          "response": "correct",
+          "p_mastery": 0.8086,
+          "recommended_action": "mixed_application",
+          "difficulty": "medium",
+          "rationale": "Current topic mastery is strong (0.81 in [0.70, 0.85]). Recommend mixed application practice."
+        },
+        {
+          "turn": 3,
+          "response": "correct",
+          "p_mastery": 0.9575,
+          "recommended_action": "advance_topic",
+          "difficulty": "hard",
+          "rationale": "Mastery in previous topic exceeded 0.85 (0.96 > 0.85). Ready to advance to dependent topic 'Work and Energy'."
+        },
+        {
+          "turn": 4,
+          "response": "correct",
+          "p_mastery": 0.9917,
+          "recommended_action": "advance_topic",
+          "difficulty": "hard",
+          "rationale": "Mastery in previous topic exceeded 0.85 (0.99 > 0.85). Ready to advance to dependent topic 'Work and Energy'."
+        }
+      ],
+      "final_p_mastery": 0.9917,
+      "final_action": "advance_topic",
+      "advanced_to_dependent_topic": true
+    },
+    "consistently_incorrect": {
+      "learner_id": "sim_learner_struggling",
+      "turns": [
+        {
+          "turn": 1,
+          "response": "incorrect",
+          "p_mastery": 0.1616,
+          "recommended_action": "foundational_review",
+          "difficulty": "easy"
+        },
+        {
+          "turn": 2,
+          "response": "incorrect",
+          "p_mastery": 0.17,
+          "recommended_action": "foundational_review",
+          "difficulty": "easy"
+        },
+        {
+          "turn": 3,
+          "response": "incorrect",
+          "p_mastery": 0.1712,
+          "recommended_action": "foundational_review",
+          "difficulty": "easy"
+        }
+      ],
+      "final_p_mastery": 0.1712,
+      "final_action": "foundational_review"
+    },
+    "mixed_performance": {
+      "learner_id": "sim_learner_mixed",
+      "turns": [
+        {
+          "turn": 1,
+          "is_correct": true,
+          "p_mastery": 0.4333,
+          "recommended_action": "targeted_practice",
+          "difficulty": "medium"
+        },
+        {
+          "turn": 2,
+          "is_correct": false,
+          "p_mastery": 0.2242,
+          "recommended_action": "foundational_review",
+          "difficulty": "easy"
+        },
+        {
+          "turn": 3,
+          "is_correct": true,
+          "p_mastery": 0.6305,
+          "recommended_action": "targeted_practice",
+          "difficulty": "medium"
+        },
+        {
+          "turn": 4,
+          "is_correct": true,
+          "p_mastery": 0.902,
+          "recommended_action": "advance_topic",
+          "difficulty": "hard"
+        }
+      ],
+      "final_p_mastery": 0.902,
+      "final_action": "advance_topic"
+    },
+    "misconception_remediation": {
+      "learner_id": "sim_learner_misconception",
+      "error_threshold_enforced": true,
+      "misconception_diagnosed": "Persistent difficulty with Second Law (wrong_answer)",
+      "remediation_action_triggered": "remediate_misconception",
+      "remediation_concept": "Second Law",
+      "post_remediation_action": "targeted_practice"
+    },
+    "prerequisite_gating": {
+      "missing_prerequisite_blocked": true,
+      "low_prerequisite_blocked": true,
+      "ready_prerequisite_advanced": true
+    },
+    "boundary_values": {
+      "0.39": "foundational_review (easy)",
+      "0.4": "targeted_practice (medium)",
+      "0.69": "targeted_practice (medium)",
+      "0.7": "mixed_application (medium)",
+      "0.85": "mixed_application (medium)",
+      "0.86": "advance_topic (hard)"
+    }
+  },
+  "baseline_comparison": {
+    "baseline_description": "Static Non-Personalized Assignment (Fixed Medium Difficulty)",
+    "adaptive_description": "CogniVault BKT-Gated Adaptive Mastery Assignment",
+    "comparison_metric": "Dynamic Difficulty Shift Rate",
+    "adaptive_difficulty_trajectory": [
+      "easy",
+      "medium",
+      "medium",
+      "hard",
+      "hard"
+    ],
+    "static_difficulty_trajectory": [
+      "medium",
+      "medium",
+      "medium",
+      "medium",
+      "medium"
+    ],
+    "measurement_scope": "Measures differentiation of assigned difficulty according to verified learner mastery state. Does not claim unproven longitudinal learning gains."
+  }
+}

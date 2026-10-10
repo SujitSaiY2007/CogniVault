@@ -190,3 +190,16 @@ def ingest_transcript(path: str | Path, db: EvidenceDB, source_id: str | None = 
                     )
                 )
     return sid
+
+def ingest_file(path: str | Path, db: EvidenceDB, source_id: str | None = None) -> str:
+    """Convenience dispatcher to ingest PDF, PPTX, or transcript file by extension."""
+    p = Path(path)
+    ext = p.suffix.lower()
+    if ext == ".pdf":
+        return ingest_pdf(p, db, source_id=source_id)
+    elif ext in {".pptx", ".ppt"}:
+        return ingest_pptx(p, db, source_id=source_id)
+    elif ext in {".txt", ".vtt", ".srt"}:
+        return ingest_transcript(p, db, source_id=source_id)
+    else:
+        raise ValueError(f"Unsupported file format: '{ext}'. Supported: .pdf, .pptx, .txt")

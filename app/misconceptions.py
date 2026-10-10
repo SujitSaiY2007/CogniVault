@@ -74,6 +74,14 @@ class MisconceptionDetector:
 
         return signal
 
+    def resolve_misconception(self, learner_id: str, topic_id: str, concept_id: str | None = None):
+        """
+        Clears active misconception signals and resets error counters after successful remediation.
+        """
+        eff_concept = concept_id or topic_id
+        self.db.reset_error_signal(learner_id, topic_id, eff_concept)
+        self.db.clear_misconceptions(learner_id, topic_id=topic_id)
+
     def get_remediation_package(self, signal: MisconceptionSignal) -> dict[str, Any]:
         evidence_items = []
         for eid in signal.remediation_evidence_ids:

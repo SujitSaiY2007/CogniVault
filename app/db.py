@@ -181,6 +181,9 @@ class EvidenceDB:
             self.conn.execute("ALTER TABLE embeddings ADD COLUMN dimension INTEGER")
         self.conn.commit()
 
+    def close(self):
+        self.conn.close()
+
     # --- Sources ---
     def add_source(self, s: SourceRecord):
         self.conn.execute(
@@ -310,6 +313,40 @@ class EvidenceDB:
                 prerequisites=json.loads(r[9]),
                 metadata=json.loads(r[10])
             )
+
+    # --- Assets ---
+    def add_asset(
+        self,
+        asset_id: str,
+        evidence_id: str,
+        mime_type: str,
+        sha256: str,
+        data: bytes,
+        width: int | None = None,
+        height: int | None = None
+    ):
+        self.conn.execute(
+            "INSERT OR REPLACE INTO assets (asset_id, evidence_id, mime_type, sha256, width, height, data) VALUES (?,?,?,?,?,?,?)",
+            (asset_id, evidence_id, mime_type, sha256, width, height, data)
+        )
+        self.conn.commit()
+
+    def get_asset(self, asset_id: str) -> dict | None:
+        row = self.conn.execute(
+            "SELECT asset_id, evidence_id, mime_type, sha256, width, height, data FROM assets WHERE asset_id=?",
+            (asset_id,)
+        ).fetchone()
+        if not row:
+            return None
+        return {
+            "asset_id": row[0],
+            "evidence_id": row[1],
+            "mime_type": row[2],
+            "sha256": row[3],
+            "width": row[4],
+            "height": row[5],
+            "data": row[6],
+        }
 
     # --- Topics and Concepts ---
     def add_topic(self, topic_id: str, name: str, description: str = ""):
