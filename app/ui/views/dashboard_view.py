@@ -32,12 +32,7 @@ def render_dashboard_view(services: dict) -> None:
     # -------------------------------------------------------------------------
     # 1. Top Horizontal Header (Search, Help, Account Status, Login/Sign Up)
     # -------------------------------------------------------------------------
-    st.markdown(
-        textwrap.dedent(f"""
-            <div style="background: #FFFFFF; border: 1px solid {BORDER_COLOR}; border-radius: 12px; padding: 0.65rem 1rem; margin-bottom: 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
-        """).strip(),
-        unsafe_allow_html=True
-    )
+    # Use Streamlit's native layout containers; HTML wrappers cannot span widgets.
 
     hdr_left, hdr_right = st.columns([1.6, 1.4])
     with hdr_left:
@@ -80,8 +75,6 @@ def render_dashboard_view(services: dict) -> None:
             with st.popover("Sign Up"):
                 st.markdown("**Create Account**")
                 st.info("CogniVault local demo mode is active. All curriculum and adaptive learning tools are fully available.")
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     if do_search and search_query.strip():
         st.session_state["tutor_prefill_query"] = search_query.strip()
