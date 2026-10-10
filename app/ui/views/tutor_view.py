@@ -9,6 +9,7 @@ import streamlit as st
 import pandas as pd
 from app.tutor import GroundedTutor
 from app.ui.components import (
+    _render_html_fragment,
     render_page_header,
     render_section_header,
     render_callout,
@@ -44,7 +45,7 @@ def render_tutor_view(services: dict):
         if st.button("Off-Corpus: French Rev", use_container_width=True, help="Tests fail-closed abstention gate"):
             preset_query = "What were the major economic causes of the French Revolution in 1789?"
 
-    st.markdown("<div style='margin-bottom: 0.75rem;'></div>", unsafe_allow_html=True)
+    _render_html_fragment("<div style='margin-bottom: 0.75rem;'></div>")
 
     # Question Composer Container
     prefill_query = st.session_state.pop("tutor_prefill_query", "")
@@ -73,7 +74,7 @@ def render_tutor_view(services: dict):
             results, trace = tutor.retriever.search(user_query.strip(), k=top_k, mode=retrieval_mode)
             suff_eval = tutor.sufficiency_gate.evaluate(user_query.strip(), results, trace=trace, db=services["db"])
 
-        st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
+        _render_html_fragment("<div style='margin-bottom: 1.5rem;'></div>")
 
         # -------------------------------------------------------------
         # STATE 1: Grounded & Supported Answer
@@ -92,15 +93,9 @@ def render_tutor_view(services: dict):
                 )
             with status_col2:
                 if response.is_synthesis:
-                    st.markdown(
-                        '<div style="text-align: right;"><span class="cogni-badge cogni-badge-indigo">🔄 Cross-Source Synthesis</span></div>',
-                        unsafe_allow_html=True
-                    )
+                    _render_html_fragment('<div style="text-align: right;"><span class="cogni-badge cogni-badge-indigo">🔄 Cross-Source Synthesis</span></div>')
                 else:
-                    st.markdown(
-                        f'<div style="text-align: right;"><span class="cogni-badge cogni-badge-neutral">Confidence: {response.confidence:.2f}</span></div>',
-                        unsafe_allow_html=True
-                    )
+                    _render_html_fragment(f'<div style="text-align: right;"><span class="cogni-badge cogni-badge-neutral">Confidence: {response.confidence:.2f}</span></div>')
 
             # Tutor Answer Card
             st.markdown(
