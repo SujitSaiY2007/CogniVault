@@ -28,6 +28,34 @@ CREATE TABLE IF NOT EXISTS sources(
     sha256 TEXT NOT NULL,
     metadata_json TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS courses(
+    course_id TEXT PRIMARY KEY,
+    title TEXT NOT NULL UNIQUE,
+    description TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS course_resources(
+    course_id TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    added_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(course_id, source_id),
+    FOREIGN KEY(course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+    FOREIGN KEY(source_id) REFERENCES sources(source_id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS courses(
+    course_id TEXT PRIMARY KEY,
+    title TEXT NOT NULL UNIQUE,
+    description TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS course_resources(
+    course_id TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    added_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(course_id, source_id),
+    FOREIGN KEY(course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+    FOREIGN KEY(source_id) REFERENCES sources(source_id) ON DELETE CASCADE
+);
 CREATE TABLE IF NOT EXISTS evidence(
     evidence_id TEXT PRIMARY KEY,
     source_id TEXT NOT NULL,
@@ -183,6 +211,52 @@ class EvidenceDB:
 
     def close(self):
         self.conn.close()
+
+    # --- Courses and their learning resources ---
+    def create_course(self, course_id: str, title: str, description: str = "") -> None:
+        clean_title = title.strip()
+        if not clean_title:
+            raise ValueError("Course title is required.")
+        self.conn.execute(
+            "INSERT INTO courses (course_id, title, description) VALUES (?,?,?)",
+            (course_id, clean_title, description.strip()),
+        )
+        self.conn.commit()
+
+    def all_courses(self) -> list[dict]:
+        rows = self.conn.execute(
+            "SELECT c.course_id, c.title, c.description, COUNT(cr.source_id) "
+            "FROM courses c LEFT JOIN course_resources cr ON c.course_id=cr.course_id "
+            "GROUP BY c.course_id ORDER BY c.title COLLATE NOCASE"
+        ).fetchall()
+        return [
+            {"course_id": r[0], "title": r[1], "description": r[2], "resource_count": int(r[3])}
+            for r in rows
+        ]
+
+    def get_course_resources(self, course_id: str) -> list[SourceRecord]:
+        rows = self.conn.execute(
+            "SELECT s.source_id, s.path, s.modality, s.title, s.sha256, s.metadata_json "
+            "FROM sources s JOIN course_resources cr ON s.source_id=cr.source_id "
+            "WHERE cr.course_id=? ORDER BY s.title COLLATE NOCASE", (course_id,)
+        ).fetchall()
+        return [
+            SourceRecord(source_id=r[0], path=r[1], modality=Modality(r[2]), title=r[3], sha256=r[4], metadata=json.loads(r[5]))
+            for r in rows
+        ]
+
+    def assign_source_to_course(self, course_id: str, source_id: str) -> None:
+        self.conn.execute(
+            "INSERT OR IGNORE INTO course_resources (course_id, source_id) VALUES (?,?)",
+            (course_id, source_id),
+        )
+        self.conn.commit()
+
+    def remove_source_from_course(self, course_id: str, source_id: str) -> None:
+        self.conn.execute(
+            "DELETE FROM course_resources WHERE course_id=? AND source_id=?", (course_id, source_id)
+        )
+        self.conn.commit()
 
     # --- Sources ---
     def add_source(self, s: SourceRecord):
