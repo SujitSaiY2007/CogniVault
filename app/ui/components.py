@@ -86,7 +86,7 @@ def render_metric_card(
 {subtext_html}
 </div>
 """).strip()
-    st.markdown(html, unsafe_allow_html=True)
+    _render_html_fragment(html)
 
 
 def render_badge(text: str, variant: str = "indigo") -> str:
@@ -127,7 +127,7 @@ def render_callout(
 <div style="font-size: 0.88rem; color: {TEXT_SECONDARY}; line-height: 1.45;">{message}</div>
 </div>
 """).strip()
-    st.markdown(html, unsafe_allow_html=True)
+    _render_html_fragment(html)
 
 
 def render_empty_state(title: str, description: str, icon: str = "📂") -> None:
@@ -139,7 +139,7 @@ def render_empty_state(title: str, description: str, icon: str = "📂") -> None
 <div style="font-size: 0.88rem; color: {TEXT_SECONDARY}; max-width: 460px; margin: 0 auto; line-height: 1.45;">{description}</div>
 </div>
 """).strip()
-    st.markdown(html, unsafe_allow_html=True)
+    _render_html_fragment(html)
 
 
 def render_citation_card(
@@ -170,4 +170,4 @@ def render_citation_card(
 {source_info}
 </div>
 """).strip()
-    st.markdown(html, unsafe_allow_html=True)
+    _render_html_fragment(html)
