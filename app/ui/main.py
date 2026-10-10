@@ -20,7 +20,6 @@ _REPO_ROOT = str(Path(__file__).resolve().parent.parent.parent)
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from app.ui.components import _render_html_fragment
 from app.ui.theme import THEME_CSS, BORDER_COLOR, TEXT_PRIMARY, TEXT_SECONDARY
 from app.ui.state import get_services, init_session_state
 from app.ui.views.dashboard_view import render_dashboard_view
@@ -92,7 +91,7 @@ def _resolve_nav_choice(raw_target: str) -> str:
 
 def main():
     # Inject CogniVault 2.0 Premium Light Design System
-    _render_html_fragment(THEME_CSS)
+    st.markdown(THEME_CSS, unsafe_allow_html=True)
     init_session_state()
     services = get_services()
     db = services["db"]
@@ -105,7 +104,8 @@ def main():
 
     # Sidebar Navigation — Minimal & Uncluttered
     with st.sidebar:
-        _render_html_fragment(textwrap.dedent(f"""
+        st.markdown(
+            textwrap.dedent(f"""
                 <div style="padding-bottom: 0.75rem; border-bottom: 1px solid {BORDER_COLOR}; margin-bottom: 1rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <span style="font-size: 1.6rem;">🧠</span>
@@ -115,7 +115,9 @@ def main():
                         Evidence-First Adaptive Learning
                     </p>
                 </div>
-            """).strip())
+            """).strip(),
+            unsafe_allow_html=True
+        )
 
         nav_choice = st.radio(
             "Navigation Modules",
@@ -124,7 +126,7 @@ def main():
             label_visibility="collapsed"
         )
 
-        _render_html_fragment("<div style='margin-top: 1.5rem;'></div>")
+        st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
 
         # Minimal collapsible telemetry in sidebar footer
         with st.expander("ℹ️ System Status", expanded=False):
