@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import textwrap
 import streamlit as st
+
+
 def _render_html_fragment(fragment: str) -> None:
     """Render a self-contained HTML fragment without CommonMark blank-line breaks.
 
@@ -61,7 +63,7 @@ def render_section_header(title: str, subtitle: str | None = None, badge_text: s
 {sub_html}
 </div>
 """).strip()
-    st.markdown(html, unsafe_allow_html=True)
+    _render_html_fragment(html)
 
 
 def render_metric_card(
