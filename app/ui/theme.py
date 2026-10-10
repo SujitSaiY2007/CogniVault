@@ -11,7 +11,7 @@ SURFACE_MUTED = "#F8FAFC"
 SURFACE_HOVER = "#F1F5F9"
 
 TEXT_PRIMARY = "#18233B"
-TEXT_SECONDARY = "#64748B"
+TEXT_SECONDARY = "#68738A"
 TEXT_MUTED = "#94A3B8"
 
 BORDER_COLOR = "#E2E8F0"
@@ -47,20 +47,23 @@ THEME_CSS = f"""
         font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     }}
 
-    /* Global Headings */
+    /* Global Headings — Prevents Single Letter Wrapping */
     h1, h2, h3, h4, h5, h6 {{
         color: {TEXT_PRIMARY} !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
         font-weight: 700 !important;
-        letter-spacing: -0.02em !important;
+        letter-spacing: -0.015em !important;
+        word-break: normal !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
     }}
 
-    h1 {{ font-size: 1.85rem !important; margin-bottom: 0.5rem !important; }}
-    h2 {{ font-size: 1.45rem !important; margin-top: 1.25rem !important; margin-bottom: 0.5rem !important; }}
-    h3 {{ font-size: 1.2rem !important; margin-bottom: 0.35rem !important; }}
-    h4 {{ font-size: 1.05rem !important; font-weight: 600 !important; }}
+    h1 {{ font-size: 1.75rem !important; margin-bottom: 0.5rem !important; }}
+    h2 {{ font-size: 1.4rem !important; margin-top: 1.1rem !important; margin-bottom: 0.5rem !important; }}
+    h3 {{ font-size: 1.18rem !important; margin-bottom: 0.35rem !important; }}
+    h4 {{ font-size: 1.02rem !important; font-weight: 600 !important; }}
 
-    /* Sidebar Shell */
+    /* Sidebar Shell — Minimal & Sleek */
     [data-testid="stSidebar"] {{
         background-color: {SURFACE_COLOR} !important;
         border-right: 1px solid {BORDER_COLOR} !important;
@@ -68,18 +71,19 @@ THEME_CSS = f"""
     }}
 
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {{
-        padding-top: 1.25rem;
+        padding-top: 1.15rem;
+        gap: 0.5rem;
     }}
 
     /* Sidebar Radio Navigation Items */
     [data-testid="stSidebar"] .stRadio > div {{
-        gap: 0.35rem;
+        gap: 0.25rem;
     }}
 
     [data-testid="stSidebar"] .stRadio label {{
-        padding: 0.45rem 0.75rem !important;
+        padding: 0.5rem 0.85rem !important;
         border-radius: 8px !important;
-        font-size: 0.92rem !important;
+        font-size: 0.93rem !important;
         font-weight: 500 !important;
         color: {TEXT_PRIMARY} !important;
         transition: all 0.15s ease-in-out !important;
@@ -87,6 +91,7 @@ THEME_CSS = f"""
 
     [data-testid="stSidebar"] .stRadio label:hover {{
         background-color: {SURFACE_MUTED} !important;
+        color: {ACCENT_INDIGO} !important;
     }}
 
     /* Main Container Cards */
@@ -94,9 +99,9 @@ THEME_CSS = f"""
         background-color: {SURFACE_COLOR} !important;
         border: 1px solid {BORDER_COLOR} !important;
         border-radius: 12px !important;
-        padding: 1.5rem !important;
-        margin-bottom: 1.25rem !important;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+        padding: 1.35rem !important;
+        margin-bottom: 1.15rem !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
     }}
 
     /* Button System */
@@ -132,7 +137,8 @@ THEME_CSS = f"""
 
     .stButton > button[kind="secondary"]:hover, .stButton > button:not([kind="primary"]):hover {{
         background-color: {SURFACE_MUTED} !important;
-        border-color: {TEXT_MUTED} !important;
+        border-color: {ACCENT_INDIGO} !important;
+        color: {ACCENT_INDIGO} !important;
     }}
 
     /* Metrics Styling */
@@ -191,7 +197,7 @@ THEME_CSS = f"""
     /* Dividers */
     hr {{
         border-color: {BORDER_COLOR} !important;
-        margin: 1.5rem 0 !important;
+        margin: 1.25rem 0 !important;
     }}
 
     /* Dataframes */
@@ -211,6 +217,7 @@ THEME_CSS = f"""
         font-size: 0.8rem;
         font-weight: 600;
         letter-spacing: 0.01em;
+        white-space: nowrap;
     }}
 
     .cogni-badge-indigo {{
@@ -254,28 +261,21 @@ THEME_CSS = f"""
         border: 1px solid {BORDER_COLOR};
         border-radius: 14px;
         padding: 1.75rem 2rem;
-        margin-bottom: 1.75rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        margin-bottom: 1.25rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
     }}
 
     .card-title {{
         font-size: 1.25rem;
         font-weight: 700;
         color: {TEXT_PRIMARY};
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.35rem;
     }}
 
     .card-subtitle {{
         font-size: 0.92rem;
         color: {TEXT_SECONDARY};
         line-height: 1.5;
-    }}
-
-    .kpi-container {{
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
     }}
 
     .citation-card {{
@@ -286,6 +286,68 @@ THEME_CSS = f"""
         padding: 0.9rem 1.15rem;
         margin-top: 0.65rem;
         margin-bottom: 0.65rem;
+    }}
+
+    .onboarding-banner {{
+        background: linear-gradient(135deg, #EEF2FF 0%, #F0FDFA 100%);
+        border: 1px solid #C7D2FE;
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }}
+
+    /* Dashboard Header & Section Components */
+    .dashboard-header-box {{
+        background: #FFFFFF;
+        border: 1px solid {BORDER_COLOR};
+        border-radius: 12px;
+        padding: 0.65rem 1rem;
+        margin-bottom: 1.15rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+    }}
+
+    .quick-action-card {{
+        background: #FFFFFF;
+        border: 1px solid {BORDER_COLOR};
+        border-radius: 10px;
+        padding: 1.15rem 1rem;
+        text-align: left;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+    }}
+    .quick-action-card:hover {{
+        border-color: {ACCENT_INDIGO};
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px -2px rgba(79, 70, 229, 0.08);
+    }}
+
+    .history-row {{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid {BORDER_COLOR};
+        font-size: 0.88rem;
+    }}
+    .history-row:last-child {{
+        border-bottom: none;
+    }}
+
+    .resume-badge {{
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: {ACCENT_INDIGO};
+        background: {ACCENT_INDIGO_LIGHT};
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
     }}
 </style>
 """

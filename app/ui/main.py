@@ -27,9 +27,66 @@ from app.ui.views.ingestion_view import render_ingestion_view
 from app.ui.views.evidence_view import render_evidence_view
 from app.ui.views.tutor_view import render_tutor_view
 from app.ui.views.assessment_view import render_assessment_view
+import textwrap
 from app.ui.views.learner_view import render_learner_view
 from app.ui.views.recommendations_view import render_recommendations_view
 from app.ui.views.evaluation_view import render_evaluation_view
+
+# Unnumbered Navigation Hierarchy (CogniVault 2.0)
+NAV_HOME = "🏠 Home"
+NAV_COURSES = "📚 Available Courses"
+NAV_NEW_COURSE = "➕ New Course"
+NAV_TUTOR = "💬 AI Tutor"
+NAV_ASSESSMENT = "📝 Practice & Assessment"
+NAV_PROGRESS = "📊 My Progress"
+NAV_RECOMMENDATIONS = "🎯 Recommendations"
+NAV_EVALUATION = "🧪 Evaluation"
+
+NAV_OPTIONS = [
+    NAV_HOME,
+    NAV_COURSES,
+    NAV_NEW_COURSE,
+    NAV_TUTOR,
+    NAV_ASSESSMENT,
+    NAV_PROGRESS,
+    NAV_RECOMMENDATIONS,
+    NAV_EVALUATION,
+]
+
+ROUTE_ALIASES = {
+    "Overview & Dashboard": NAV_HOME,
+    "Home": NAV_HOME,
+    "1. Course Setup": NAV_NEW_COURSE,
+    "Course Setup": NAV_NEW_COURSE,
+    "New Course": NAV_NEW_COURSE,
+    "2. Evidence Explorer": NAV_COURSES,
+    "Evidence Explorer": NAV_COURSES,
+    "Available Courses": NAV_COURSES,
+    "3. Grounded AI Tutor": NAV_TUTOR,
+    "Grounded AI Tutor": NAV_TUTOR,
+    "AI Tutor": NAV_TUTOR,
+    "4. Adaptive Assessment": NAV_ASSESSMENT,
+    "Adaptive Assessment": NAV_ASSESSMENT,
+    "Practice": NAV_ASSESSMENT,
+    "5. Learner Mastery": NAV_PROGRESS,
+    "Learner Mastery Profile": NAV_PROGRESS,
+    "My Progress": NAV_PROGRESS,
+    "6. Recommendations": NAV_RECOMMENDATIONS,
+    "Recommendations & Prerequisites": NAV_RECOMMENDATIONS,
+    "Recommendations": NAV_RECOMMENDATIONS,
+    "7. Benchmark": NAV_EVALUATION,
+    "Benchmark & Evaluation": NAV_EVALUATION,
+    "Evaluation": NAV_EVALUATION,
+}
+
+
+def _resolve_nav_choice(raw_target: str) -> str:
+    if raw_target in NAV_OPTIONS:
+        return raw_target
+    for alias_key, mapped_nav in ROUTE_ALIASES.items():
+        if alias_key.lower() in raw_target.lower():
+            return mapped_nav
+    return NAV_HOME
 
 
 def main():
@@ -39,80 +96,70 @@ def main():
     services = get_services()
     db = services["db"]
 
-    nav_options = [
-        "🏠 Overview & Dashboard",
-        "📥 1. Course Setup & Ingestion",
-        "🔍 2. Evidence Explorer",
-        "💬 3. Grounded AI Tutor",
-        "📝 4. Adaptive Assessment",
-        "📊 5. Learner Mastery Profile",
-        "🎯 6. Recommendations & Prerequisites",
-        "🧪 7. Benchmark & Evaluation",
-    ]
-
     # Handle quick navigation override from dashboard shortcuts
     if "nav_selection_override" in st.session_state:
         override = st.session_state.pop("nav_selection_override")
-        if override in nav_options:
-            st.session_state["main_nav_radio"] = override
+        resolved = _resolve_nav_choice(override)
+        st.session_state["main_nav_radio"] = resolved
 
-    # Sidebar Navigation & System Telemetry
+    # Sidebar Navigation — Minimal & Uncluttered
     with st.sidebar:
         st.markdown(
-            f"""
-            <div style="padding-bottom: 0.75rem; border-bottom: 1px solid {BORDER_COLOR}; margin-bottom: 1rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-size: 1.6rem;">🧠</span>
-                    <span style="font-size: 1.3rem; font-weight: 700; color: {TEXT_PRIMARY};">CogniVault 2.0</span>
+            textwrap.dedent(f"""
+                <div style="padding-bottom: 0.75rem; border-bottom: 1px solid {BORDER_COLOR}; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.6rem;">🧠</span>
+                        <span style="font-size: 1.3rem; font-weight: 700; color: {TEXT_PRIMARY};">CogniVault</span>
+                    </div>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 0.82rem; color: {TEXT_SECONDARY};">
+                        Evidence-First Adaptive Learning
+                    </p>
                 </div>
-                <p style="margin: 0.25rem 0 0 0; font-size: 0.82rem; color: {TEXT_SECONDARY};">
-                    Evidence-First Adaptive Learning
-                </p>
-            </div>
-            """,
+            """).strip(),
             unsafe_allow_html=True
         )
 
         nav_choice = st.radio(
             "Navigation Modules",
-            nav_options,
+            NAV_OPTIONS,
             key="main_nav_radio",
             label_visibility="collapsed"
         )
 
-        st.divider()
-        st.markdown(f"<div style='font-size: 0.82rem; font-weight: 600; color: {TEXT_SECONDARY}; text-transform: uppercase; margin-bottom: 0.5rem;'>📡 System Telemetry</div>", unsafe_allow_html=True)
-        all_ev = list(db.all_evidence())
-        all_sources = list(db.all_sources())
-        all_q = db.all_questions(verified_only=True)
+        st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
 
-        st.markdown(f"- **Indexed Sources:** `{len(all_sources)}`")
-        st.markdown(f"- **Evidence Units:** `{len(all_ev)}`")
-        st.markdown(f"- **Verified Questions:** `{len(all_q)}`")
-        st.markdown(f"- **Active Learner:** `{st.session_state.active_learner_id}`")
-        st.markdown(f"- **Modalities:** `PDF | PPTX | Transcript`")
+        # Minimal collapsible telemetry in sidebar footer
+        with st.expander("ℹ️ System Status", expanded=False):
+            all_ev = list(db.all_evidence())
+            all_sources = list(db.all_sources())
+            all_q = db.all_questions(verified_only=True)
 
-        st.divider()
+            st.caption(f"**Sources:** `{len(all_sources)}` | **Evidence Units:** `{len(all_ev)}`")
+            st.caption(f"**Verified Items:** `{len(all_q)}`")
+            st.caption(f"**Active Learner:** `{st.session_state.active_learner_id}`")
+            st.caption(f"**Corpus Modalities:** `PDF | PPTX | Transcript`")
+
         st.caption("CogniVault 2.0 • Track D Adaptive Learning")
 
     # Route Views
-    if "Overview & Dashboard" in nav_choice:
+    if nav_choice == NAV_HOME:
         render_dashboard_view(services)
-    elif "1. Course Setup" in nav_choice:
-        render_ingestion_view(services)
-    elif "2. Evidence Explorer" in nav_choice:
+    elif nav_choice == NAV_COURSES:
         render_evidence_view(services)
-    elif "3. Grounded AI Tutor" in nav_choice:
+    elif nav_choice == NAV_NEW_COURSE:
+        render_ingestion_view(services)
+    elif nav_choice == NAV_TUTOR:
         render_tutor_view(services)
-    elif "4. Adaptive Assessment" in nav_choice:
+    elif nav_choice == NAV_ASSESSMENT:
         render_assessment_view(services)
-    elif "5. Learner Mastery" in nav_choice:
+    elif nav_choice == NAV_PROGRESS:
         render_learner_view(services)
-    elif "6. Recommendations" in nav_choice:
+    elif nav_choice == NAV_RECOMMENDATIONS:
         render_recommendations_view(services)
-    elif "7. Benchmark" in nav_choice:
+    elif nav_choice == NAV_EVALUATION:
         render_evaluation_view(services)
 
 
 if __name__ == "__main__":
     main()
+

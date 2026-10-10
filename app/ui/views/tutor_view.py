@@ -47,10 +47,14 @@ def render_tutor_view(services: dict):
     st.markdown("<div style='margin-bottom: 0.75rem;'></div>", unsafe_allow_html=True)
 
     # Question Composer Container
+    prefill_query = st.session_state.pop("tutor_prefill_query", "")
+    active_default = preset_query if preset_query else prefill_query
+    auto_trigger = bool(prefill_query and not preset_query)
+
     with st.container(border=True):
         user_query = st.text_input(
             "Ask a curriculum question:",
-            value=preset_query if preset_query else "",
+            value=active_default,
             placeholder="e.g., What is Newton's second law? How does cellular respiration work? What is the power rule?",
             help="Formulate any academic question grounded in the course materials."
         )
@@ -63,7 +67,7 @@ def render_tutor_view(services: dict):
         with col_k:
             top_k = st.slider("Max Evidence Candidates (k)", min_value=1, max_value=10, value=5)
 
-    if ask_btn and user_query.strip():
+    if (ask_btn or auto_trigger) and user_query.strip():
         with st.spinner("Retrieving evidence, evaluating sufficiency gate, and formulating grounded response..."):
             response = tutor.answer(user_query.strip(), k=top_k, mode=retrieval_mode)
             results, trace = tutor.retriever.search(user_query.strip(), k=top_k, mode=retrieval_mode)

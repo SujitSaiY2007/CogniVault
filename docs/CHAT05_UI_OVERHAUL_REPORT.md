@@ -46,14 +46,23 @@ To prevent ad-hoc inline HTML duplication and maintain strict visual consistency
 
 ## 2. Redesigned Views Walkthrough
 
-### View 0: Learning Overview & Dashboard (`app/ui/views/dashboard_view.py`)
-- **Role:** Landing home experience guiding the learner into the platform.
+### View 0: Home Dashboard (`app/ui/views/dashboard_view.py`) — Stage 1 Alignment
+- **Role:** Primary landing and dashboard layout aligning with the educational SaaS visual reference.
 - **Key Features:**
-  - Executive KPI summary: Curriculum Sources, Evidence Units, Verified Assessment Items, and Active Learner BKT Mastery $P(L)$.
-  - **Prescribed Next Learning Action Card:** Dynamically evaluates the active learner's weakest topic, displays pedagogical rationale, and highlights prerequisite lock warnings if foundational topics are below mastery threshold ($P(L) < 0.70$).
-  - **Quick-Start Learning Modules:** Action shortcuts routing directly to AI Tutor, Verified Practice, and Evidence Vault.
-  - **Closed-Loop Guarantee Banner:** Architectural summary highlighting 100% citation addressability, 0% hallucination leakage, and deterministic verification.
-  - **First-Run State:** If no sources exist, displays a prominent callout with a one-click button to initialize the baseline STEM corpus.
+  - **Top Horizontal Header Bar:**
+    - Global cross-course question search field with submit button seamlessly prefilling and routing to Grounded AI Tutor.
+    - Principles help popover explaining Evidence-First retrieval, Zero Hallucination abstention, and Adaptive BKT.
+    - Account state (`👤 Guest` or active profile), neutral plan indicator (`Free Tier (Local)`), and informative Login/Sign Up popovers.
+  - **Upper Hero & Resume Section:**
+    - **Welcome Hero Card:** Clean welcome title, subtitle, and 4 feature pills (`🛡️ Evidence-backed answers`, `🎯 Adaptive practice`, `📈 Track your progress`, `💡 Personalized recommendations`).
+    - **Resume Learning Card:** Tracks most recently active course topic, authentic item completion count/percentage (`{completed}/{total} items`), BKT mastery $P(L)$, "Continue Learning" action button, and "All Courses" navigation.
+  - **Main Responsive Grid:**
+    - **Continue Learning Card:** Resumable topic overview, subject context, and direct practice launch button.
+    - **Recent History Card:** Real recent interaction attempts with pass/fail indicators, scores, and formatted timestamps (session-only for guests; clean empty state when empty).
+    - **Recommended Next Step Card:** Evaluates active learner's state via `recommendation_engine.recommend()`, displays target topic, difficulty, rationale, and prerequisite lock warning if foundational topics have $P(L) < 0.70$.
+    - **Quick Actions Grid (2x2):** Direct action shortcuts routing to Ask AI Tutor, Practice Test, Evidence Vault, and View Guidance.
+  - **Bottom Onboarding Banner:** "New to CogniVault? Set up your learning profile" with button routing to My Progress.
+  - **Defect Fixes:** Completely resolved CommonMark indentation bug that caused raw `</div>` and `<p style=...>` string leaks, added anti-character-wrap CSS rules to all headings, and relocated system telemetry to a collapsible sidebar footer expander.
 
 ### View 1: Course Setup & Ingestion (`app/ui/views/ingestion_view.py`)
 - **Role:** Multimodal course material ingestion and corpus management.
