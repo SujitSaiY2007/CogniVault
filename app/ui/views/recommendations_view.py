@@ -9,7 +9,6 @@ import streamlit as st
 import pandas as pd
 from app.recommendation import AdaptiveRecommendationEngine
 from app.ui.components import (
-    _render_html_fragment,
     render_page_header,
     render_section_header,
     render_metric_card,
@@ -57,7 +56,8 @@ def render_recommendations_view(services: dict):
         header_cols = st.columns([2.5, 1, 1.2])
         with header_cols[0]:
             action_title = rec.recommended_action.replace("_", " ").upper()
-            _render_html_fragment(f"""
+            st.markdown(
+                f"""
                 <div style="font-size: 0.82rem; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.04em;">
                     Prescribed Learning Action
                 </div>
@@ -67,16 +67,21 @@ def render_recommendations_view(services: dict):
                 <div style="font-size: 0.95rem; color: #4F46E5; font-weight: 500;">
                     Target: <strong>{rec.topic_id}</strong> {f'({rec.concept_id})' if rec.concept_id else ''}
                 </div>
-                """)
+                """,
+                unsafe_allow_html=True
+            )
         with header_cols[1]:
-            _render_html_fragment(f"""
+            st.markdown(
+                f"""
                 <div style="font-size: 0.82rem; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.04em;">
                     Recommended Level
                 </div>
                 <div style="margin-top: 0.4rem;">
                     <span class="cogni-badge cogni-badge-neutral">{rec.difficulty.value.upper()}</span>
                 </div>
-                """)
+                """,
+                unsafe_allow_html=True
+            )
         with header_cols[2]:
             if rec.recommended_action == "remediate_misconception":
                 badge_html = '<span class="cogni-badge cogni-badge-danger">🚨 Misconception Alert</span>'
@@ -87,13 +92,17 @@ def render_recommendations_view(services: dict):
             else:
                 badge_html = '<span class="cogni-badge cogni-badge-indigo">🎯 Targeted Practice</span>'
 
-            _render_html_fragment(f"""
+            st.markdown(
+                f"""
                 <div style="display: flex; justify-content: flex-end; align-items: center; height: 100%;">
                     {badge_html}
                 </div>
-                """)
+                """,
+                unsafe_allow_html=True
+            )
 
-        _render_html_fragment(f"""
+        st.markdown(
+            f"""
             <div style="
                 background: #F8FAFC;
                 border-left: 3px solid #4F46E5;
@@ -108,7 +117,9 @@ def render_recommendations_view(services: dict):
                     {rec.rationale}
                 </div>
             </div>
-            """)
+            """,
+            unsafe_allow_html=True
+        )
 
         if rec.learner_state_evidence:
             with st.expander("🔍 Learner State Evidence & Policy Telemetry", expanded=False):
@@ -122,7 +133,8 @@ def render_recommendations_view(services: dict):
                     source = db.get_source(ev.source_id)
                     loc = ev.location
                     loc_str = f"Page {loc.get('page', '')}" if "page" in loc else (f"Slide {loc.get('slide', '')}" if "slide" in loc else "Section")
-                    _render_html_fragment(f"""
+                    st.markdown(
+                        f"""
                         <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px; padding: 0.65rem 0.95rem; margin-bottom: 0.5rem;">
                             <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.25rem;">
                                 <span class="cogni-badge cogni-badge-neutral">{eid}</span>
@@ -133,9 +145,11 @@ def render_recommendations_view(services: dict):
                                 {ev.text[:220]}...
                             </div>
                         </div>
-                        """)
+                        """,
+                        unsafe_allow_html=True
+                    )
 
-    _render_html_fragment("<div style='margin-bottom: 1.5rem;'></div>")
+    st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
 
     # 2. Prerequisite Topology & Gatekeeper Audit
     render_section_header(
