@@ -1,92 +1,29 @@
-# Cognivault Architecture
+# CogniVault — Architecture Reference
 
-## Target Architecture
+**Scope note:** This describes the intended/reported phase-branch system. Main remains the original scaffold/control baseline; this document does not mean the code has been merged to main.
 
-User
-→ Streamlit UI
-→ Application Services
-→ Evidence / Retrieval Layer
-→ LLM + Verification Layer
-→ Learner Model
-→ Persistent Storage
+## System flow
+Course sources → ingestion/extraction → normalized evidence with stable IDs and locators → lexical/semantic retrieval → sufficiency/addressability gate → grounded tutor or verified assessment → learner state → recommendation → evaluation.
 
-## Core Flow
+## Layers
+1. Presentation: Streamlit shell and course, evidence, tutor, assessment, progress, recommendation and evaluation views.
+2. Application services: orchestration and validation.
+3. Evidence/retrieval: source manifest, SQLite/FTS5, semantic embeddings/vector search, deterministic fusion and traces.
+4. Grounding: evidence sufficiency, citation resolver and fail-closed abstention.
+5. Assessment: verified questions and answer validation.
+6. Learner state: per-topic BKT, interaction history and misconception signals.
+7. Recommendation: mastery, prerequisites, errors, misconceptions and repetition.
+8. Evaluation: fixed cases, simulated learner trajectories and reproducible metrics.
+9. Persistence: existing local storage contracts; durable cloud persistence is not verified.
 
-Course source → ingestion → evidence units → lexical/semantic indexes → retrieval → evidence sufficiency → grounded tutor/assessment → verification → learner update → recommendation.
+## Technology boundary
+Python, Streamlit, SQLite/FTS5, lightweight semantic retrieval, one permitted LLM/multimodal provider and deterministic Python verification. No framework replacement or architecture expansion without a demonstrated need.
 
-## Components
+## Current UI scope
+Chat 05 Stage 1 is presentation-only. Preserve database schema, service contracts, retrieval, citations, assessment, BKT parameters, recommendation policy and evaluation formulas. Use real data, not fake demo records.
 
-### 1. Ingestion
+## Failure boundaries
+Provider failure → explicit error. Retrieval/sufficiency failure → abstention. Citation resolution failure → do not present as grounded. Invalid assessment item → reject. Unknown quota/history/progress → honest unavailable/empty state.
 
-Accept PDF/textbook, PPTX/slides, images/figures, and selected lecture-video transcript/timestamp sources.
-
-### 2. Evidence Store
-
-Maintain:
-
-- source_id,
-- source metadata,
-- evidence_id,
-- source type,
-- modality,
-- extracted text,
-- page/slide/timestamp/region locator,
-- parent evidence relation,
-- extraction method/confidence,
-- content hash.
-
-### 3. Retrieval
-
-Use SQLite FTS5 for lexical retrieval plus embeddings/vector search for semantic retrieval. Fuse ranked results deterministically and preserve retrieval traces.
-
-### 4. Evidence Gate
-
-Generation is permitted only when retrieved evidence is relevant, sufficient, valid and addressable. Otherwise return an unsupported/insufficient-evidence state.
-
-### 5. Tutor
-
-Generate only from approved evidence in grounded mode and attach claim-supporting citations.
-
-### 6. Assessment
-
-Generate/select tagged questions from course evidence. Verify before display. Prefer deterministic checking for numerical and objective answers.
-
-### 7. Learner Model
-
-Use Bayesian Knowledge Tracing per topic/skill. Store mastery probability and interaction history.
-
-### 8. Misconception Layer
-
-Convert repeated/strong error patterns into likely misconception signals and map them to evidence-grounded remediation.
-
-### 9. Recommendation
-
-Use mastery, difficulty readiness, prerequisite readiness, recent errors, misconception signals and repetition history to select the next learning action.
-
-### 10. Evaluation
-
-Run fixed benchmark cases and simulated learner sessions. Store raw outputs and calculated metrics for reproducibility.
-
-## Technology Boundary
-
-- Python
-- Streamlit
-- SQLite
-- SQLite FTS5
-- lightweight vector store
-- one permitted LLM/multimodal provider
-- deterministic Python verification
-
-No microservices, Kubernetes, custom model training, or multi-agent orchestration.
-
-## Failure Boundaries
-
-Provider failure → explicit unavailable state.  
-Retrieval failure → insufficient evidence.  
-Citation mapping failure → no grounded answer.  
-Question verification failure → question rejected.  
-Quota exceeded → explicit limit state.
-
-## Source of Truth
-
-docs/CHAT0_TECHNICAL_LOCK.md is the detailed Chat 0 architecture/behavior specification.
+## Branch distinction
+The code on phase branches is not present on main merely because architecture docs describe it.

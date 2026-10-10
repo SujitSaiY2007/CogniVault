@@ -1,25 +1,26 @@
-# Requirements Traceability
+# Requirements Traceability — Current
 
-This maps the Track D project brief to implementation, tests and evidence. It is not a claim that the current repository already satisfies these requirements.
+Status terms: specified ≠ implemented; reported ≠ independently verified; AppTest ≠ browser acceptance; planned ≠ submitted.
 
-| Requirement | Implementation mapping | Verification | Current state |
+| ID | Requirement | Evidence/state | Remaining acceptance |
 |---|---|---|---|
-| Multimodal ingestion | PDF, PPTX, figure extraction, video transcript/timestamps | ingestion tests | Planned |
-| Source-linked knowledge base | source manifest + evidence units + locators | provenance tests | Planned |
-| Grounded tutor | retrieval + sufficiency gate + cited response | G1, G4, G5 | Planned |
-| Exact source navigation | evidence_id resolves to page/slide/timestamp | citation integrity test | Planned |
-| Off-material handling | abstention/unsupported state | G5 + abstention benchmark | Planned |
-| Adaptive assessment | mastery/difficulty/repetition/prerequisite selector | A1, A3, L1-L3 | Planned |
-| Question correctness | deterministic/model-assisted verification | A2 | Planned |
-| Answer verification | objective deterministic checks + structured free-text rubric | A2/A4 | Planned |
-| Repetition control | question fingerprint/history | A3 | Planned |
-| Feedback | evidence-grounded corrective feedback | A4 | Planned |
-| Learner model | BKT per topic/skill | L1-L2 | Planned |
-| Misconception support | repeated/strong error signals | L3 + evaluation | Planned |
-| Personalization | mastery/difficulty/recommendation policy | L1-L3 | Planned |
-| Evaluation | retrieval, faithfulness, relevancy, abstention, assessment and personalization metrics | evaluation runner | Planned |
-| Simulated learners | distinct scripted learner profiles | L1-L3 | Planned |
-| UX/demo | Streamlit tutor, assessment, learner and evidence views | end-to-end demo | Planned |
-| Security | environment secrets, synthetic users, quotas | security tests | Planned |
+| R01 | PDF/PPTX/transcript ingestion | Reported Chat 01/04/05 | Re-run end-to-end on final branch |
+| R02 | Stable evidence IDs and locators | Reported Chat 01 | Resolve citations in browser |
+| R03 | Hybrid retrieval | Reported Chat 01 | Confirm artifacts |
+| R04 | Grounded tutor | Reported Chat 02/04 | Browser supported query + citation |
+| R05 | Unsupported-query abstention | Reported Chat 02/04 | Browser off-corpus query |
+| R06 | Verified assessment | Reported Chat 02/04 | Submission and regression test |
+| R07 | BKT state updates | Reported Chat 02/04 | Verify persistence and metric semantics |
+| R08 | Misconception signals | Reported Chat 02/04 | Verify signal behavior |
+| R09 | Recommendations/prerequisite gating | Reported Chat 02/04 | Verify real state/policy |
+| R10 | Deterministic benchmark | Reported Chat 03/04/05 | Re-run before release |
+| R11 | UI workflows | Initial Chat 05 reported | Current dashboard redesign pending |
+| R12 | Browser visual acceptance | Not complete | Required |
+| R13 | Guest session-only history | Product requirement | Implementation not verified |
+| R14 | Registered login/persistent history | Not verified | Future scope |
+| R15 | Server-enforced free quotas | Not verified | Required before public multi-user release |
+| R16 | Free public hosting/durable storage | Not verified | Separate deployment phase |
+| R17 | Demo recording | Not confirmed | Pending |
+| R18 | Official portal submission | Not confirmed | Pending |
 
-No requirement is considered satisfied until verification evidence is recorded.
+Do not promote a row's status without an artifact, executed test, screenshot, browser observation, or submission receipt appropriate to the claim.

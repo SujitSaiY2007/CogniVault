@@ -1,42 +1,19 @@
-# Hallucination & Grounding Control
+# Grounding, Citation Integrity, and Abstention
 
-## Objective
+## Contract
+In grounded mode, responses must be supported by retrieved, addressable course evidence. Insufficient/unresolvable evidence must lead to abstention or an explicit error.
 
-Prevent unsupported course-grounded claims from being presented as verified facts.
+## Sequence
+Retrieve → assess relevance/sufficiency → resolve stored evidence IDs → generate within grounded contract → verify as implemented → display answer and citations distinctly.
 
-## Locked Policy
+## Fail-closed cases
+No relevant evidence; insufficient support; missing citation mapping; unresolved conflict; verification failure; retrieval/provider failure.
 
-1. Evidence retrieval precedes grounded generation.
-2. Evidence sufficiency is checked before answering.
-3. Grounded answers require real provenance.
-4. Unsupported questions are declined or explicitly flagged.
-5. Citations must resolve to stored source locations.
-6. Generated questions must pass answer-key/content verification.
-7. Numerical answers should use deterministic checking when feasible.
-8. Retrieval, citation and verification failures fail closed.
-9. External model knowledge must not be silently represented as course content.
-10. Evaluation includes adversarial/off-material questions.
+## Citation rule
+Page, slide, timestamp, figure and source IDs must come from stored metadata. Never invent locators or cite a source merely because it ranks highly.
 
-## Evidence Contract
+## Honest claim
+The project does not guarantee zero hallucinations. It implements or intends evidence-first controls designed to reject/flag unsupported responses; claims must match measured test scope.
 
-A grounded answer is valid only if each material claim can be mapped to one or more evidence IDs.
-
-For cross-source synthesis, multiple evidence IDs are expected.
-
-## Abstention
-
-Abstain when:
-
-- no relevant evidence is retrieved;
-- retrieved evidence is insufficient;
-- source location cannot be resolved;
-- evidence conflicts and the conflict cannot be safely resolved;
-- verification fails.
-
-## Honest Claim
-
-Cognivault does not claim guaranteed zero hallucination. It claims an evidence-first architecture designed to reject or flag unsupported course-grounded responses, with this behavior measured by explicit tests.
-
-## Anti-Citation-Hallucination Rule
-
-Never generate page/slide/timestamp identifiers from model memory. All locators must come from stored evidence metadata.
+## UI
+Clearly distinguish grounded answers, citations, abstentions and service errors. The dashboard redesign must not change the backend grounding policy.

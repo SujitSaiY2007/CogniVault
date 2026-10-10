@@ -1,29 +1,25 @@
-# Demo Plan
+# Demo Plan — Current Release Candidate
 
-Target duration: approximately 6–8 minutes, within the hackathon's 3–10 minute requirement.
+**Target:** 6–8 minutes, subject to official guidelines.  
+**State:** Final recording not confirmed.
 
-## Sequence
+## Gate
+Do not record the final demo until the dashboard is visually accepted and critical browser workflows pass. Pending AG response must be reconciled first.
 
-1. Problem — generic AI can answer without proving course support or adapting reliably.
-2. Ingest — load representative Mathematics/Science material.
-3. Evidence — show source-linked evidence and course structure.
-4. Tutor — ask a supported question and open exact evidence.
-5. Unsupported query — ask an off-material question and demonstrate abstention.
-6. Assessment — take an adaptive question selected from learner state.
-7. Verification/feedback — show verified correctness and evidence-grounded feedback.
-8. Learner state — show changed topic mastery and likely learning misconception signal.
-9. Recommendation — show targeted next action and why it was selected.
-10. Evaluation — show actual benchmark results only.
-11. Architecture — briefly explain the evidence → learner-state feedback loop.
+## Proposed sequence
+1. Problem and evidence-first positioning.
+2. Load/show a real indexed course.
+3. Inspect evidence and source locator.
+4. Ask supported tutor question; open citation.
+5. Ask unsupported question; show abstention.
+6. Submit verified assessment.
+7. Show persisted learner-state change with accurately labelled metric.
+8. Show recommendation and prerequisite rationale.
+9. Show measured benchmark with denominator and method.
+10. Close with architecture and limitations.
 
-## Demo Integrity
+## Integrity
+No fabricated citations, progress, history, quota or metrics. Do not claim zero hallucinations or real-world educational gains from simulated learners. Do not present BKT posterior as course completion. If a provider fails, show the actual failure state.
 
-- No fabricated metrics.
-- No feature shown before it is verified.
-- Citations must resolve to actual source locations.
-- If a stretch feature is not complete, do not show it.
-- Prefer one clean end-to-end journey over a broad feature tour.
-
-## Fallback
-
-If an external provider is unavailable, the demo must expose the failure state rather than fabricate an answer. A pre-generated evaluation report may be shown only if it is a real, repository-tracked result from an earlier verified run.
+## Save evidence
+Final source SHA, test output, benchmark artifact, browser screenshots/checklist, video URL and portal submission receipt/time. Never store credentials in Git.

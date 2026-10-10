@@ -1,27 +1,33 @@
-# Decision Log
+# Decision Log — Reconciled 2026-10-10
 
-| ID | Decision | Rationale | Status |
-|---|---|---|---|
-| D-001 | Project name: Cognivault | Stable hackathon product identity | Locked |
-| D-002 | Track D | Target is Personalized Tutoring & Adaptive Learning | Locked |
-| D-003 | Evidence-first architecture | Reduces unsupported course-grounded answers | Locked |
-| D-004 | School Mathematics + Science as initial domain | Strong multimodal and assessment demonstration potential | Locked |
-| D-005 | English/Hindi interaction is optional | Prevents unnecessary MVP scope expansion | Locked |
-| D-006 | Streamlit-first UI | Fast iteration and suitable demo surface | Locked |
-| D-007 | Lightweight services over unnecessary multi-agent architecture | Lower complexity and failure surface | Locked |
-| D-008 | No secrets in Git | Required security practice | Locked |
-| D-009 | No unsupported novelty claims | Prior-art integrity | Locked |
-| D-010 | Evaluation results must be executed, not invented | Credibility and reproducibility | Locked |
-| D-011 | Hybrid lexical + semantic retrieval | Combines exact course terminology with semantic matching while remaining inspectable | Locked |
-| D-012 | SQLite/FTS5 plus lightweight vector index | Keeps MVP infrastructure small and reproducible | Locked |
-| D-013 | Evidence units carry stable source locators | Enables citation integrity and evaluation | Locked |
-| D-014 | Fail-closed evidence sufficiency gate | Prevents unsupported course-grounded answers | Locked |
-| D-015 | BKT for MVP learner model | Interpretable and established for skill mastery/adaptive tutoring | Locked |
-| D-016 | Misconception requires repeated/strong evidence | Avoids over-interpreting one wrong answer | Locked |
-| D-017 | Deterministic verification where feasible | Numerical/objective correctness is better handled without an LLM | Locked |
-| D-018 | Model-assisted verification only for semantic cases | Covers conceptual/free-text cases while preserving a hard rejection path | Locked |
-| D-019 | No custom foundation-model training | Unnecessary for hackathon MVP | Locked |
-| D-020 | Video MVP uses transcript/timestamps; key-frame reasoning is stretch | Provides real multimodal source coverage without excessive complexity | Locked |
-| D-021 | Chat 0 technical lock is authoritative for implementation | Prevents implementation drift | Locked |
+Historical decisions are retained as history. Current decisions supersede obsolete workflow instructions; do not erase the audit trail.
 
-New decisions must be added here with rationale and status.
+| ID | Decision | Status |
+|---|---|---|
+| D-001 | Product name CogniVault | Locked |
+| D-002 | Track D — Personalized Tutoring & Adaptive Learning | Locked |
+| D-003 | Evidence-first grounded behavior with abstention | Locked |
+| D-004 | Mathematics/Science starter corpus | Locked |
+| D-005 | Streamlit-first architecture | Locked |
+| D-006 | Lightweight services; avoid unnecessary agents/microservices | Locked |
+| D-007 | No secrets in Git | Locked |
+| D-008 | Evaluation claims require executed evidence | Locked |
+| D-009 | Hybrid retrieval and source provenance | Reported on Chat 01 branch |
+| D-010 | Sufficiency gate and abstention | Reported on Chat 02 branch |
+| D-011 | BKT and explainable recommendation policy | Reported on Chat 02 branch |
+| D-012 | Benchmark and simulated learner evaluation | Reported on Chat 03 branch |
+| D-013 | Chat 04 acceptance checkpoint retained | `a717132781f2957f5162786b3919f2ba32217d67` |
+| D-014 | Initial Chat 05 overhaul isolated on its branch | `c213298a7ebe486ee9e793e54be2563431bf4d6c` |
+| D-015 | Preserve main, PR #1, and all phase branches | Locked |
+| D-016 | Screenshot/browser acceptance is required | Current |
+| D-017 | Redesign one screen at a time, dashboard first | Current |
+| D-018 | User screenshot is primary dashboard reference | Current |
+| D-019 | Remove raw HTML leakage, tiny text and technical clutter | Current |
+| D-020 | Use real data and honest empty states | Current |
+| D-021 | Do not equate BKT probability with course completion | Current |
+| D-022 | Guest history is session-only | Current |
+| D-023 | Free hosting/auth/durable storage/quotas are future work until verified | Current |
+| D-024 | Main gets documentation synchronization only; implementation remains on phase branches | Current |
+| D-025 | Reconcile pending AG response before issuing duplicate task | Current |
+
+Chat 0's instruction that Chat 1 is the next phase is historical and superseded by Chats 01–05.

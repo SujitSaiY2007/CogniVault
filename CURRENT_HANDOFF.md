@@ -1,66 +1,38 @@
-# Current Handoff
+# Current Handoff — Chat 06
 
-## Last Completed Action
+**Reconciled:** 2026-10-10  
+**AG response:** Pending; task may still be running.
 
-Completed Chat 0 — Project Lock & Foundation.
+## Immediate instruction
+The user already sent AG a detailed prompt for Chat 05 Stage 1: implement only the screenshot-guided Home Dashboard on `chat05-ui-overhaul`, preserve backend/branches, test, capture screenshot and report. Do not issue a duplicate prompt while the response may still be in progress.
 
-## Verified GitHub State
+At the start of Chat 06, ask the user to paste AG's response/report and screenshot if available. Then verify current GitHub branch HEAD, diff, changed files and test evidence.
 
-- Repository: SujitSaiY2007/CogniVault
-- Default branch: main
-- Only branch currently present: main.
-- Latest work adds the Chat 0 technical lock and prior-art positioning.
-- app/, tests/, evaluation/, and data/ remain scaffolds.
-- No application feature is verified complete.
-- No benchmark result is verified.
+## Observed refs at handoff
+- main before documentation-only sync: `0dd3acd0f973f7afcf8dada234f844ee5095b19a`.
+- chat01: `cca915ca2edb209491f0766b0a224e65995b877c`.
+- chat02: `fbdce9d824ea7384b3bf13ff3a79e217cee4a1bd`.
+- chat03: `6dc575def670426166c4a7f8d271a8886e5fa288`.
+- chat04: `a717132781f2957f5162786b3919f2ba32217d67`.
+- chat05 before pending dashboard changes: `c213298a7ebe486ee9e793e54be2563431bf4d6c`.
+- PR #1 is open/draft for Chat 01. Preserve it.
+- User PDFs at root are immutable references.
 
-## Authoritative Chat 0 Specification
+## Why the UI task exists
+Screenshots of the first overhaul show raw HTML fragments, headings wrapping one letter at a time, tiny text, excessive technical clutter and bad spacing. User rejected it and approved a screenshot-guided, one-screen-at-a-time process.
 
-docs/CHAT0_TECHNICAL_LOCK.md
+## Chat 06 workflow
+1. Obtain pending AG response.
+2. Verify branch/diff and confirm main/PR/PDFs untouched.
+3. Inspect screenshot at normal zoom.
+4. Fix only remaining dashboard defects if needed.
+5. Run focused and full tests; distinguish AppTest from browser testing.
+6. Ask for explicit user visual approval.
+7. Only after approval, plan the next page.
+8. Do not mark demo/portal submission complete without evidence.
 
-Supporting positioning:
-docs/PRIOR_ART_AND_POSITIONING.md
+## Unverified
+Browser walkthrough, demo recording, portal submission, public hosting, durable cloud storage, actual authentication and server-enforced quotas.
 
-## Locked Decisions
-
-- Track D: Personalized Tutoring & Adaptive Learning.
-- School Mathematics + Science initial corpus.
-- PDF/PPTX plus transcript/timestamp video ingestion in MVP.
-- Evidence IDs with page/slide/timestamp provenance.
-- Hybrid lexical + semantic retrieval.
-- Evidence sufficiency gate and fail-closed grounding.
-- BKT for per-topic mastery.
-- Misconception signals require repeated/strong evidence.
-- Adaptive policy uses mastery, difficulty, prerequisite readiness, errors and repetition.
-- Deterministic answer checks wherever practical.
-- Model-assisted verification for conceptual/free-text cases.
-- Streamlit + SQLite/FTS5 + lightweight vector store + one permitted LLM provider.
-- No unnecessary multi-agent/microservice architecture.
-- No unsupported novelty claims.
-
-## Do Not Assume
-
-- No feature is implemented merely because it is specified.
-- BKT parameters are not learned from real students unless later fitted and documented.
-- Evaluation thresholds are not empirical results.
-- Visual reasoning is not available beyond what the implemented extractor/model actually supports.
-- Official hackathon judging rules are not reproduced here because the event name/rules URL is not stored in the repository; verify them before final submission.
-
-## Next Chat
-
-### Chat 1 — Multimodal Knowledge Foundation
-
-Implementation scope only:
-
-1. source manifest and corpus fixtures,
-2. evidence/provenance data model,
-3. PDF/PPTX extraction,
-4. video transcript/timestamp path,
-5. SQLite/FTS5 indexing,
-6. semantic embeddings/vector index,
-7. hybrid retrieval,
-8. retrieval/evidence tests.
-
-### Chat 1 Exit
-
-Do not proceed to tutor or learner-model implementation until the evidence/retrieval layer is tested and documented.
+## Roles
+User = product owner/final visual approval. Antigravity = repository executor. ChatGPT = coordinator/reviewer/continuity.

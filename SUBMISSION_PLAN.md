@@ -1,55 +1,24 @@
-# Submission Plan
+# Hackathon Submission Plan
 
-## Required Final Artifacts
+**Status:** Preparation in progress; official submission not confirmed.
 
-- Working application.
-- GitHub repository with required visibility/access.
-- Complete README with prerequisites, setup and run instructions.
-- Current architecture and learner-model documentation.
-- Executed evaluation results and methodology.
-- 3–10 minute demo video.
-- Devpost/project description if required.
-- Team information.
+## Gate 1 — Dashboard
+Reconcile pending AG response, inspect screenshot at normal zoom, fix HTML leakage/typography/spacing, obtain explicit user approval.
 
-## Final Audit
+## Gate 2 — Product acceptance
+Browser-test all routes; supported tutor citations; unsupported abstention; assessment submission; learner update; recommendations; empty/error/loading states. Run the full regression suite on the final implementation branch.
 
-### Product
+## Gate 3 — Evaluation integrity
+Rerun release-critical tests and benchmark. Verify artifacts, denominators, formulas and timestamps. No fabricated metrics or unsupported claims.
 
-- [ ] Clean-start end-to-end flow works.
-- [ ] Track D capabilities demonstrated.
-- [ ] Unsupported question behavior verified.
-- [ ] Assessment verification verified.
-- [ ] Learner personalization verified.
-- [ ] Evidence navigation works.
+## Gate 4 — Packaging
+Verify clean setup instructions against the actual final branch, security and dependencies, repository visibility requirement, and official event rules in the user-uploaded guidelines.
 
-### Evidence
+## Gate 5 — Demo and portal
+Record final demo, verify video access, submit required links/materials, retain receipt and timestamp.
 
-- [ ] Citations map to real source locations.
-- [ ] No fabricated evaluation values.
-- [ ] Evaluation denominator/population/method are documented.
-- [ ] Known limitations are stated.
-- [ ] Prior-art claims are accurate.
+## Hosting
+Free public hosting is optional until provider limits, durable storage, privacy, authentication, quotas and actual cost are verified. Do not promise zero cost or permanent availability.
 
-### Security
-
-- [ ] No secrets in Git.
-- [ ] Demo identities are synthetic.
-- [ ] Usage controls work or limitations are explicit.
-- [ ] Source licensing/provenance is documented.
-
-### Documentation
-
-- [ ] README tested by a clean setup.
-- [ ] Architecture current.
-- [ ] Chat 0 technical lock current.
-- [ ] PROJECT_STATE current.
-- [ ] CURRENT_HANDOFF current.
-- [ ] Demo steps match actual UI.
-
-### Submission
-
-- [ ] Official event rules checked against the actual hackathon page.
-- [ ] GitHub visibility/access requirement satisfied.
-- [ ] YouTube demo uploaded and within 3–10 minutes.
-- [ ] Devpost description finalized if applicable.
-- [ ] Final links verified.
+## Current blockers
+AG dashboard response pending; browser acceptance pending; recording and portal submission not confirmed.
