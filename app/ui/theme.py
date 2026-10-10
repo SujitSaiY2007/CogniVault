@@ -39,6 +39,11 @@ DANGER_RED_BORDER = "#FECACA"
 # Complete Responsive Streamlit CSS Theme Injection
 THEME_CSS = f"""
 <style>
+    /* Remove Streamlit's empty top chrome; reclaim vertical space for the dashboard. */
+    header[data-testid="stHeader"] {{ display: none !important; height: 0 !important; }}
+    [data-testid="stAppViewBlockContainer"] {{ padding-top: 0.8rem !important; padding-bottom: 0.4rem !important; }}
+    [data-testid="stMainBlockContainer"] {{ padding-top: 0.8rem !important; padding-bottom: 0.4rem !important; }}
+
     /* Global App Container */
     .stApp {{
         background-color: {BG_COLOR} !important;
@@ -260,9 +265,38 @@ THEME_CSS = f"""
         background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
         border: 1px solid {BORDER_COLOR};
         border-radius: 14px;
-        padding: 1.75rem 2rem;
-        margin-bottom: 1.25rem;
+        padding: 1.1rem 1.4rem;
+        margin-bottom: 0.65rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    }}
+
+    .dashboard-hero .card-title {{
+        font-size: 1.8rem !important;
+        margin-bottom: 0.35rem !important;
+    }}
+
+    .dashboard-hero .card-subtitle {{
+        max-width: 760px;
+        margin-left: auto;
+        margin-right: auto;
+    }}
+
+    .dashboard-hero-badges .cogni-badge {{
+        padding: 0.22rem 0.55rem;
+        font-size: 0.76rem;
+    }}
+
+    .dashboard-quick-action {{
+        min-height: 54px;
+        padding: 0.6rem 0.65rem;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+    }}
+
+    .dashboard-quick-action strong {{
+        font-size: 0.82rem;
+        line-height: 1.2;
     }}
 
     .card-title {{
