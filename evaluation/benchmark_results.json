@@ -1,5 +1,5 @@
 {
-  "benchmark_timestamp": "2026-10-10T07:18:29.081251+00:00",
+  "benchmark_timestamp": "2026-10-10T07:50:36.313488+00:00",
   "benchmark_version": "1.0.0",
   "total_test_cases": 28,
   "metrics": {
@@ -220,7 +220,7 @@
         "actual_valid": false,
         "passed": true,
         "failure_reasons": [
-          "Expected answer 'Z' does not match any valid option key ['A', 'B'] or option text"
+          "Expected answer 'Z' does not match any valid option key ['B', 'A'] or option text"
         ]
       },
       {

@@ -13,7 +13,7 @@ from app.retrieval import HybridRetriever
 from app.sufficiency import EvidenceSufficiencyGate
 from app.tutor import GroundedTutor, DeterministicTutorProvider
 from app.assessment import AssessmentEngine, DeterministicQuestionVerifier
-from app.learner_model import BKTModel
+from app.learner_model import BKTModel, LearnerStateManager
 from app.misconceptions import MisconceptionDetector
 from app.recommendation import AdaptiveRecommendationEngine
 from app.corpus import seed_database_from_corpus
@@ -42,7 +42,7 @@ def get_services(db_path: str = DEFAULT_DB_PATH):
     tutor = GroundedTutor(db, retriever=retriever, sufficiency_gate=sufficiency_gate, provider=tutor_provider)
     verifier = DeterministicQuestionVerifier()
     assessment_engine = AssessmentEngine(db, verifier=verifier)
-    bkt = BKTModel(db)
+    bkt = LearnerStateManager(db, bkt_model=BKTModel())
     misconceptions = MisconceptionDetector(db)
     recommendation_engine = AdaptiveRecommendationEngine(db)
 
@@ -54,6 +54,7 @@ def get_services(db_path: str = DEFAULT_DB_PATH):
         "verifier": verifier,
         "assessment_engine": assessment_engine,
         "bkt": bkt,
+        "learner_state_manager": bkt,
         "misconceptions": misconceptions,
         "recommendations": recommendation_engine,
     }

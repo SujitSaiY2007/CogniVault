@@ -54,6 +54,29 @@ class LearnerStateManager:
         self.db = db
         self.bkt = bkt_model or BKTModel()
 
+    @property
+    def params(self):
+        return self.bkt.params
+
+    def step(self, p_prior: float, is_correct: bool) -> float:
+        return self.bkt.step(p_prior, is_correct)
+
+    def update_posterior(self, p_prior: float, is_correct: bool) -> float:
+        return self.bkt.update_posterior(p_prior, is_correct)
+
+    def apply_transition(self, p_posterior: float) -> float:
+        return self.bkt.apply_transition(p_posterior)
+
+    def record_observation(
+        self,
+        learner_id: str,
+        topic_id: str,
+        is_correct: bool,
+        timestamp: str | None = None
+    ) -> TopicMasteryRecord:
+        """Alias for record_response for API compatibility."""
+        return self.record_response(learner_id, topic_id, is_correct, timestamp=timestamp)
+
     def get_or_create_mastery(self, learner_id: str, topic_id: str) -> TopicMasteryRecord:
         record = self.db.get_learner_mastery(learner_id, topic_id)
         if record is None:

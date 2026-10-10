@@ -165,7 +165,7 @@ class EvidenceDB:
         self.path = Path(path)
         if str(self.path) != ":memory:":
             self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.conn = sqlite3.connect(self.path)
+        self.conn = sqlite3.connect(self.path, check_same_thread=False)
         self.conn.execute("PRAGMA foreign_keys=ON")
         self.conn.executescript(SCHEMA)
 
@@ -313,6 +313,28 @@ class EvidenceDB:
                 prerequisites=json.loads(r[9]),
                 metadata=json.loads(r[10])
             )
+
+    def get_evidence_for_source(self, source_id: str) -> list[EvidenceUnit]:
+        rows = self.conn.execute(
+            "SELECT evidence_id, source_id, modality, text, location_json, evidence_type, asset_id, topics_json, concepts_json, prerequisites_json, metadata_json FROM evidence WHERE source_id=? ORDER BY evidence_id",
+            (source_id,)
+        ).fetchall()
+        return [
+            EvidenceUnit(
+                evidence_id=r[0],
+                source_id=r[1],
+                modality=Modality(r[2]),
+                text=r[3],
+                location=json.loads(r[4]),
+                evidence_type=r[5],
+                asset_id=r[6],
+                topics=json.loads(r[7]),
+                concepts=json.loads(r[8]),
+                prerequisites=json.loads(r[9]),
+                metadata=json.loads(r[10])
+            )
+            for r in rows
+        ]
 
     # --- Assets ---
     def add_asset(

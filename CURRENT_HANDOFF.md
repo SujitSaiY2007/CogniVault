@@ -1,71 +1,59 @@
-# Current Handoff — Chat 03 Implementation Closure
+# Current Handoff — Chat 04 Final Demo Verification & Submission Readiness
 
 ## Last Completed Action
 
-Completed Chat 03: Product & Evaluation end-to-end and finalized all driver review evaluation and provenance corrections. Built and verified the interactive 7-module Streamlit UI (`app/ui/`), multi-modal STEM corpus (`app/corpus.py` & `data/corpus/`), reproducible deterministic evaluation runner (`evaluation/runner.py`), multi-turn simulated learner trajectory benchmark (`evaluation/simulate_learners.py`), and comprehensive integration test suite (`tests/acceptance/test_chat03_acceptance.py`, `tests/test_evaluation_runner.py`, `tests/test_ui_service_integration.py`).
+Completed Chat 04: Final Demo Verification, Polish & Submission Readiness.
+1. Executed unmodified baseline live walkthrough, uncovering two baseline defects:
+   - Missing `get_evidence_for_source` method on `EvidenceDB` for source evidence listing in Course Ingestion view.
+   - BKT state manager wiring and missing `record_observation` alias in assessment view submission handling.
+   - Cross-thread SQLite cursor conflicts under multi-threaded Streamlit reruns.
+2. Formally documented the unmodified baseline in `docs/CHAT04_BASELINE_REPORT.md`.
+3. Created dedicated branch `chat04-final-demo-submission` based on verified Chat 03 commit `6dc575def670426166c4a7f8d271a8886e5fa288`.
+4. Implemented minimal, bounded, and justified fixes:
+   - Added `EvidenceDB.get_evidence_for_source` in `app/db.py`.
+   - Wired `LearnerStateManager` and added `record_observation` alias in `app/learner_model.py` and `app/ui/state.py`.
+   - Set `check_same_thread=False` in `app/db.py` for SQLite connection safety.
+   - Polished gatekeeper and benchmark UI status badges across views.
+   - Handled asset binary data format (tuple and dict) in `app/ui/views/evidence_view.py`.
+   - Added comprehensive Streamlit AppTest verification (`test_all_seven_streamlit_views_render_without_exceptions`) in `tests/test_ui_service_integration.py`.
+5. Re-executed test suite: **102 passed in 25.65s** (zero failures, zero warnings).
+6. Re-executed evaluations:
+   - `python -m evaluation.runner` (28 test cases, 100% answer rate, 100% abstention rate, 0% leakage, 39.58% precision@3, 100% recall@3).
+   - `python -m evaluation.simulate_learners` (6 simulated learner trajectories).
+7. Re-executed live end-to-end walkthrough across all 7 views with 100% pass rate.
+8. Synchronized documentation, demo plan script, and submission package.
 
 ## Verified Repository State
 
 - **Repository:** `SujitSaiY2007/CogniVault`
-- **Active Branch:** `chat03-product-evaluation` (branched from verified `chat02-intelligence-core` at `fbdce9d824ea7384b3bf13ff3a79e217cee4a1bd`).
-- **Automated Test Suite:** **100 passed in 35.67s** (`pytest -v --durations=10`).
+- **Active Branch:** `chat04-final-demo-submission`
+- **Chat 03 Base Commit:** `6dc575def670426166c4a7f8d271a8886e5fa288`
+- **Automated Test Suite:** **102 passed in 25.65s** (`pytest -v --durations=10`).
 - **Acceptance Harnesses:**
   - `tests/acceptance/test_k1_to_k10.py` (K1–K10 Core Vault Ingestion: **10/10 PASS**)
   - `tests/acceptance/test_chat02_acceptance.py` (G1–G5, A1–A4, L1–L3, S2 Intelligence Core: **13/13 PASS**)
-  - `tests/acceptance/test_chat03_acceptance.py` (U1–U9 End-to-End Product & Benchmark Integration: **9/9 PASS**)
-  - `tests/test_evaluation_runner.py` (Benchmark dataset, repetition alternative/fallback, citation locator verification, and duplicate-safe retrieval regression: **8/8 PASS**)
-  - `tests/test_ui_service_integration.py` (Streamlit UI views & state machine integrity: **3/3 PASS**)
-- **Baseline Preservation:** All 40 Chat 01 baseline tests and 40 Chat 02 core tests preserved and passing green without regressions.
+  - `tests/acceptance/test_chat03_acceptance.py` (U1–U9 End-to-End Product & Benchmark: **9/9 PASS**)
+  - `tests/test_evaluation_runner.py` (Benchmark, repetition, locator verification: **8/8 PASS**)
+  - `tests/test_ui_service_integration.py` (UI views, BKT state, and all 7 Streamlit views AppTest: **5/5 PASS**)
+- **Baseline Preservation:** Chat 01, Chat 02, and Chat 03 tests preserved with zero regressions.
 
 ## Completed Components & Artifacts
 
 1. **Interactive Streamlit Web UI (`app/ui/`):**
-   - `main.py` & `state.py`: Robust session state manager, course context switcher, and tab navigation.
-   - `ingestion_view.py`: Multi-format file uploader and live corpus seeder.
-   - `evidence_view.py`: Multi-modal evidence explorer with document/slide/timestamp locator filtering.
-   - `tutor_view.py`: Evidence-grounded conversational AI tutor with exact citations and fail-closed abstention badges.
-   - `assessment_view.py`: Adaptive question presenter, deterministic answer verifier, and instant feedback.
-   - `learner_view.py`: Real-time Bayesian Knowledge Tracing topic mastery cards and misconception diagnosis viewer.
-   - `recommendations_view.py`: Explainable next-action recommendations with prerequisite graph visualizer.
-   - `evaluation_view.py`: In-app benchmark dashboard rendering live accuracy, faithfulness, source-resolved locators, and abstention metrics.
-2. **STEM Multi-Modal Corpus (`app/corpus.py` & `data/corpus/`):**
-   - PDF with embedded vector diagram (`physics_mechanics.pdf`).
-   - PPTX lecture slides with speaker notes (`waves_optics.pptx`).
-   - Pure mathematical PDF (`mathematics_calculus.pdf`).
-   - Timestamped video/audio transcript (`biology_cell_lecture.txt`).
-   - Corpus manifest (`data/corpus_manifest.json`) and database seeder (`seed_database_from_corpus`) with CC0-1.0 public domain test fixture licensing and parser metadata.
-3. **Deterministic Evaluation Runner (`evaluation/runner.py`):**
-   - 28 test cases across 5 functional suites (`evaluation/benchmark_dataset.json`).
-   - 100% supported answer rate on in-corpus queries (8/8).
-   - 100% abstention rate (3/3) and 0.0% leakage (0/3) on off-material / out-of-corpus queries.
-   - 39.58% retrieval precision@3 (strictly based on exact evidence IDs and dynamic denominator $\min(3, \|\text{Retrieved}\|)$) and 100% retrieval recall@3.
-   - 100% citation addressability (21/21) and 100% source-resolved locator accuracy (21/21).
-   - Repetition control verified for both alternative question selection and pool exhaustion fallback.
-   - Exact numerical BKT posterior verification ($< 10^{-4}$ tolerance) and recommendation policy verification.
-   - Output persisted at `evaluation/benchmark_results.json` with explicit metric denominators.
+   - All 7 modules operational: Course Ingestion, Evidence Explorer, Grounded AI Tutor, Adaptive Assessment, Learner Mastery Profile, Recommendations & Prerequisites, Benchmark & Evaluation.
+2. **Reproducible STEM Corpus (`data/corpus/` & `app/corpus.py`):**
+   - 4 multimodal sources (PDF, PPTX, Transcript, Image) and 12 atomic units with SHA-256 provenance manifest.
+3. **Deterministic Benchmark Runner (`evaluation/runner.py`):**
+   - 28 test cases, explicit formulas and denominators, persisted in `evaluation/benchmark_results.json`.
 4. **Simulated Learner Trajectories (`evaluation/simulate_learners.py`):**
-   - 6 scenarios (`consistently_correct`, `consistently_incorrect`, `mixed_performance`, `misconception_remediation`, `prerequisite_gating`, `boundary_values`) comparing dynamic difficulty shifts against a non-personalized baseline.
-   - Output persisted at `evaluation/simulation_results.json`.
+   - 6 scenarios persisted in `evaluation/simulation_results.json`.
+5. **Comprehensive Submission Package:**
+   - Detailed 6–8 minute demo walkthrough script in `DEMO_PLAN.md`.
+   - Recording checklist with step-by-step click actions and expected visible outcomes in `DEMO_PLAN.md`.
+   - Track D submission description and hackathon pitch in `DEMO_PLAN.md`.
 
-## Authoritative Documentation
+## Outstanding Human Tasks for Submission
 
-- `docs/CHAT03_IMPLEMENTATION_STATUS.md` — Detailed Chat 03 implementation and verification report.
-- `docs/CHAT02_IMPLEMENTATION_STATUS.md` — Chat 02 intelligence core verification report.
-- `docs/CHAT0_TECHNICAL_LOCK.md` — Authoritative architectural and algorithmic technical lock.
-- `DECISION_LOG.md` — Decisions D-001 through D-043.
-- `REQUIREMENTS_TRACEABILITY.md` — Complete Track D requirement-to-verification traceability matrix.
-- `EVALUATION_PROTOCOL.md` — Measured evaluation protocol and empirical results.
-- `DEMO_PLAN.md` — Step-by-step UI demo script mapped to Streamlit views.
-- `SUBMISSION_PLAN.md` — Final submission audit checklist.
-- `README.md` — Complete setup, run, testing, and evaluation instructions.
-
-## Scope Boundaries
-
-- Chat 03 delivers the complete working product, UI, STEM corpus, evaluation runner, and simulated learner benchmarking.
-- Video recording, final visual polish, and external hackathon submission packaging are strictly reserved for Chat 04.
-
-## Next Chat: Chat 04 — Final Polish, Demo Recording & Submission Packaging
-
-1. Perform final clean-environment walkthrough of the Streamlit demo application (`streamlit run app/ui/main.py`).
-2. Record the 3–10 minute demo video following the verified sequence in `DEMO_PLAN.md`.
-3. Package final hackathon submission materials according to `SUBMISSION_PLAN.md`.
+1. **Record Video:** Follow `DEMO_PLAN.md` to record the 6–8 minute walkthrough on `http://localhost:8501`.
+2. **Upload Video:** Upload the recorded video to YouTube (unlisted/public) or Google Drive.
+3. **Submit on Hackathon Portal:** Submit repository URL, video link, and project description into the portal before the deadline.

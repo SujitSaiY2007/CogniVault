@@ -82,3 +82,58 @@ def test_simulation_runner_execution(temp_service_db, tmp_path):
     base_comp = res["baseline_comparison"]
     assert "adaptive_difficulty_trajectory" in base_comp
     assert "static_difficulty_trajectory" in base_comp
+
+
+def test_evidence_for_source_and_ui_bkt_integration(temp_service_db):
+    """Validates get_evidence_for_source and UI state BKT observation workflow."""
+    db, db_path = temp_service_db
+    services = get_services(str(db_path))
+
+    # 1. Test get_evidence_for_source for all seeded sources
+    sources = list(db.all_sources())
+    assert len(sources) > 0
+    total_ev = 0
+    for s in sources:
+        ev_list = db.get_evidence_for_source(s.source_id)
+        assert isinstance(ev_list, list)
+        assert len(ev_list) > 0
+        total_ev += len(ev_list)
+    assert total_ev == len(list(db.all_evidence()))
+
+    # 2. Test BKT observation / response recording via services container
+    bkt = services["bkt"]
+    assert hasattr(bkt, "record_observation")
+    assert hasattr(bkt, "record_response")
+
+    learner_id = "test_learner_ui_integration"
+    topic_id = "Newtonian Mechanics"
+
+    rec1 = bkt.record_observation(learner_id, topic_id, is_correct=True)
+    assert rec1.attempts == 1
+    assert rec1.correct == 1
+    assert rec1.p_mastery > 0.10
+
+    rec2 = bkt.record_observation(learner_id, topic_id, is_correct=False)
+    assert rec2.attempts == 2
+    assert rec2.correct == 1
+    assert rec2.p_mastery < rec1.p_mastery
+
+
+def test_all_seven_streamlit_views_render_without_exceptions():
+    """Validates that all 7 Streamlit navigation views render cleanly without unhandled exceptions."""
+    from streamlit.testing.v1 import AppTest
+    from pathlib import Path
+
+    app_path = Path("app/ui/main.py").resolve()
+    at = AppTest.from_file(str(app_path))
+    at.run()
+    assert len(at.exception) == 0, f"Initial run exceptions: {[e.message for e in at.exception]}"
+
+    options = at.sidebar.radio[0].options
+    assert len(options) == 7
+
+    for opt in options:
+        at.sidebar.radio[0].set_value(opt).run()
+        assert len(at.exception) == 0, f"View '{opt}' raised exception: {[e.message for e in at.exception]}"
+
+

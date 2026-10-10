@@ -14,6 +14,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+import sys
+from pathlib import Path
+_REPO_ROOT = str(Path(__file__).resolve().parent.parent.parent)
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
 from app.ui.state import get_services, init_session_state
 from app.ui.views.ingestion_view import render_ingestion_view
 from app.ui.views.evidence_view import render_evidence_view

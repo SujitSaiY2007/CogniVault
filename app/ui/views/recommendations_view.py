@@ -95,7 +95,7 @@ def render_recommendations_view(services: dict):
                 "Current Mastery": round(t_score, 4),
                 "Prerequisites": "None (Root Concept)",
                 "Prerequisite Mastery": "N/A",
-                "Gatekeeper Status": " Ready",
+                "Gatekeeper Status": "✅ Ready",
             })
         else:
             for p in prereqs:
@@ -107,7 +107,7 @@ def render_recommendations_view(services: dict):
                     status = f"❌ Blocked (Prerequisite P={p_mastery.p_mastery:.2f} < 0.70)"
                     p_score_str = f"{p_mastery.p_mastery:.4f}"
                 else:
-                    status = f" Satisfied (Prerequisite P={p_mastery.p_mastery:.2f} >= 0.70)"
+                    status = f"✅ Satisfied (Prerequisite P={p_mastery.p_mastery:.2f} >= 0.70)"
                     p_score_str = f"{p_mastery.p_mastery:.4f}"
 
                 prereq_rows.append({

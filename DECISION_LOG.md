@@ -45,7 +45,10 @@
 | D-040 | Streamlit Multi-View Product Architecture | Modular UI in `app/ui/` with 7 dedicated workflows binding directly to backend services without duplicating business logic | Implemented & Verified |
 | D-041 | Deterministic Evaluation Benchmark Runner | Reproducible offline test runner measuring retrieval precision/recall, abstention, leakage, citation validity, and policy accuracy | Implemented & Verified |
 | D-042 | Multi-Turn Simulated Learner Evaluations | Simulates 6 distinct learner personas (advancing, struggling, mixed, misconception, prerequisite-gated, boundary) vs non-personalized baseline | Implemented & Verified |
-| D-043 | Offline & Deterministic Test Suite Guarantee | All 95 unit, acceptance, benchmark, and UI integration tests execute locally with zero external network or API dependency | Implemented & Verified |
+| D-043 | Offline & Deterministic Test Suite Guarantee | All 102 unit, acceptance, benchmark, and UI integration tests execute locally with zero external network or API dependency | Implemented & Verified |
+| D-044 | Source Evidence Resolution Method (`get_evidence_for_source`) | Adds explicit `get_evidence_for_source` method to `EvidenceDB` for source evidence chunk counting in Course Ingestion view without schema modifications | Implemented & Verified |
+| D-045 | Learner State Manager Service Wiring & Observation Alias | Wires `LearnerStateManager` into UI service container and provides `record_observation` alias to ensure assessment submissions persist BKT state updates | Implemented & Verified |
+| D-046 | Multi-Thread SQLite Connection & Automated 7-View AppTest | Sets `check_same_thread=False` on SQLite connection for Streamlit thread safety and incorporates `test_all_seven_streamlit_views_render_without_exceptions` into the permanent test suite | Implemented & Verified |
 
 New decisions must be added here with rationale and status.
 

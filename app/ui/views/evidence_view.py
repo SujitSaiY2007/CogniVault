@@ -86,13 +86,15 @@ def render_evidence_view(services: dict):
             # If image asset present, render the image
             if ev.asset_id:
                 asset = db.get_asset(ev.asset_id)
-                if asset and asset.get("data"):
-                    st.image(
-                        asset["data"],
-                        caption=f"Embedded Visual Figure ({ev.evidence_id}) - {loc_badge}",
-                        use_container_width=False,
-                        width=320
-                    )
+                if asset:
+                    asset_bytes = asset.get("data") if isinstance(asset, dict) else (asset[6] if len(asset) > 6 else None)
+                    if asset_bytes:
+                        st.image(
+                            asset_bytes,
+                            caption=f"Embedded Visual Figure ({ev.evidence_id}) - {loc_badge}",
+                            use_container_width=False,
+                            width=320
+                        )
 
             # Metadata tags
             tag_cols = st.columns([1, 1, 2])

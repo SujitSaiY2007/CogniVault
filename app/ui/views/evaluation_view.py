@@ -41,7 +41,7 @@ def render_evaluation_view(services: dict):
             with st.spinner("Executing deterministic benchmark runner over test dataset..."):
                 runner = EvaluationRunner(db=db)
                 runner.run_benchmark(output_path=benchmark_file)
-                st.success(" Benchmark execution completed successfully!")
+                st.success("✅ Benchmark execution completed successfully!")
 
         if benchmark_file.exists():
             with open(benchmark_file, "r", encoding="utf-8") as f:
@@ -85,7 +85,7 @@ def render_evaluation_view(services: dict):
             with r3_cols[2]:
                 st.metric("Policy Bracket Accuracy", f"{metrics.get('recommendation_policy_accuracy', 0.0):.2%}")
             with r3_cols[3]:
-                st.metric("Repetition Control", " Passed" if metrics.get('repetition_control_pass') else "❌ Failed")
+                st.metric("Repetition Control", "✅ Passed" if metrics.get('repetition_control_pass') else "❌ Failed")
 
             st.divider()
 
@@ -103,10 +103,10 @@ def render_evaluation_view(services: dict):
                     "Query": item.get("query"),
                     "Expected": item.get("expected_status"),
                     "Actual": item.get("actual_status"),
-                    "Grounded": " " if item.get("is_grounded") else "❌",
+                    "Grounded": "✅" if item.get("is_grounded") else "❌",
                     "Citations": item.get("citations_count", 0),
-                    "Precision@3": item.get("precision_at_3", "N/A"),
-                    "Recall@3": item.get("recall_at_3", "N/A"),
+                    "Precision@3": f"{item['precision_at_3']:.2%}" if isinstance(item.get("precision_at_3"), (int, float)) else "N/A",
+                    "Recall@3": f"{item['recall_at_3']:.2%}" if isinstance(item.get("recall_at_3"), (int, float)) else "N/A",
                 })
 
             if qa_rows:
@@ -133,7 +133,7 @@ def render_evaluation_view(services: dict):
         if st.button("🚀 Re-Run Multi-Turn Learner Simulations", use_container_width=True):
             with st.spinner("Running 6 simulated learner trajectories & baseline comparison..."):
                 sim_res = run_all_simulations(db_path="data/cognivault.sqlite")
-                st.success(" Simulations completed!")
+                st.success("✅ Simulations completed!")
                 sim_data = sim_res
 
         if sim_data is None and sim_file.exists():
