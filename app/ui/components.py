@@ -8,6 +8,17 @@ from __future__ import annotations
 
 import textwrap
 import streamlit as st
+def _render_html_fragment(fragment: str) -> None:
+    """Render a self-contained HTML fragment without CommonMark blank-line breaks.
+
+    Streamlit's Markdown parser can terminate an HTML block at a blank line and
+    expose subsequent tags as literal text. Keep the markup contiguous and
+    never use this helper for fragments spanning separate Streamlit elements.
+    """
+    compact = "\\n".join(line for line in fragment.splitlines() if line.strip())
+    st.markdown(compact, unsafe_allow_html=True)
+
+
 from app.ui.theme import (
     TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
     BORDER_COLOR, ACCENT_INDIGO, ACCENT_TEAL,
@@ -34,7 +45,7 @@ def render_page_header(
 <div style="margin: 0.35rem 0 0 0; font-size: 0.94rem; color: {TEXT_SECONDARY}; line-height: 1.5;">{description}</div>
 </div>
 """).strip()
-    st.markdown(html, unsafe_allow_html=True)
+    _render_html_fragment(html)
 
 
 def render_section_header(title: str, subtitle: str | None = None, badge_text: str | None = None) -> None:
