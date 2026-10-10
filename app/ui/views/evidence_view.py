@@ -20,9 +20,9 @@ def render_evidence_view(services: dict):
     db = services["db"]
 
     render_page_header(
-        title="Evidence Explorer & Provenance Auditor",
-        description="Inspect atomic curriculum evidence units, exact physical source locators, embedded figures, and taxonomy relationships.",
-        badge_text="Module 2",
+        title="Explore Learning Content",
+        description="Search explanations from your course materials and trace each excerpt back to its original file, page, slide, or timestamp.",
+        badge_text="Course content",
         badge_variant="teal"
     )
 
@@ -64,8 +64,12 @@ def render_evidence_view(services: dict):
         with col3:
             selected_modality = st.selectbox("Modality Filter", ["All Modalities", "PDF", "PPTX", "TRANSCRIPT", "IMAGE"])
 
+    # Optional navigation from the Course Library to one resource's excerpts.
+    source_filter = st.session_state.pop("library_source_filter", None)
     # Filtering logic
     filtered = all_evidence
+    if source_filter:
+        filtered = [ev for ev in filtered if ev.source_id == source_filter]
 
     if selected_topic != "All Topics":
         filtered = [e for e in filtered if selected_topic in e.topics or any(selected_topic.lower() in c.lower() for c in e.concepts)]
@@ -103,7 +107,7 @@ def render_evidence_view(services: dict):
     # Display evidence cards
     for idx, ev in enumerate(filtered[:50], 1):
         source = db.get_source(ev.source_id)
-        source_title = source.title if source else ev.source_id
+        source_title = source.title if source else "Course material"
         source_path = source.path if source else ""
 
         # Format locator
@@ -124,15 +128,8 @@ def render_evidence_view(services: dict):
         with st.container(border=True):
             header_col1, header_col2 = st.columns([2.5, 1.2])
             with header_col1:
-                st.markdown(
-                    f"""
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
-                        <span class="cogni-badge cogni-badge-neutral" style="font-family: monospace;">{ev.evidence_id}</span>
-                        <strong style="color: #18233B; font-size: 1.05rem;">{source_title}</strong>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                st.markdown(f"**{source_title}**")
+                st.caption(f"Excerpt {idx} of {len(filtered)}")
                 if source_path:
                     st.caption(f"Source file: `{source_path}`")
             with header_col2:
@@ -177,6 +174,15 @@ def render_evidence_view(services: dict):
                             use_container_width=False,
                             width=340
                         )
+
+            with st.expander("About this excerpt"):
+                st.write("**Original resource**")
+                st.write(source_title)
+                st.write("**Excerpt reference**")
+                st.code(ev.evidence_id, language=None)
+                if source_path:
+                    st.write("**Stored file path**")
+                    st.code(source_path, language=None)
 
             # Metadata tags
             tag_parts = []
