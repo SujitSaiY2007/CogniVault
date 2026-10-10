@@ -349,5 +349,41 @@ THEME_CSS = f"""
         padding: 0.2rem 0.5rem;
         border-radius: 4px;
     }}
+
+    /* Prevent Streamlit flex/grid children from collapsing to intrinsic text width. */
+    [data-testid="stMainBlockContainer"],
+    [data-testid="stVerticalBlock"],
+    [data-testid="stHorizontalBlock"],
+    [data-testid="column"],
+    [data-testid="stMarkdownContainer"] {
+        min-width: 0 !important;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    [data-testid="stMarkdownContainer"] > div,
+    [data-testid="stMarkdownContainer"] > p {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    /* Keep headings readable inside cards and columns without breaking words per character. */
+    [data-testid="stMarkdownContainer"] h1,
+    [data-testid="stMarkdownContainer"] h2,
+    [data-testid="stMarkdownContainer"] h3,
+    [data-testid="stMarkdownContainer"] h4 {
+        max-width: 100%;
+        word-break: normal !important;
+        overflow-wrap: break-word !important;
+        hyphens: auto;
+    }
+
+    @media (max-width: 900px) {
+        [data-testid="stMainBlockContainer"] {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+
 </style>
 """
