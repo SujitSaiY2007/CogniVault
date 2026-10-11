@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import streamlit as st
+from app.ui.components import _render_html_fragment
 
 
 def render_sidebar(
@@ -12,17 +13,14 @@ def render_sidebar(
 ) -> str:
     """Render consistent navigation using native Streamlit widgets only."""
     with st.sidebar:
-        st.markdown(
-            """
-            <div class="cv-brand">
+        _render_html_fragment(
+                        <div class="cv-brand">
               <div class="cv-brand-mark">C</div>
               <div>
                 <div class="cv-brand-name">CogniVault</div>
                 <div class="cv-brand-caption">Your learning workspace</div>
               </div>
             </div>
-            """,
-            unsafe_allow_html=True,
         )
         st.caption("WORKSPACE")
         choice = st.radio(
