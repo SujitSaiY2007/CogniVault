@@ -14,13 +14,15 @@ def render_sidebar(
     """Render consistent navigation using native Streamlit widgets only."""
     with st.sidebar:
         _render_html_fragment(
-                        <div class="cv-brand">
+            """
+            <div class="cv-brand">
               <div class="cv-brand-mark">C</div>
               <div>
                 <div class="cv-brand-name">CogniVault</div>
                 <div class="cv-brand-caption">Your learning workspace</div>
               </div>
             </div>
+            """
         )
         st.caption("WORKSPACE")
         choice = st.radio(
@@ -50,7 +52,7 @@ def render_sidebar(
 
 
 def render_page_intro(eyebrow: str, title: str, description: str) -> None:
-    """Shared page introduction; rendered with native Markdown, not raw HTML."""
+    """Shared page introduction rendered with native Streamlit text elements."""
     st.caption(eyebrow.upper())
     st.title(title)
     st.markdown(description)
