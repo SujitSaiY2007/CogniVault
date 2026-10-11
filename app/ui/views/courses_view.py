@@ -78,7 +78,7 @@ def render_courses_view(services: dict) -> None:
             with st.container(border=True):
                 st.subheader("Your course library starts here")
                 st.write("Create a course, then add learning materials that belong to it.")
-                if st.button("Add learning materials", type="primary):
+                if st.button("Add learning materials", type="primary"):
                     st.session_state["nav_selection_override"] = "➕ Add Materials"
                     st.rerun()
         _render_resource_library(db, courses, sources)
@@ -91,7 +91,7 @@ def render_courses_view(services: dict) -> None:
     resources = db.get_course_resources(selected_id)
 
     with st.container(border=True):
-        title_col, count_col = st.columns([4, 1], vertical_alignment="center")
+        title_col, count_col = st.columns([4, 1])
         with title_col:
             st.caption("SELECTED COURSE")
             st.subheader(course["title"])
@@ -104,7 +104,7 @@ def render_courses_view(services: dict) -> None:
         if resources:
             for source in resources:
                 with st.container(border=True):
-                    info_col, actions_col = st.columns([2.5, 1], vertical_alignment="center")
+                    info_col, actions_col = st.columns([2.5, 1])
                     with info_col:
                         st.markdown(f"**{source.title}**")
                         excerpt_count = len(db.get_evidence_for_source(source.source_id))
@@ -192,7 +192,7 @@ def _render_resource_library(db, courses: list, sources: list) -> None:
             st.caption("All uploaded resources are assigned to a course, or no resources have been uploaded.")
         else:
             for source in unassigned:
-                col_info, col_action = st.columns([3, 1], vertical_alignment="center")
+                col_info, col_action = st.columns([3, 1])
                 with col_info:
                     st.markdown(f"**{source.title}**")
                     st.caption(f"{source.modality.value.upper()} · {len(db.get_evidence_for_source(source.source_id))} searchable excerpts")
