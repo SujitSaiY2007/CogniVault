@@ -21,9 +21,9 @@ def render_tutor_view(services: dict):
     tutor: GroundedTutor = services["tutor"]
 
     render_page_header(
-        title="Grounded AI Tutor",
-        description="Conversational tutor grounded strictly in verified course evidence. If a question is off-corpus or evidence is insufficient, CogniVault deterministically abstains instead of hallucinating.",
-        badge_text="Module 3",
+        title="AI Tutor",
+        description="Ask questions about your course materials. Answers show supporting sources; when the material does not support an answer, CogniVault will tell you.",
+        badge_text="Source-backed",
         badge_variant="indigo"
     )
 
