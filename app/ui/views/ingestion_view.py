@@ -26,9 +26,9 @@ def render_ingestion_view(services: dict):
     db = services["db"]
 
     render_page_header(
-        title="Course Setup & Ingestion",
+        title="Add Learning Materials",
         description="Ingest multi-modal course materials into CogniVault's verifiable evidence vault with deterministic provenance, exact locators, and SHA-256 checksums.",
-        badge_text="Module 1",
+        badge_text="Materials",
         badge_variant="indigo"
     )
 
