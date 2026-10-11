@@ -13,6 +13,7 @@ import pandas as pd
 from evaluation.runner import EvaluationRunner
 from evaluation.simulate_learners import run_all_simulations
 from app.ui.components import (
+    _render_html_fragment,
     render_page_header,
     render_section_header,
     render_metric_card,
@@ -67,16 +68,13 @@ def render_evaluation_view(services: dict):
             ts = data.get("benchmark_timestamp", "")[:19].replace("T", " ")
 
             with col_info:
-                st.markdown(
-                    f"""
+                _render_html_fragment(f"""
                     <div style="padding-top: 0.35rem; font-size: 0.88rem; color: #64748B;">
                         <strong>Version:</strong> <code>{ver}</code> &nbsp;|&nbsp;
                         <strong>Evaluated Cases:</strong> <code>{total_cases}</code> &nbsp;|&nbsp;
                         <strong>Timestamp:</strong> <code>{ts}</code>
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                    """)
 
             st.markdown("<div style='margin-bottom: 1.25rem;'></div>", unsafe_allow_html=True)
 
