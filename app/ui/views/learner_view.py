@@ -8,6 +8,7 @@ from __future__ import annotations
 import streamlit as st
 import pandas as pd
 from app.ui.components import (
+    _render_html_fragment,
     render_page_header,
     render_section_header,
     render_metric_card,
@@ -138,15 +139,12 @@ def render_learner_view(services: dict):
     else:
         for ms in misc_signals:
             with st.container(border=True):
-                st.markdown(
-                    f"""
+                _render_html_fragment(f"""
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                         <span class="cogni-badge cogni-badge-danger">🚨 Suspected Misconception</span>
                         <span class="cogni-badge cogni-badge-neutral">Error Count: {ms.error_count} (Confidence: {ms.confidence:.2f})</span>
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                    """)
                 st.markdown(f"**Topic:** `{ms.topic_id}` | **Concept:** `{ms.concept_id}`")
                 st.error(f"**Diagnostic Finding:** {ms.suspected_misconception}")
                 if ms.remediation_concept_id:
