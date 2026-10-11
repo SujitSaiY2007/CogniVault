@@ -22,3 +22,7 @@ Free public hosting is optional until provider limits, durable storage, privacy,
 
 ## Current blockers
 AG dashboard response pending; browser acceptance pending; recording and portal submission not confirmed.
+
+
+## Final overhaul decision (2026-10-11)
+Use `docs/FINAL_OVERHAUL_PLAN.md` as the final three-chat execution contract. Do not claim submission readiness until the new stack passes tests and a real walkthrough, evaluation outputs are saved, documentation is reconciled, and the 3–10 minute demo exists. The organizer calls for a public GitHub repository; current visibility must be verified and any visibility change requires explicit approval. Portal submission and video upload remain pending until evidenced.
