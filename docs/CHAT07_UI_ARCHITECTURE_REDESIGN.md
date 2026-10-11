@@ -44,3 +44,26 @@ Replace the patch-driven visual layer with a coherent, learner-first Streamlit a
 - The core workflow remains available: course/resource → tutor with citations/abstention → verified practice → learner state → next recommendation.
 - No claims that tests, browser checks, or visual acceptance passed without evidence.
 - Final UI acceptance remains pending until reviewed screenshots are approved by the product owner.
+
+
+## Implementation checkpoint — 2026-10-11
+
+### Implemented in source
+- Shared shell and route dispatcher split into app/ui/shell.py and app/ui/main.py.
+- Replaced the prior CSS bundle with a smaller responsive token-based theme.
+- Rebuilt Home around first-run onboarding, resume learning, one recommendation, and compact quick actions.
+- Rebuilt Courses around a selected course, its materials, original-file access, indexed-content exploration, assigning uploaded resources, unlinking from a course, and confirmed deletion of the indexed copy.
+- Renamed key page introductions to learner-facing language.
+- Routed multiline HTML fragments in Tutor, Practice, Progress, Recommendations, Materials, Evidence, and Evaluation through a dedenting helper; removed unnecessary spacer markup from several views.
+- Updated README status and launch command so old test claims do not imply the new branch has been verified.
+
+### Checks actually performed
+- Retrieved changed files from GitHub and checked for common source-edit mistakes, including leftover malformed form-button syntax, stale vertical_alignment arguments, and direct unsafe_allow_html=True calls in the seven listed view modules.
+- Confirmed GitHub branch chat06-ui-repair head and confirmed main remains at its earlier SHA; PR #1 remains open, draft, and unmerged.
+- No Python test suite, Streamlit runtime, or real browser was available in this work session. GitHub reports no check runs for the current commit.
+
+### Still required
+- Run python -m compileall app and pytest -v --durations=10 in a local checkout.
+- Start Streamlit and manually walk every navigation destination.
+- Confirm add/remove/delete behavior with disposable test resources and confirm the original file remains on disk after deleting an indexed source.
+- Inspect desktop and narrow-screen screenshots, then obtain explicit visual acceptance.
