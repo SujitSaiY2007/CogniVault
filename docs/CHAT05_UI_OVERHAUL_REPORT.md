@@ -1,4 +1,4 @@
-# CogniVault 2.0 — Chat 05 UI Implementation and Chat 06 Repair Status
+# CogniVault UI — Chat 05/06 History and Chat 07 Redesign Status
 
 ## Current status
 
@@ -8,7 +8,7 @@ The original Chat 05 implementation was committed to `chat05-ui-overhaul` at `53
 
 The Chat 05 branch is preserved. Chat 06 work is isolated on `chat06-ui-repair`, created from the Chat 05 implementation commit. No merge into `main` was performed, and PR #1 was not changed.
 
-## Chat 06 repair changes currently pushed to `chat06-ui-repair`
+## Chat 06 repair history
 
 - Added a shared HTML fragment renderer in `app/ui/components.py` that removes blank lines from complete fragments before passing them to Streamlit Markdown.
 - Routed the shared reusable HTML components through that renderer.
@@ -43,3 +43,18 @@ The approved visual direction is the user's 2026-10-10 screenshot: a minimal lef
 ## Remaining non-dashboard milestones
 
 Public hosting, durable cloud persistence, real authentication, enforceable quotas, demo recording, and portal submission are separate tasks and remain unverified.
+
+
+## Chat 07 architecture redesign — current state
+
+The UI work continues on `chat06-ui-repair` to preserve the existing branch workflow and keep `main` untouched. The latest redesign commits introduce:
+
+- `docs/CHAT07_UI_ARCHITECTURE_REDESIGN.md`: information architecture, layer boundaries, principles, migration sequence, and acceptance gates.
+- `app/ui/shell.py`: shared navigation shell and page-introduction helper.
+- `app/ui/theme.py`: replacement design tokens and responsive styles.
+- `app/ui/main.py`: simplified route dispatcher and updated learner-facing navigation labels, with migration for stored legacy route labels.
+- `app/ui/views/dashboard_view.py`: a learner-first home layout centered on starting, resuming, and choosing a next action.
+- `app/ui/views/courses_view.py`: a selected-course view with clearer resource actions and a separate unassigned resource library.
+- `README.md`: corrected status so it no longer claims submission readiness or that stale test results verify this redesign.
+
+This is a source-level implementation milestone only. No test suite or browser has been run from this environment. The latest changes may still have runtime or visual issues. UI acceptance remains pending until the user tests the branch locally, shares screenshots, and approves the result.
