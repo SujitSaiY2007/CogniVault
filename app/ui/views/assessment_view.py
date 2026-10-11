@@ -94,8 +94,6 @@ def render_assessment_view(services: dict):
         acc_pct = (correct_cnt / attempts_cnt * 100) if attempts_cnt > 0 else 0.0
         render_metric_card("Accuracy Rate", f"{acc_pct:.1f}%", subtext="Historical performance", badge="Score", badge_variant="teal")
 
-    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
-
     # Next Question Controls
     col_fetch, col_clear = st.columns([2, 1])
     with col_fetch:
@@ -117,8 +115,6 @@ def render_assessment_view(services: dict):
         if st.button("🔄 Reset Question History", use_container_width=True):
             st.session_state.served_question_ids = []
             st.info("Question repetition history cleared for this session.")
-
-    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
     # Render Current Question Card
     q = st.session_state.get("current_question")
@@ -149,10 +145,7 @@ def render_assessment_view(services: dict):
                 </div>
                 """)
         with header_cols[2]:
-            st.markdown(
-                '<div style="text-align: right;"><span class="cogni-badge cogni-badge-success">✅ Verified Item</span></div>',
-                unsafe_allow_html=True
-            )
+            _render_html_fragment('<div style="text-align: right;"><span class="cogni-badge cogni-badge-success">✅ Verified Item</span></div>')
 
         _render_html_fragment(f"""
             <div style="
@@ -218,7 +211,7 @@ def render_assessment_view(services: dict):
     # Display Feedback & Explanations if evaluated
     eval_res = st.session_state.get("last_evaluation")
     if eval_res and q and eval_res.question_id == q.question_id:
-        st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
+
         if eval_res.is_correct:
             render_callout(
                 title="Correct Answer!",
