@@ -103,6 +103,9 @@ def main() -> None:
     if "nav_selection_override" in st.session_state:
         override = st.session_state.pop("nav_selection_override")
         st.session_state["main_nav_radio"] = _resolve_nav_choice(str(override))
+    elif st.session_state.get("main_nav_radio") is not None and st.session_state.get("main_nav_radio") not in NAV_OPTIONS:
+        # Migrate labels stored by older local Streamlit sessions.
+        st.session_state["main_nav_radio"] = _resolve_nav_choice(str(st.session_state["main_nav_radio"]))
 
     nav_choice = render_sidebar(NAV_OPTIONS, db)
 
