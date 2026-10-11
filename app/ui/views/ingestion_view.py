@@ -57,16 +57,13 @@ def render_ingestion_view(services: dict):
     with col1:
         with st.container(border=True):
             render_section_header("Upload Course Material", subtitle="Extract text, slide structures, timestamps, and embedded diagrams.")
-            st.markdown(
-                """
+            _render_html_fragment("""
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
                     <span class="cogni-badge cogni-badge-neutral">📄 PDF (Text & Figures)</span>
                     <span class="cogni-badge cogni-badge-neutral">📊 PPTX (Slides & Notes)</span>
                     <span class="cogni-badge cogni-badge-neutral">⏱️ Transcripts ([hh:mm:ss])</span>
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+                """)
             uploaded_files = st.file_uploader(
                 "Select educational documents to index",
                 type=["pdf", "pptx", "txt"],
