@@ -143,6 +143,26 @@ def render_courses_view(services: dict) -> None:
                         ):
                             db.remove_source_from_course(selected_id, source.source_id)
                             st.rerun()
+                    with st.expander("Resource settings"):
+                        st.warning(
+                            "Deleting the indexed resource removes its searchable excerpts and related "
+                            "practice records from CogniVault. The original file on disk is not deleted."
+                        )
+                        confirmed = st.checkbox(
+                            "I understand this also removes related indexed learning data.",
+                            key=f"confirm_delete_source_{source.source_id}",
+                        )
+                        if st.button(
+                            "Delete indexed resource",
+                            type="secondary",
+                            key=f"delete_source_{source.source_id}",
+                            disabled=not confirmed,
+                        ):
+                            if db.delete_source(source.source_id):
+                                st.success("Indexed resource removed. The original file was left untouched.")
+                                st.rerun()
+                            else:
+                                st.error("This resource is no longer in the library.")
         else:
             st.info("This course has no materials yet. Add an uploaded file below.")
 
