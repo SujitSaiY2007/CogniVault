@@ -53,7 +53,7 @@ def render_courses_view(services: dict) -> None:
         with st.form("create_course_form", clear_on_submit=True):
             title = st.text_input("Course name", placeholder="e.g. Mathematics")
             description = st.text_area("Description", placeholder="What will learners study in this course?")
-            submitted = st.form_submit_button("Create course", type="primary)
+            submitted = st.form_submit_button("Create course", type="primary")
             if submitted:
                 if not title.strip():
                     st.error("Enter a course name.")
