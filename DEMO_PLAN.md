@@ -23,3 +23,7 @@ No fabricated citations, progress, history, quota or metrics. Do not claim zero 
 
 ## Save evidence
 Final source SHA, test output, benchmark artifact, browser screenshots/checklist, video URL and portal submission receipt/time. Never store credentials in Git.
+
+
+## Final overhaul decision (2026-10-11)
+The final execution contract is `docs/FINAL_OVERHAUL_PLAN.md`. The demo must show the Agno-first product end to end: source ingestion with locators, cited tutor answer, an off-material abstention, verified assessment, persistent topic mastery and a recommendation. Record only after the new implementation passes its own checks. Keep the video within the organizer's 3–10 minute requirement; actual recording/upload remains a human action unless explicitly authorized and evidenced.
