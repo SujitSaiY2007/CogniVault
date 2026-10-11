@@ -1,52 +1,23 @@
-# Current Handoff — Chat 01 Overhaul: Agno AgentOS & Local Foundation
+# Current Handoff — Chat 01 Accepted; Start Chat 02 Product Loop
 
-## Last Completed Action
+**Reconciled:** 2026-10-11  
+**Canonical roadmap on main:** [docs/FINAL_OVERHAUL_PLAN.md](https://github.com/SujitSaiY2007/CogniVault/blob/main/docs/FINAL_OVERHAUL_PLAN.md)  
+**Exact Chat 02 prompt on main:** [docs/CHAT02_EXECUTION_PROMPT.md](https://github.com/SujitSaiY2007/CogniVault/blob/main/docs/CHAT02_EXECUTION_PROMPT.md)
 
-Completed Phase 1 of the architecture overhaul: **Agno AgentOS Foundation with Local Ollama & ChromaDB**.
-1. Created isolated branch `overhaul/chat-01-agno-foundation` from preserved baseline `cdd111f8c424bfbd265ee1c5e151469533a34375`.
-2. Created authoritative technical roadmap in `docs/FINAL_OVERHAUL_PLAN.md`.
-3. Implemented `ChromaEvidenceStore` in `app/chroma_store.py` with cosine vector search and SQLite synchronization.
-4. Integrated ChromaDB into `HybridRetriever` in `app/retrieval.py` preserving the deterministic $0.45 \times \text{lexical} + 0.55 \times \text{semantic}$ score formula.
-5. Implemented local Ollama model provider and health probes in `app/ollama_provider.py` with deterministic offline fallback.
-6. Implemented complete Agno AgentOS package in `app/agent_os/`:
-   - `tools.py`: Agno Agent tools for retrieval, sufficiency checking, locator resolution, and citation validation.
-   - `tutor_agent.py`: Grounded Evidence Tutor Agent enforcing exact physical locators and fail-closed abstention.
-   - `service.py`: `AgentOSTutorService` domain layer coordinating storage, retrieval, and agents.
-   - `app.py`: FastAPI and Agno AgentOS application with `/health`, `/api/v1/health`, `/api/v1/tutor/query`, `/api/v1/evidence/search`, `/api/v1/sources`, and `/api/v1/evidence/sync-chroma`.
-7. Preserved 100% of existing historical contracts and Streamlit 9-view application shell.
-8. Expanded test suite from 102 to **118 automated tests**, achieving **100% pass rate** (`pytest -v --durations=10`).
-9. Documented complete implementation in `docs/CHAT01_AGNO_FOUNDATION_REPORT.md`.
+## Chat 01 verified remote handoff
+- Branch: `overhaul/chat-01-agno-foundation`
+- Original reported commit: `9189a4d2f2a91065f97417b512ab4de8e7904bed`
+- At reconciliation, the remote branch head exactly matched that commit. This document update will advance the branch HEAD; use the new live branch HEAD as Chat 02's base.
+- Reported tests: 118 passed in 165.14 seconds, per `docs/CHAT01_AGNO_FOUNDATION_REPORT.md`. This reconciliation did not rerun tests.
+- Delivered foundation: Agno AgentOS evidence tutor, local Ollama adapter/fallback, ChromaDB + SQLite/FTS5 retrieval, evidence sufficiency/citation checks and source/tutor/search/health APIs.
+- Pending: expose the existing assessment/question verification, BKT, misconception and recommendation logic through the API; build and connect the real Next.js frontend.
 
-## Verified Repository State
+## Chat 02 scope — one integrated phase
+Create/use only `overhaul/chat-02-product-loop` from the freshly verified latest Chat 01 remote HEAD. Chat 02 must do both:
+1. Agno workflow/API integration for assessment generation, deterministic question/answer verification, duplicate prevention, answer scoring/feedback, persisted BKT mastery, misconception remediation, prerequisite-aware recommendations and cold-start diagnostic.
+2. v0-generated/exported Next.js + TypeScript + Tailwind frontend, connected to the real backend, covering ingestion, grounded tutoring/clickable citations, assessment, progress and recommendations.
 
-- **Repository:** `SujitSaiY2007/CogniVault`
-- **Active Branch:** `overhaul/chat-01-agno-foundation`
-- **Base Baseline SHA:** `cdd111f8c424bfbd265ee1c5e151469533a34375` (from `origin/chat06-ui-repair`)
-- **Automated Test Suite:** **118 passed in 165.14s** (`pytest -v --durations=10`).
-- **Test Modules:**
-  - `tests/test_agent_os.py` (Agno tools, tutor agent, and FastAPI endpoints: **5/5 PASS**)
-  - `tests/test_api_smoke.py` (End-to-end API smoke tests: **7/7 PASS**)
-  - `tests/test_chroma_store.py` (ChromaDB store and hybrid retrieval: **4/4 PASS**)
-  - `tests/acceptance/test_k1_to_k10.py` (Core Vault Ingestion: **10/10 PASS**)
-  - `tests/acceptance/test_chat02_acceptance.py` (Intelligence Core: **13/13 PASS**)
-  - `tests/acceptance/test_chat03_acceptance.py` (End-to-End Product & Benchmark: **9/9 PASS**)
-  - `tests/test_evaluation_runner.py` (Benchmark and locators: **8/8 PASS**)
-  - `tests/test_ui_service_integration.py` (9-view Streamlit shell: **5/5 PASS**)
-  - All other domain tests (retrieval, sufficiency, BKT, misconceptions, recommendations): **PASS**
+Use [docs/CHAT02_EXECUTION_PROMPT.md on main](https://github.com/SujitSaiY2007/CogniVault/blob/main/docs/CHAT02_EXECUTION_PROMPT.md) as the exact executor prompt. Do not split the backend and frontend into separate chats. Do not start Chat 03 until Chat 02 passes its exit gate.
 
-## Deliverables & Documentation
-
-1. `docs/FINAL_OVERHAUL_PLAN.md` — Authoritative overhaul specification across all phases.
-2. `docs/CHAT01_AGNO_FOUNDATION_REPORT.md` — Chat 01 implementation report.
-3. `app/chroma_store.py` — ChromaDB vector store.
-4. `app/ollama_provider.py` — Local Ollama provider with zero paid API requirement.
-5. `app/agent_os/` — Complete Agno AgentOS package with FastAPI endpoints.
-6. `pyproject.toml` & `requirements.txt` — Updated with `agno`, `chromadb`, `fastapi`, `ollama`, `openai`.
-7. `tests/test_chroma_store.py`, `tests/test_agent_os.py`, `tests/test_api_smoke.py` — Full test coverage.
-
-## Next Phase Handoff (Chat 02)
-
-**Phase:** Chat 02 — AgentOS Intelligence Core
-- Implement Agno multi-agent workflow for assessment generation and question verification.
-- Expose BKT learner state tracing and misconception remediation routing via AgentOS REST endpoints.
-- Maintain dual runtime and 100% test pass rate.
+## Preservation
+Preserve the Streamlit legacy path, all code/data/tests/user PDFs/reports/history/branches and PR #1. No force-push/reset, branch deletion/rename, PR #1 close/merge, repository visibility change, or implementation merge to `main` without explicit approval. Video recording/upload and portal submission remain human actions.
