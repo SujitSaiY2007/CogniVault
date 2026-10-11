@@ -38,7 +38,7 @@ def render_courses_view(services: dict) -> None:
     st.title("Courses")
     st.markdown("Keep related learning materials together. Open an original file or explore the indexed content used by the tutor.")
 
-    top_left, top_right = st.columns([3, 1], vertical_alignment="center")
+    top_left, top_right = st.columns([3, 1])
     with top_left:
         query = st.text_input(
             "Search courses",
