@@ -140,7 +140,7 @@ pip install -e .
 
 ### 2. Launch Streamlit UI Demo
 ```powershell
-streamlit run app/ui/main.py
+python -m streamlit run app/ui/main.py
 ```
 
 ### 3. Run Test Suite
