@@ -76,8 +76,6 @@ def render_evaluation_view(services: dict):
                     </div>
                     """)
 
-            st.markdown("<div style='margin-bottom: 1.25rem;'></div>", unsafe_allow_html=True)
-
             # Metric Cards Row 1: Retrieval & Gating
             render_section_header("Retrieval & Sufficiency Gating", subtitle="Measures accuracy of candidate retrieval and precision of gatekeeping decisions.")
             r1_cols = st.columns(4)
@@ -89,8 +87,6 @@ def render_evaluation_view(services: dict):
                 render_metric_card("Retrieval Precision@3", f"{metrics.get('retrieval_precision_at_3', 0.0):.1%}", subtext="Relevant / Retrieved", badge="Retrieval", badge_variant="teal")
             with r1_cols[3]:
                 render_metric_card("Retrieval Recall@3", f"{metrics.get('retrieval_recall_at_3', 0.0):.1%}", subtext="Relevant / Expected", badge="Recall", badge_variant="teal")
-
-            st.markdown("<div style='margin-bottom: 0.75rem;'></div>", unsafe_allow_html=True)
 
             # Metric Cards Row 2: Faithfulness, Citations, & Zero-Leakage
             render_section_header("Citation Integrity & Leakage Prevention", subtitle="Verifies that all citations point to physical documents and no off-corpus information is fabricated.")
@@ -106,8 +102,6 @@ def render_evaluation_view(services: dict):
                 leak_val = metrics.get('unsupported_leakage_rate', 0.0)
                 render_metric_card("Leakage Rate", f"{leak_val:.1%}", subtext="Hallucinations admitted", badge="Zero Target", badge_variant="success" if leak_val == 0 else "danger")
 
-            st.markdown("<div style='margin-bottom: 0.75rem;'></div>", unsafe_allow_html=True)
-
             # Metric Cards Row 3: Assessment, BKT, & Policy
             render_section_header("Assessment Engine & BKT Learner Modeling", subtitle="Structural verification of question items, BKT posterior calculation, and repetition gating.")
             r3_cols = st.columns(4)
@@ -120,8 +114,6 @@ def render_evaluation_view(services: dict):
             with r3_cols[3]:
                 passed_rep = metrics.get('repetition_control_pass')
                 render_metric_card("Repetition Control", "Passed" if passed_rep else "Failed", subtext="Prevents duplicate items", badge="Anti-Repeat", badge_variant="success" if passed_rep else "danger")
-
-            st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
 
             # Detailed Query-by-Query Results Table
             render_section_header("📋 Query-Level Grounding & Abstention Audit", subtitle="Individual test case traces confirming expected vs actual response statuses.")
@@ -200,8 +192,6 @@ def render_evaluation_view(services: dict):
                     st.write("- **No Remediation:** Ignores repeated misconception error patterns.")
                     st.write("- **No Prerequisite Gating:** Attempts advanced topics without foundational readiness.")
 
-            st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
-
             # Scenario Viewers
             for name, scenario in scenarios.items():
                 with st.expander(f"👤 Persona: {name.replace('_', ' ').title()}", expanded=False):
@@ -239,8 +229,6 @@ def render_evaluation_view(services: dict):
                  $$P(L_t) = P(L_t \mid O_t) + (1 - P(L_t \mid O_t))P(T)$$
             """
         )
-
-        st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
         render_section_header("⚠️ Engineering & Scientific Disclosures", subtitle="Explicit boundaries and verification criteria.")
         render_callout(
