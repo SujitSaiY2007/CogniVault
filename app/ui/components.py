@@ -17,7 +17,8 @@ def _render_html_fragment(fragment: str) -> None:
     expose subsequent tags as literal text. Keep the markup contiguous and
     never use this helper for fragments spanning separate Streamlit elements.
     """
-    compact = "\n".join(line for line in fragment.splitlines() if line.strip())
+    dedented = textwrap.dedent(fragment).strip()
+    compact = "\n".join(line for line in dedented.splitlines() if line.strip())
     st.markdown(compact, unsafe_allow_html=True)
 
 
