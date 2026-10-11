@@ -1,0 +1,32 @@
+# Chat 02 Execution Prompt — Product Loop (Agno + v0 + Next.js)
+
+**Canonical plan:** `docs/FINAL_OVERHAUL_PLAN.md` on `main`  
+**Implementation branch:** `overhaul/chat-02-product-loop`  
+**Required base:** accepted Chat 01 remote HEAD `9189a4d2f2a91065f97417b512ab4de8e7904bed` unless the live remote has advanced; verify before branching.  
+**Scope:** one integrated Chat 02. Do not split backend intelligence and frontend into separate chats.
+
+You are the local implementation executor for the existing CogniVault repository. Before editing, fetch remote refs, inspect `git status`, current branch and HEAD, confirm the exact remote head of `overhaul/chat-01-agno-foundation`, read `docs/FINAL_OVERHAUL_PLAN.md`, `docs/CHAT01_AGNO_FOUNDATION_REPORT.md`, `CURRENT_HANDOFF.md`, `CURRENT_OBJECTIVE.md`, `PROJECT_STATE.md`, all relevant governance docs, organizer Track D requirements, and the existing assessment, BKT, misconception, recommendation, ingestion, evidence, retrieval, tutor, evaluation and test modules. Report the base SHA and any discrepancy before implementation. Do not overwrite dirty work.
+
+## Git safety and preservation
+- Create/use only `overhaul/chat-02-product-loop`, based on the verified accepted Chat 01 remote HEAD.
+- Preserve the Streamlit path, all existing source, tests, data, four user PDFs, reports, commit history, all branches and PR #1.
+- No force-push, reset, deletion/rename of branches, PR #1 close/merge, repository visibility changes, or merge to `main`.
+- Do not duplicate or rewrite completed Chat 01 evidence retrieval, ChromaDB, Ollama adapter, or tutor API unless a verified defect requires a minimal compatible fix.
+- Do not claim browser checks, tests, hosted deployment or metrics unless actually executed and recorded.
+
+## Required implementation: one complete learning loop
+1. **Agno workflow and typed API contracts.** Keep the Chat 01 Evidence Tutor Agent and existing endpoints working. Add a controlled workflow with three bounded roles where useful: Evidence Tutor, Assessment, and Learning Coach. Use deterministic Python tools for answer-key validation, question structure/source/topic/difficulty checks, duplicate-question policy, BKT math, misconception logic, prerequisite gating and durable writes. No uncontrolled agent loops and no LLM-generated mastery numbers.
+2. **Assessment endpoints.** Expose generation/selection, validation, answer submission/scoring and feedback for MCQ, short-answer and numerical questions. Each usable question must carry topic/concept, difficulty, source ID and exact page/slide/timestamp locator where supported. Verify answer keys before release, reject malformed or unsupported questions, track prior question fingerprints to avoid repeats, and return evidence-backed explanations. Preserve existing AssessmentEngine/domain contracts instead of duplicating them.
+3. **Learner model endpoints.** Expose read/update learner topic mastery through existing BKT implementation; persist state and interaction history in SQLite. Update only from verified assessment outcomes and defined tutoring observations. Expose misconception diagnostics/remediation and prerequisite-aware next-step recommendations. Add cold-start diagnostic/intake for a new learner. Validate authorization/session/learner boundaries so one learner cannot mutate another learner's state.
+4. **Real frontend from v0.** Use v0 to generate/refine and export actual responsive Next.js + TypeScript + Tailwind source code. Commit the code in this branch; v0 is not a runtime dependency. Build functional screens for course/material ingestion, source-grounded tutor, clickable citations, assessment practice and verified feedback, learner progress/mastery, misconception/remediation, recommendations/prerequisites, and cold-start diagnostic. No static mockup, fake KPI, fabricated learner history or dead controls.
+5. **Backend integration.** Wire all UI flows to typed API calls against the Agno AgentOS/FastAPI backend. Keep state-changing operations server-side. Show loading, empty, validation, offline and error states. Citation links must open the correct source locator or show a clear unsupported/unavailable state. Add safe environment examples; no secrets in code or browser bundle.
+6. **Local-first setup.** Ollama/local embeddings remain the reproducible baseline. Hosted free-tier providers are optional only. Document how to start backend and frontend separately on Windows, environment variables, ingestion limitations and test data. Do not imply Vercel frontend hosting also hosts the Python backend.
+7. **Tests and proof.** Run the complete Python regression suite; targeted tests for assessment API, answer verification, duplicate prevention, BKT persistence, misconception/remediation, prerequisite gating, cold-start flow and learner isolation; frontend lint/typecheck/build; API integration tests; and a real browser walkthrough at desktop and mobile widths. Fix failures without weakening existing assertions. Record exact commands, actual results and screenshots/log artifacts where available.
+
+## Acceptance walkthrough
+A fresh learner can (a) create/select a learner profile or complete diagnostic intake, (b) ingest a supported PDF/PPTX and see source provenance, (c) ask a question and receive a grounded answer with a working exact citation, (d) start MCQ, short-answer and numerical practice, (e) receive verified feedback with source locator, (f) see persisted topic mastery update according to BKT and the verified observation, and (g) receive a prerequisite-aware next step or misconception remediation. Repeat after restart to prove persistence. Unsupported questions must abstain. No fake data or unconnected controls.
+
+## Finish and handoff
+Commit and push only `overhaul/chat-02-product-loop`; verify the remote SHA and compare it with the intended base. Update `docs/CHAT02_PRODUCT_LOOP_REPORT.md`, `CURRENT_HANDOFF.md`, `CURRENT_OBJECTIVE.md`, `PROJECT_STATE.md` and any directly affected technical docs on this phase branch. List changed files, exact commands/results, browser walkthrough evidence, known gaps and the accepted Chat 03 starting SHA. Stop after Chat 02; do not begin evaluation packaging or Chat 03. Do not merge implementation to `main`.
+
+**Important scope reconciliation:** the canonical roadmap has exactly three implementation chats. Chat 02 combines Agno assessment/BKT/misconception/recommendation API work AND the v0/Next.js frontend integration. Do not treat these as separate chats or omit either half.
