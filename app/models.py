@@ -9,6 +9,14 @@ class Modality(str, Enum):
     image = "image"
     text = "text"
 
+class LocatorType(str, Enum):
+    page = "page"
+    slide = "slide"
+    timestamp = "timestamp"
+    region = "region"
+    section = "section"
+
+
 class TopicRecord(BaseModel):
     topic_id: str
     name: str

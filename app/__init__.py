@@ -9,7 +9,8 @@ from .tutor import GroundedTutor, DeterministicTutorProvider
 from .assessment import AssessmentEngine, DeterministicQuestionVerifier, compute_question_fingerprint
 from .learner_model import BKTModel, LearnerStateManager
 from .misconceptions import MisconceptionDetector
-from .recommendation import AdaptiveRecommendationEngine
+from .chroma_store import ChromaEvidenceStore
+from .agent_os import AgentOSTutorService, EvidenceTutorAgent, create_agent_os_app
 from .models import (
     AnswerEvaluation,
     BKTParams,
@@ -19,6 +20,7 @@ from .models import (
     Difficulty,
     EvidenceUnit,
     LearnerSubmission,
+    LocatorType,
     MisconceptionSignal,
     Modality,
     PrerequisiteLink,
@@ -55,6 +57,10 @@ __all__ = [
     "LearnerStateManager",
     "MisconceptionDetector",
     "AdaptiveRecommendationEngine",
+    "ChromaEvidenceStore",
+    "AgentOSTutorService",
+    "EvidenceTutorAgent",
+    "create_agent_os_app",
     "AnswerEvaluation",
     "BKTParams",
     "CandidateTrace",
@@ -63,6 +69,7 @@ __all__ = [
     "Difficulty",
     "EvidenceUnit",
     "LearnerSubmission",
+    "LocatorType",
     "MisconceptionSignal",
     "Modality",
     "PrerequisiteLink",

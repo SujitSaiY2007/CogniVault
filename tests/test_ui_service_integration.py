@@ -130,7 +130,7 @@ def test_all_seven_streamlit_views_render_without_exceptions():
     assert len(at.exception) == 0, f"Initial run exceptions: {[e.message for e in at.exception]}"
 
     options = at.sidebar.radio[0].options
-    assert len(options) == 8
+    assert len(options) == 9
 
     for opt in options:
         at.sidebar.radio[0].set_value(opt).run(timeout=15)

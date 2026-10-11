@@ -1,66 +1,52 @@
-# Current Handoff — Chat 05 UI Overhaul & Submission Readiness
+# Current Handoff — Chat 01 Overhaul: Agno AgentOS & Local Foundation
 
 ## Last Completed Action
 
-Completed Chat 05: CogniVault 2.0 Complete UI Redesign.
-1. Created isolated branch `chat05-ui-overhaul` based on verified Chat 04 final commit `a717132781f2957f5162786b3919f2ba32217d67`.
-2. Built the CogniVault 2.0 Design System in `app/ui/theme.py`:
-   - Warm off-white background (`#F7F8FC`), crisp white surface cards (`#FFFFFF`), deep navy typography (`#18233B`), slate secondary text (`#64748B`), primary indigo accent (`#4F46E5`), supporting teal accent (`#0D9488`), and accessible semantic status indicators.
-3. Created Reusable Component Library in `app/ui/components.py`:
-   - `render_page_header`, `render_section_header`, `render_metric_card`, `render_badge`, `render_callout`, `render_empty_state`, and `render_citation_card`.
-4. Created Executive Learning Overview & Dashboard in `app/ui/views/dashboard_view.py`:
-   - Curriculum readiness KPI summary, active learner BKT mastery, prescribed next learning action with prerequisite lock alerts, and quick-start module shortcuts.
-5. Redesigned all seven existing views in `app/ui/views/`:
-   - View 1: Ingestion & Course Setup (modality badges, upload card, seeded corpus card, source table, manifest expander).
-   - View 2: Evidence Explorer (search, topic/modality filters, physical locator badges, embedded visual figure frames).
-   - View 3: Grounded AI Tutor (preset prompt chips, grounded answer box with citation cards, fail-closed abstention alert).
-   - View 4: Adaptive Assessment (topic/difficulty selectors, question card, verified pill, BKT mastery score updates).
-   - View 5: Learner Mastery Profile (profile switcher, per-topic BKT mastery table, visual progress bars, misconception alerts).
-   - View 6: Recommendations & Prerequisites (prescribed action card, pedagogical rationale, prerequisite gatekeeper audit matrix).
-   - View 7: Benchmark & Evaluation Suite (3 tabs: benchmark KPI cards, simulated learner trajectory comparisons, metric mathematical definitions).
-6. Updated Application Shell in `app/ui/main.py`:
-   - Clean 8-item navigation menu, CogniVault 2.0 brand title and descriptor, sidebar telemetry, and dashboard jump handling.
-7. Expanded Automated Testing in `tests/test_ui_service_integration.py`:
-   - Updated `test_all_seven_streamlit_views_render_without_exceptions` to validate all 8 views with 15s timeout.
-8. Executed Verification Suite:
-   - Automated Pytest Suite: **102 passed in 39.30s** (`pytest -v --durations=10`).
-   - AppTest In-Memory Walkthrough: **8/8 views PASS** with zero unhandled exceptions.
-   - End-to-End Walkthrough Script: **All 9 workflows PASS**.
-   - Streamlit Application: Running and serving live on `http://localhost:8501`.
-9. Documented Comprehensive Implementation in `docs/CHAT05_UI_OVERHAUL_REPORT.md`.
+Completed Phase 1 of the architecture overhaul: **Agno AgentOS Foundation with Local Ollama & ChromaDB**.
+1. Created isolated branch `overhaul/chat-01-agno-foundation` from preserved baseline `cdd111f8c424bfbd265ee1c5e151469533a34375`.
+2. Created authoritative technical roadmap in `docs/FINAL_OVERHAUL_PLAN.md`.
+3. Implemented `ChromaEvidenceStore` in `app/chroma_store.py` with cosine vector search and SQLite synchronization.
+4. Integrated ChromaDB into `HybridRetriever` in `app/retrieval.py` preserving the deterministic $0.45 \times \text{lexical} + 0.55 \times \text{semantic}$ score formula.
+5. Implemented local Ollama model provider and health probes in `app/ollama_provider.py` with deterministic offline fallback.
+6. Implemented complete Agno AgentOS package in `app/agent_os/`:
+   - `tools.py`: Agno Agent tools for retrieval, sufficiency checking, locator resolution, and citation validation.
+   - `tutor_agent.py`: Grounded Evidence Tutor Agent enforcing exact physical locators and fail-closed abstention.
+   - `service.py`: `AgentOSTutorService` domain layer coordinating storage, retrieval, and agents.
+   - `app.py`: FastAPI and Agno AgentOS application with `/health`, `/api/v1/health`, `/api/v1/tutor/query`, `/api/v1/evidence/search`, `/api/v1/sources`, and `/api/v1/evidence/sync-chroma`.
+7. Preserved 100% of existing historical contracts and Streamlit 9-view application shell.
+8. Expanded test suite from 102 to **118 automated tests**, achieving **100% pass rate** (`pytest -v --durations=10`).
+9. Documented complete implementation in `docs/CHAT01_AGNO_FOUNDATION_REPORT.md`.
 
 ## Verified Repository State
 
 - **Repository:** `SujitSaiY2007/CogniVault`
-- **Active Branch:** `chat05-ui-overhaul`
-- **Chat 04 Accepted Commit:** `a717132781f2957f5162786b3919f2ba32217d67`
-- **Automated Test Suite:** **102 passed in 39.30s** (`pytest -v --durations=10`).
-- **Acceptance Harnesses:**
-  - `tests/acceptance/test_k1_to_k10.py` (K1–K10 Core Vault Ingestion: **10/10 PASS**)
-  - `tests/acceptance/test_chat02_acceptance.py` (G1–G5, A1–A4, L1–L3, S2 Intelligence Core: **13/13 PASS**)
-  - `tests/acceptance/test_chat03_acceptance.py` (U1–U9 End-to-End Product & Benchmark: **9/9 PASS**)
-  - `tests/test_evaluation_runner.py` (Benchmark, repetition, locator verification: **8/8 PASS**)
-  - `tests/test_ui_service_integration.py` (UI views, BKT state, and all 8 views AppTest: **5/5 PASS**)
-- **Baseline Preservation:** Chat 01, Chat 02, Chat 03, and Chat 04 logic and tests preserved with zero regressions.
+- **Active Branch:** `overhaul/chat-01-agno-foundation`
+- **Base Baseline SHA:** `cdd111f8c424bfbd265ee1c5e151469533a34375` (from `origin/chat06-ui-repair`)
+- **Automated Test Suite:** **118 passed in 165.14s** (`pytest -v --durations=10`).
+- **Test Modules:**
+  - `tests/test_agent_os.py` (Agno tools, tutor agent, and FastAPI endpoints: **5/5 PASS**)
+  - `tests/test_api_smoke.py` (End-to-end API smoke tests: **7/7 PASS**)
+  - `tests/test_chroma_store.py` (ChromaDB store and hybrid retrieval: **4/4 PASS**)
+  - `tests/acceptance/test_k1_to_k10.py` (Core Vault Ingestion: **10/10 PASS**)
+  - `tests/acceptance/test_chat02_acceptance.py` (Intelligence Core: **13/13 PASS**)
+  - `tests/acceptance/test_chat03_acceptance.py` (End-to-End Product & Benchmark: **9/9 PASS**)
+  - `tests/test_evaluation_runner.py` (Benchmark and locators: **8/8 PASS**)
+  - `tests/test_ui_service_integration.py` (9-view Streamlit shell: **5/5 PASS**)
+  - All other domain tests (retrieval, sufficiency, BKT, misconceptions, recommendations): **PASS**
 
-## Completed Components & Artifacts
+## Deliverables & Documentation
 
-1. **CogniVault 2.0 Streamlit Web UI (`app/ui/`):**
-   - Executive dashboard + all 7 modules operational with light visual theme and reusable components.
-2. **Reproducible STEM Corpus (`data/corpus/` & `app/corpus.py`):**
-   - 4 multimodal sources (PDF, PPTX, Transcript, Image) and 12 atomic units with SHA-256 provenance manifest.
-3. **Deterministic Benchmark Runner (`evaluation/runner.py`):**
-   - 28 test cases, explicit formulas and denominators, persisted in `evaluation/benchmark_results.json`.
-4. **Simulated Learner Trajectories (`evaluation/simulate_learners.py`):**
-   - 6 scenarios persisted in `evaluation/simulation_results.json`.
-5. **Comprehensive Submission Package:**
-   - Detailed walkthrough script in `DEMO_PLAN.md`.
-   - Recording checklist with step-by-step click actions in `DEMO_PLAN.md`.
-   - Track D submission description and hackathon pitch in `DEMO_PLAN.md`.
-   - Full implementation report in `docs/CHAT05_UI_OVERHAUL_REPORT.md`.
+1. `docs/FINAL_OVERHAUL_PLAN.md` — Authoritative overhaul specification across all phases.
+2. `docs/CHAT01_AGNO_FOUNDATION_REPORT.md` — Chat 01 implementation report.
+3. `app/chroma_store.py` — ChromaDB vector store.
+4. `app/ollama_provider.py` — Local Ollama provider with zero paid API requirement.
+5. `app/agent_os/` — Complete Agno AgentOS package with FastAPI endpoints.
+6. `pyproject.toml` & `requirements.txt` — Updated with `agno`, `chromadb`, `fastapi`, `ollama`, `openai`.
+7. `tests/test_chroma_store.py`, `tests/test_agent_os.py`, `tests/test_api_smoke.py` — Full test coverage.
 
-## Outstanding Human Tasks for Submission
+## Next Phase Handoff (Chat 02)
 
-1. **Record Video:** Follow `DEMO_PLAN.md` to record the walkthrough on `http://localhost:8501`.
-2. **Upload Video:** Upload the recorded video to YouTube (unlisted/public) or Google Drive.
-3. **Submit on Hackathon Portal:** Submit repository URL `https://github.com/SujitSaiY2007/CogniVault`, video link, and project description into the portal before the deadline.
+**Phase:** Chat 02 — AgentOS Intelligence Core
+- Implement Agno multi-agent workflow for assessment generation and question verification.
+- Expose BKT learner state tracing and misconception remediation routing via AgentOS REST endpoints.
+- Maintain dual runtime and 100% test pass rate.

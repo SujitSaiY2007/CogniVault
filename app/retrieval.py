@@ -4,10 +4,17 @@ from .db import EvidenceDB
 from .models import CandidateTrace, EvidenceUnit, RetrievalResult, RetrievalTrace
 
 class HybridRetriever:
-    def __init__(self, db: EvidenceDB, model_name: str = "sentence-transformers/all-MiniLM-L6-v2", model=None):
+    def __init__(
+        self,
+        db: EvidenceDB,
+        model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+        model=None,
+        chroma_store=None,
+    ):
         self.db = db
         self.model_name = model_name
         self.model = model
+        self.chroma_store = chroma_store
 
     def _model(self):
         if self.model is None:
@@ -86,7 +93,10 @@ class HybridRetriever:
         sem = [0.0] * len(rows)
 
         if mode in ("semantic", "hybrid"):
-            has_any_embedding = any(self.db.get_embedding(e.evidence_id) is not None for e in rows)
+            has_chroma = self.chroma_store is not None and self.chroma_store.count() > 0
+            has_sqlite = any(self.db.get_embedding(e.evidence_id) is not None for e in rows)
+            has_any_embedding = has_chroma or has_sqlite
+
             if mode == "semantic" and not has_any_embedding:
                 return [], RetrievalTrace(
                     query=query,
@@ -105,14 +115,27 @@ class HybridRetriever:
             if has_any_embedding:
                 import numpy as np
                 qv = self._model().encode([query], normalize_embeddings=True)[0]
-                for i, e in enumerate(rows):
-                    v = self.db.get_embedding(e.evidence_id)
-                    if v is not None:
-                        if v.shape[0] != qv.shape[0]:
-                            raise ValueError(
-                                f"Embedding dimension mismatch: query dimension {qv.shape[0]} != evidence dimension {v.shape[0]}"
-                            )
-                        sem[i] = float(np.dot(qv, v))
+                if has_chroma:
+                    chroma_res = {
+                        r["evidence_id"]: r["similarity"]
+                        for r in self.chroma_store.query(qv, top_k=max(len(rows), 1))
+                    }
+                    for i, e in enumerate(rows):
+                        if e.evidence_id in chroma_res:
+                            sem[i] = chroma_res[e.evidence_id]
+                        else:
+                            v = self.db.get_embedding(e.evidence_id)
+                            if v is not None:
+                                sem[i] = float(np.dot(qv, v))
+                else:
+                    for i, e in enumerate(rows):
+                        v = self.db.get_embedding(e.evidence_id)
+                        if v is not None:
+                            if v.shape[0] != qv.shape[0]:
+                                raise ValueError(
+                                    f"Embedding dimension mismatch: query dimension {qv.shape[0]} != evidence dimension {v.shape[0]}"
+                                )
+                            sem[i] = float(np.dot(qv, v))
 
         if mode == "lexical":
             scores = lex
@@ -166,10 +189,21 @@ class HybridRetriever:
         )
         return out, trace
 
-def build_embeddings(db: EvidenceDB, model_name: str = "sentence-transformers/all-MiniLM-L6-v2", model=None):
+def build_embeddings(
+    db: EvidenceDB,
+    model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+    model=None,
+    chroma_store=None,
+):
     if model is None:
         from sentence_transformers import SentenceTransformer
         model = SentenceTransformer(model_name)
-    for e in db.all_evidence():
+    units = list(db.all_evidence())
+    embeddings = []
+    for e in units:
         vec = model.encode(e.text, normalize_embeddings=True)
         db.add_embedding(e.evidence_id, vec, model_name=model_name)
+        embeddings.append(vec)
+    if chroma_store is not None and units:
+        chroma_store.batch_add_evidence(units, embeddings)
+

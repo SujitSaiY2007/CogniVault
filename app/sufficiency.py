@@ -139,3 +139,7 @@ def check_sufficiency(
 ) -> SufficiencyResult:
     gate = EvidenceSufficiencyGate(min_score=min_score, min_term_coverage=min_term_coverage)
     return gate.evaluate(query, results, trace=trace, db=db)
+
+
+EvidenceGate = EvidenceSufficiencyGate
+

@@ -426,3 +426,7 @@ def get_corpus_manifest(manifest_path: str | Path = "data/corpus_manifest.json")
         "sources": []
     }
 
+
+seed_corpus = seed_database_from_corpus
+
+

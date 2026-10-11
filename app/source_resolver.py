@@ -36,3 +36,14 @@ def resolve(evidence_id: str, db: EvidenceDB) -> dict | None:
                 "size_bytes": len(asset[6]),
             }
     return result
+
+
+class SourceResolver:
+    """Object-oriented resolver providing physical source and locator resolution."""
+
+    def __init__(self, db: EvidenceDB):
+        self.db = db
+
+    def resolve(self, evidence_id: str) -> dict | None:
+        return resolve(evidence_id, self.db)
+
