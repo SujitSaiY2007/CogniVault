@@ -10,11 +10,11 @@
 
 ## Project Status
 
-**Phase:** Chat 05 — CogniVault 2.0 Complete UI Redesign  
-**Status:** READY FOR SUBMISSION (102/102 tests passing green, CogniVault 2.0 light design system active, executive dashboard + 7 module views verified with zero exceptions, benchmark suite operational, simulated learner evaluations verified)  
+**Phase:** Chat 07 — UI Architecture Redesign (in progress)  
+**Status:** NOT READY FOR SUBMISSION — UI redesign is in progress; current changes have not yet passed a fresh test run or browser walkthrough. Visual acceptance is pending.  
 **Repository:** SujitSaiY2007/CogniVault  
 **Default branch:** main  
-**Active branch:** chat05-ui-overhaul  
+**Active UI work branch:** chat06-ui-repair  
 
 GitHub is the canonical source of truth.
 
@@ -106,9 +106,9 @@ No unnecessary microservices, Kubernetes, custom foundation-model training or mu
 - docs/CHAT03_IMPLEMENTATION_STATUS.md — Chat 03 status report.
 - docs/CHAT04_BASELINE_REPORT.md — Chat 04 baseline evidence report.
 - docs/CHAT04_FINAL_STATUS.md — Chat 04 final verification report.
-- docs/CHAT05_UI_OVERHAUL_REPORT.md — Chat 05 CogniVault 2.0 UI overhaul implementation report.
+- docs/CHAT05_UI_OVERHAUL_REPORT.md — history and verification status of the prior UI repair.\n- docs/CHAT07_UI_ARCHITECTURE_REDESIGN.md — current UI architecture and acceptance plan.
 - docs/PRIOR_ART_AND_POSITIONING.md — prior-art and competitive-positioning record.
-- app/ui/ — Streamlit user interface (main.py + executive dashboard + 7 module views, custom light design system in theme.py and components.py).
+- app/ui/ — Streamlit user interface (shared shell, design tokens, and learner-facing views).
 
 - app/ — application code (ingestion, retrieval, tutor, sufficiency, assessment, BKT, misconceptions, recommendations).
 - tests/ — automated unit, acceptance, and AppTest integration tests (102 tests passing).
@@ -144,7 +144,7 @@ streamlit run app/ui/main.py
 ```
 
 ### 3. Run Test Suite
-Run the complete automated test suite (102 tests):
+Run the automated test suite (the expected test count may change as the project evolves):
 ```powershell
 pytest -v --durations=10
 ```
