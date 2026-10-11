@@ -27,7 +27,7 @@ def render_ingestion_view(services: dict):
 
     render_page_header(
         title="Add Learning Materials",
-        description="Ingest multi-modal course materials into CogniVault's verifiable evidence vault with deterministic provenance, exact locators, and SHA-256 checksums.",
+        description="Upload PDFs, slide decks, or transcripts so CogniVault can search their content and cite the original source. You can also load the sample learning corpus for a demo.",
         badge_text="Materials",
         badge_variant="indigo"
     )
