@@ -8,9 +8,11 @@
 ## Verified handoff
 - Repository: `SujitSaiY2007/CogniVault`
 - Chat 01 branch: `overhaul/chat-01-agno-foundation`
-- Chat 01 remote HEAD verified against reported SHA: `9189a4d2f2a91065f97417b512ab4de8e7904bed` at reconciliation time.
-- Chat 01 report records 118 tests passing in 165.14 seconds. This documentation pass did not rerun tests.
-- Chat 01 implementation includes Agno AgentOS evidence tutor, local Ollama adapter/fallback, ChromaDB + SQLite/FTS5 retrieval and evidence/citation endpoints.
+- Original implementation commit: `9189a4d2f2a91065f97417b512ab4de8e7904bed`
+- Latest Chat 01 branch HEAD after documentation-only reconciliation: `9d78ce50699e7f77877e3f1d1555c84951751343`; verified by comparing the live remote branch with this commit.
+- Four documentation-only commits reconcile handoff/objective/state and mark the branch-local roadmap as historical. They did not change application code or tests.
+- Chat 01 report records 118 tests passing in 165.14 seconds. This reconciliation did not rerun tests.
+- Chat 01 implementation includes Agno AgentOS evidence tutor, local Ollama adapter/fallback, ChromaDB + SQLite/FTS5 retrieval, evidence sufficiency/citation checks and API health/source/search/tutor routes.
 
 ## Completed (reported by Chat 01)
 - Agno evidence tutor foundation and REST API.
