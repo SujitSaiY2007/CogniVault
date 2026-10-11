@@ -21,9 +21,9 @@ def render_learner_view(services: dict):
     db = services["db"]
 
     render_page_header(
-        title="Learner Mastery Profile & BKT Analytics",
-        description="Inspect persisted learner states tracked via Bayesian Knowledge Tracing (BKT). Posterior belief estimates reflect probabilistic mastery across curriculum topics.",
-        badge_text="Module 5",
+        title="My Progress",
+        description="Review your practice history and topic mastery estimates. These estimates help guide your next steps; they are not course-completion percentages.",
+        badge_text="Learning history",
         badge_variant="indigo"
     )
 
