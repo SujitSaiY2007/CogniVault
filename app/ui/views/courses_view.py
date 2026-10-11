@@ -197,8 +197,7 @@ def _render_resource_library(db, courses: list, sources: list) -> None:
                     st.markdown(f"**{source.title}**")
                     st.caption(f"{source.modality.value.upper()} · {len(db.get_evidence_for_source(source.source_id))} searchable excerpts")
                 with col_action:
-                    if st.button("Add to a course", key=f"unassigned_add_{source.source_id}", use_container_width=True):
-                        st.info("Choose a course above, then use “Add uploaded materials”.")
+                    st.caption("Choose a course above to assign this file.")
         if st.button("Upload learning materials", type="primary", key="course_library_upload"):
             st.session_state["nav_selection_override"] = "➕ Add Materials"
             st.rerun()
