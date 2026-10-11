@@ -27,3 +27,7 @@ The authoritative next-phase plan is [`docs/FINAL_OVERHAUL_PLAN.md`](docs/FINAL_
 **Execution model:** exactly three implementation chats: (1) Agno/evidence foundation, (2) frontend and adaptive learning loop, (3) evaluation, hardening and submission. Implementation must proceed on dedicated phase branches; preserve all legacy Streamlit code, source data, tests, PDFs, and Git history. Do not force-push, reset, delete/rename branches, close/merge PR #1, change visibility, or merge implementation to main without explicit approval.
 
 **Truthfulness gate:** the plan is locked; implementation and acceptance are not yet proven. Organizer requirements are the acceptance baseline. Never claim a requirement, test, metric, deployment, video or submission is complete without reproducible evidence.
+
+
+## Final overhaul decision (2026-10-11)
+The authoritative forward plan is `docs/FINAL_OVERHAUL_PLAN.md`. The stack is local-first: Agno AgentOS/Python, v0-generated Next.js frontend, Ollama, SQLite/FTS5 and local ChromaDB. Keep secrets server-side; never ship model/API keys to the browser or commit `.env`. Hosted free tiers are optional and must not be assumed unlimited. Preserve legacy code/history. The new stack is not accepted until tested.
