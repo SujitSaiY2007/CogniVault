@@ -69,8 +69,6 @@ def render_learner_view(services: dict):
         with col_k4:
             render_metric_card("Active Misconceptions", len(misc_signals), subtext="Requires remediation", badge="Alerts", badge_variant="danger" if misc_signals else "neutral")
 
-        st.markdown("<div style='margin-bottom: 1.25rem;'></div>", unsafe_allow_html=True)
-
     # 1. Topic Mastery Table & Visual Progress Bars
     render_section_header("🎯 Per-Topic Mastery States (BKT)", subtitle="Probabilistic estimates based on hidden Markov model parameters P(L0)=0.10, P(T)=0.15, P(S)=0.10, P(G)=0.20.")
 
@@ -113,7 +111,7 @@ def render_learner_view(services: dict):
         st.dataframe(df_mastery, use_container_width=True, hide_index=True)
 
         # Progress Visualizers
-        st.markdown("<div style='margin-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
+
         for m in masteries:
             with st.container(border=True):
                 p_val = min(1.0, max(0.0, m.p_mastery))
@@ -123,8 +121,6 @@ def render_learner_view(services: dict):
                 with col_stat:
                     st.caption(f"Attempts: {m.attempts} | Correct: {m.correct}")
                 st.progress(p_val)
-
-    st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
 
     # 2. Active Misconception Signals
     render_section_header("⚠️ Active Misconception Diagnostics", subtitle="Automated detection of repeated bug library errors and systematic misconceptions.")
@@ -151,8 +147,6 @@ def render_learner_view(services: dict):
                     st.info(f"💡 **Remediation Action:** Review foundational prerequisite `{ms.remediation_concept_id}`")
                 if ms.remediation_note:
                     st.caption(f"Clinical Note: {ms.remediation_note}")
-
-    st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
 
     # 3. Complete Interaction History Table
     render_section_header("📜 Practice Interaction History", subtitle="Audit log of all questions attempted by this learner profile.")
