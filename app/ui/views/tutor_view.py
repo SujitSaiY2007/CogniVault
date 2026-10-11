@@ -82,15 +82,12 @@ def render_tutor_view(services: dict):
         if response.support_status == "supported":
             status_col1, status_col2 = st.columns([3, 1])
             with status_col1:
-                st.markdown(
-                    """
+                _render_html_fragment("""
                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <span class="cogni-badge cogni-badge-success">🟢 Grounded in Curriculum Evidence</span>
                         <span style="font-size: 0.88rem; color: #16A34A; font-weight: 500;">Verified against indexed course units</span>
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                    """)
             with status_col2:
                 if response.is_synthesis:
                     _render_html_fragment('<div style="text-align: right;"><span class="cogni-badge cogni-badge-indigo">🔄 Cross-Source Synthesis</span></div>')
@@ -98,8 +95,7 @@ def render_tutor_view(services: dict):
                     _render_html_fragment(f'<div style="text-align: right;"><span class="cogni-badge cogni-badge-neutral">Confidence: {response.confidence:.2f}</span></div>')
 
             # Tutor Answer Card
-            st.markdown(
-                f"""
+            _render_html_fragment(f"""
                 <div style="
                     background: #FFFFFF;
                     border: 1px solid #E2E8F0;
@@ -116,9 +112,7 @@ def render_tutor_view(services: dict):
                         {response.answer}
                     </div>
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+                """)
 
             # Verified Source Citations
             render_section_header("📚 Verified Source Citations", subtitle="Every factual assertion in the response maps directly to these addressable units.")
@@ -158,8 +152,7 @@ def render_tutor_view(services: dict):
                 icon="⚠️"
             )
 
-            st.markdown(
-                f"""
+            _render_html_fragment(f"""
                 <div style="
                     background: #FFFBEB;
                     border: 1px solid #FDE68A;
@@ -175,9 +168,7 @@ def render_tutor_view(services: dict):
                         {response.answer}
                     </div>
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+                """)
 
         # -------------------------------------------------------------
         # STATE 3: System Error
