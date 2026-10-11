@@ -28,9 +28,9 @@ def render_assessment_view(services: dict):
     misconceptions: MisconceptionDetector = services["misconceptions"]
 
     render_page_header(
-        title="Adaptive Assessment & Verified Practice",
-        description="Practice curriculum topics through structurally verified questions. Items are selected adaptively based on your Bayesian Knowledge Tracing (BKT) mastery band to prevent repetition.",
-        badge_text="Module 4",
+        title="Practice & Assessment",
+        description="Practise with verified questions, get feedback, and revisit topics that need more attention. Question selection can adapt to your learning history.",
+        badge_text="Practice",
         badge_variant="indigo"
     )
 
