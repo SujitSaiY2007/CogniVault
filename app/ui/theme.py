@@ -243,5 +243,29 @@ hr {{
     padding-right: 1rem;
   }}
 }}
+
+/* Ensure Streamlit's nested button labels keep the intended primary-action contrast. */
+.stButton > button[kind="primary"],
+[data-testid="stFormSubmitButton"] button[kind="primary"] {
+  background: #4F46E5 !important;
+  border-color: #4F46E5 !important;
+  color: #FFFFFF !important;
+}
+.stButton > button[kind="primary"] *,
+[data-testid="stFormSubmitButton"] button[kind="primary"] * {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+  opacity: 1 !important;
+}
+.stButton > button[kind="primary"]:hover,
+[data-testid="stFormSubmitButton"] button[kind="primary"]:hover {
+  background: #4338CA !important;
+  border-color: #4338CA !important;
+}
+[data-testid="stSidebar"] .stRadio label:has(input:checked) {
+  background: #EEF2FF;
+  color: #4338CA;
+  font-weight: 650;
+}
 </style>
 """
