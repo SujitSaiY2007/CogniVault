@@ -1,18 +1,23 @@
-# Current Objective — Chat 1: Agno Evidence Foundation
+# Current Objective — Chat 02: Integrated Product Loop
 
-**Status:** Plan locked; implementation not yet verified.  
-**Plan:** docs/FINAL_OVERHAUL_PLAN.md
+**Status:** Chat 01 remote handoff verified; Chat 02 not yet implemented.  
+**Canonical plan:** [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md)  
+**Exact executor prompt:** [docs/CHAT02_EXECUTION_PROMPT.md](docs/CHAT02_EXECUTION_PROMPT.md)
 
-Build a locally runnable Agno AgentOS evidence tutor that reuses the existing evidence/retrieval/source-location contracts. This is Chat 1 of exactly three implementation chats.
+## Accepted starting point
+- Branch: `overhaul/chat-01-agno-foundation`
+- SHA: `9189a4d2f2a91065f97417b512ab4de8e7904bed`
+- The branch comparison showed this SHA is the current remote head at reconciliation time. Recheck before branching.
+- The Chat 01 report records 118/118 tests passing; no new test run was performed by this documentation reconciliation.
 
-## First actions
-
-1. Inspect all remote branch heads, working tree, dependencies, app code, tests, data and historical reports.
-2. Read all project control docs and organizer Track D requirements.
-3. Record selected base branch and SHA with rationale; never guess the baseline.
-4. Work only on the dedicated Chat 1 branch.
-5. Preserve all code, tests, data, user PDFs, reports, branches and PR #1.
+## Objective
+In exactly one Chat 02, build a complete usable product loop by combining:
+1. Agno workflow/API endpoints for assessment generation, deterministic question and answer verification, duplicate prevention, scoring/feedback, BKT updates, learner state persistence, misconception remediation, prerequisite recommendations and cold-start diagnostic.
+2. A real v0-generated/exported Next.js + TypeScript + Tailwind frontend wired to the Agno AgentOS backend.
+3. Functional ingestion, grounded tutor with exact clickable source locators, assessment, mastery/progress, and next-step screens with no fake data.
 
 ## Exit gate
+Run existing regression tests plus targeted backend/API/frontend tests; lint/typecheck/build the frontend; perform an actual desktop/mobile browser walkthrough; prove a fresh learner can ingest material, ask a cited question, complete assessment, see a verified persistent mastery update, and receive a grounded recommendation. Record exact commands, results and artifacts. Fix failures without weakening assertions.
 
-Implement Agno AgentOS, one Evidence Tutor Agent, local Ollama adapter, retrieval/source-resolution tools, exact page/slide/timestamp locators, deterministic sufficiency and citation validation, unsupported-query abstention, safe configuration and run instructions. Execute real tests and API smoke tests, fix failures without weakening assertions, commit/push the phase branch, verify remote SHA, and produce a report plus Chat 2 handoff. Do not build the full frontend in this chat or claim success without execution evidence.
+## Safety
+Use only `overhaul/chat-02-product-loop`, based on the freshly verified Chat 01 remote HEAD. Preserve all existing code/data/tests/branches/PR #1. Do not merge to `main`, close/merge PR #1, force-push, reset, delete/rename branches, or change repository visibility. Do not start Chat 03 in this phase.
