@@ -12,6 +12,7 @@ from app.assessment import AssessmentEngine
 from app.learner_model import BKTModel
 from app.misconceptions import MisconceptionDetector
 from app.ui.components import (
+    _render_html_fragment,
     render_page_header,
     render_section_header,
     render_metric_card,
@@ -132,35 +133,28 @@ def render_assessment_view(services: dict):
     with st.container(border=True):
         header_cols = st.columns([2.5, 1, 1])
         with header_cols[0]:
-            st.markdown(
-                f"""
+            _render_html_fragment(f"""
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
                     <span class="cogni-badge cogni-badge-neutral">{q.question_id}</span>
                     <strong style="color: #18233B; font-size: 1.1rem;">{active_topic}</strong>
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+                """)
             if q.concept_id:
                 st.caption(f"Target Concept: **{q.concept_id}**")
         with header_cols[1]:
-            st.markdown(
-                f"""
+            _render_html_fragment(f"""
                 <div style="display: flex; gap: 0.4rem; justify-content: flex-end;">
                     <span class="cogni-badge cogni-badge-neutral">{q.difficulty.value.upper()}</span>
                     <span class="cogni-badge cogni-badge-neutral">{q.question_type.value.upper()}</span>
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+                """)
         with header_cols[2]:
             st.markdown(
                 '<div style="text-align: right;"><span class="cogni-badge cogni-badge-success">✅ Verified Item</span></div>',
                 unsafe_allow_html=True
             )
 
-        st.markdown(
-            f"""
+        _render_html_fragment(f"""
             <div style="
                 background: #F8FAFC;
                 border: 1px solid #E2E8F0;
@@ -174,9 +168,7 @@ def render_assessment_view(services: dict):
             ">
                 {q.prompt}
             </div>
-            """,
-            unsafe_allow_html=True
-        )
+            """)
 
         # Form for answering
         user_answer = ""
