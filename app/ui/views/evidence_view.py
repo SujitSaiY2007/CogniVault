@@ -133,19 +133,15 @@ def render_evidence_view(services: dict):
                 if source_path:
                     st.caption(f"Source file: `{source_path}`")
             with header_col2:
-                st.markdown(
-                    f"""
+                _render_html_fragment(f"""
                     <div style="display: flex; justify-content: flex-end; gap: 0.4rem; align-items: center;">
                         <span class="cogni-badge cogni-badge-neutral">{ev.modality.value.upper()}</span>
                         <span class="cogni-badge cogni-badge-{loc_variant}">{loc_badge}</span>
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                    """)
 
             # Excerpt Box
-            st.markdown(
-                f"""
+            _render_html_fragment(f"""
                 <div style="
                     background-color: #F8FAFC;
                     border-left: 3px solid #CBD5E1;
@@ -158,9 +154,7 @@ def render_evidence_view(services: dict):
                 ">
                     {ev.text}
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+                """)
 
             # If image asset present, safely render image
             if ev.asset_id:
