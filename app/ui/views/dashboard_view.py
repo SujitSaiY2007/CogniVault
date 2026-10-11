@@ -60,15 +60,15 @@ def render_dashboard_view(services: dict) -> None:
     hero_col, resume_col = st.columns([1.25, 1], gap="large")
     with hero_col:
         with st.container(border=True):
-            st.markdown("### Your materials. Your pace.")
+            st.markdown("### What would you like to learn today?")
             st.write(
-                "Get answers tied to your indexed course sources, practise with verified "
-                "questions, and use evidence-based guidance to choose what to study next."
+                "Pick a course to open its materials, ask a source-backed question, "
+                "or practise a topic with verified questions."
             )
-            st.markdown("**Built around three steps**")
-            st.markdown("- Explore a course and open its learning materials")
-            st.markdown("- Ask the tutor and inspect its source citations")
-            st.markdown("- Practise, review feedback, and revisit topics")
+            st.markdown("**A simple learning loop**")
+            st.markdown("- Learn from your course materials")
+            st.markdown("- Check answers against cited sources")
+            st.markdown("- Practise and review what needs work")
             if st.button("Explore courses", type="primary", use_container_width=True):
                 _navigate("📚 Courses")
 
@@ -82,7 +82,12 @@ def render_dashboard_view(services: dict) -> None:
                     st.metric("Current mastery estimate", f"{mastery.p_mastery:.0%}")
                     st.caption("A learner-model estimate, not course completion.")
                 topic_questions = db.get_questions_for_topic(resume_topic, verified_only=True)
-                st.caption(f"{len(topic_questions)} verified practice items available for this topic.")
+                st.caption(f"{len(topic_questions)} verified practice item(s) available for this topic.")
+                if len(topic_questions) < 3:
+                    st.caption(
+                        "Evidence note: this topic has a small practice set. Treat the mastery "
+                        "estimate as provisional until you have answered more questions."
+                    )
                 if st.button("Continue with practice", type="primary", use_container_width=True):
                     st.session_state["active_topic_id"] = resume_topic
                     _navigate("📝 Practice")
