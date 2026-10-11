@@ -23,9 +23,9 @@ def render_recommendations_view(services: dict):
     engine: AdaptiveRecommendationEngine = services["recommendations"]
 
     render_page_header(
-        title="Adaptive Recommendations & Prerequisite Readiness",
-        description="Explainable next-step pedagogical recommendations. CogniVault strictly enforces BKT mastery bands, active misconception routing, and prerequisite readiness gates (P >= 0.70).",
-        badge_text="Module 6",
+        title="Your Next Steps",
+        description="Find a useful next topic based on your practice history, current mastery estimates, and prerequisite relationships.",
+        badge_text="Personalized guidance",
         badge_variant="indigo"
     )
 
