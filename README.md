@@ -39,3 +39,16 @@ Preserve main, PR #1 and all phase branches. No force-push, reset, deletion, ren
 Read `PROJECT_STATE.md`, `CURRENT_OBJECTIVE.md`, `CURRENT_HANDOFF.md`, `NEXT_CHAT_PROMPT.md`, `docs/continuity/CHAT_HISTORY.md`, `docs/continuity/FILE_OWNERSHIP.md`, and `docs/CHAT05_UI_OVERHAUL_REPORT.md`.
 
 Reported test results are not independently rerun by this documentation commit. No demo recording or portal submission is marked complete without evidence.
+
+
+---
+
+## Final overhaul decision — 2026-10-11
+
+The authoritative next-phase plan is now [`docs/FINAL_OVERHAUL_PLAN.md`](FINAL_OVERHAUL_PLAN.md). This section supersedes earlier forward-looking implementation instructions where they conflict; prior entries remain preserved as history.
+
+**Current direction:** controlled Agno-first overhaul with v0-generated Next.js/TypeScript frontend, Python Agno AgentOS backend, Ollama/local model baseline, SQLite + FTS5 + local ChromaDB, local embeddings, deterministic evidence/assessment verification, and existing BKT logic. See the final plan for exact decisions, acceptance gates, branch rules, and the only three executor prompts.
+
+**Execution model:** exactly three implementation chats: (1) Agno/evidence foundation, (2) frontend and adaptive learning loop, (3) evaluation, hardening and submission. Implementation must proceed on dedicated phase branches; preserve all legacy Streamlit code, source data, tests, PDFs, and Git history. Do not force-push, reset, delete/rename branches, close/merge PR #1, change visibility, or merge implementation to main without explicit approval.
+
+**Truthfulness gate:** the plan is locked; implementation and acceptance are not yet proven. Organizer requirements are the acceptance baseline. Never claim a requirement, test, metric, deployment, video or submission is complete without reproducible evidence.
