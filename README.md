@@ -1,54 +1,40 @@
-# CogniVault — Current Project Reference
+# CogniVault — Evidence-First Adaptive Learning
 
-**Track:** D — Personalized Tutoring & Adaptive Learning  
-**Reconciled:** 2026-10-10  
-**Current phase:** Chat 05 screenshot-guided dashboard redesign; Antigravity response pending.
-
-> **Repository truth:** `main` was at `0dd3acd0f973f7afcf8dada234f844ee5095b19a` before this documentation-only synchronization and contains the original scaffold/control files. Application implementation is on separate Chat 01–05 branches. This update does not merge implementation code into main.
-
-## Product
-CogniVault connects multimodal course-material ingestion and source-addressable evidence with grounded tutoring, explicit abstention, verified assessments, learner-state updates, recommendations and reproducible evaluation.
-
-## Phase state
-| Phase | Reported state | Current caveat |
-|---|---|---|
-| Chat 01 — Evidence foundation | Branch exists | PR #1 remains open/draft |
-| Chat 02 — Intelligence core | Reported complete | Separate phase branch |
-| Chat 03 — Product/evaluation | Reported complete | Separate phase branch |
-| Chat 04 — Acceptance checkpoint | Reported 102 tests passed | Browser visual acceptance not established |
-| Chat 05 — Initial UI overhaul | Reported pushed | Screenshots revealed significant UI defects |
-| Chat 05 — Dashboard Stage 1 | AG task issued; response pending | Do not duplicate task |
-| Browser acceptance | Pending | Playwright driver download failed in prior attempt |
-| Demo recording/submission | Not confirmed | Still pending |
-| Public free hosting/persistent storage/auth | Not verified | Separate future deployment work |
-
-## Current UI decisions
-- Preserve warm off-white, white, navy, indigo, teal and subtle-gray palette.
-- Minimal unnumbered sidebar and screenshot-guided dashboard.
-- Dashboard first; user approval required before redesigning other screens.
-- Dashboard includes global tutor question field, account/guest and truthful usage state, welcome hero, Resume/Continue Learning, Recent History, Recommended Next Step, Quick Actions and onboarding.
-- Fix raw HTML leakage, tiny text, one-letter heading wraps, excessive whitespace and technical clutter.
-- Use real data and honest empty states. Never fabricate progress, history, quotas, or recommendations.
-- Do not equate BKT probability with course completion.
-- Guest history is session-only.
-
-## Branch and file policy
-Preserve main, PR #1 and all phase branches. No force-push, reset, deletion, rename or merge without explicit authorization. The four root PDFs supplied by the user are immutable references: do not edit, move, rename or delete them.
+**Hackathon:** Multimodal AI Hackathon 2026 · Track D — Personalized Tutoring & Adaptive Learning  
+**Plan date:** 2026-10-11  
+**Plan status:** Locked; implementation not yet verified.
 
 ## Start here
-Read `PROJECT_STATE.md`, `CURRENT_OBJECTIVE.md`, `CURRENT_HANDOFF.md`, `NEXT_CHAT_PROMPT.md`, `docs/continuity/CHAT_HISTORY.md`, `docs/continuity/FILE_OWNERSHIP.md`, and `docs/CHAT05_UI_OVERHAUL_REPORT.md`.
 
-Reported test results are not independently rerun by this documentation commit. No demo recording or portal submission is marked complete without evidence.
+The authoritative final plan, architecture, acceptance gates and the only three executor prompts are in [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md).
 
+## Final planned stack
 
----
+- Frontend: v0-generated Next.js + TypeScript + Tailwind CSS.
+- Agent runtime: Python + Agno AgentOS with bounded workflows and three specialist responsibilities.
+- Local model baseline: Ollama; any hosted free-tier provider is optional, quota-limited and not required.
+- Data/retrieval: SQLite + FTS5 + local ChromaDB + local embeddings.
+- Trust/adaptation: deterministic source/citation/assessment verification and preserved BKT learner model.
+- Testing: pytest, API/integration checks, frontend checks and real browser walkthrough.
 
-## Final overhaul decision — 2026-10-11
+## Product goal
 
-The authoritative next-phase plan is now [`docs/FINAL_OVERHAUL_PLAN.md`](FINAL_OVERHAUL_PLAN.md). This section supersedes earlier forward-looking implementation instructions where they conflict; prior entries remain preserved as history.
+Deliver a source-grounded study companion that ingests learning materials, cites exact pages/slides/timestamps, abstains on unsupported questions, verifies assessments, tracks topic mastery and adapts the next learning action.
 
-**Current direction:** controlled Agno-first overhaul with v0-generated Next.js/TypeScript frontend, Python Agno AgentOS backend, Ollama/local model baseline, SQLite + FTS5 + local ChromaDB, local embeddings, deterministic evidence/assessment verification, and existing BKT logic. See the final plan for exact decisions, acceptance gates, branch rules, and the only three executor prompts.
+## Historical preservation
 
-**Execution model:** exactly three implementation chats: (1) Agno/evidence foundation, (2) frontend and adaptive learning loop, (3) evaluation, hardening and submission. Implementation must proceed on dedicated phase branches; preserve all legacy Streamlit code, source data, tests, PDFs, and Git history. Do not force-push, reset, delete/rename branches, close/merge PR #1, change visibility, or merge implementation to main without explicit approval.
+This is a continuation, not a replacement project. Preserve the Streamlit implementation, all useful code, tests, data, user-provided PDFs, reports, prior-art notes, commits, branches and PR #1. Streamlit remains a legacy path until the new system passes acceptance. Do not force-push, reset, delete/rename branches, close/merge PR #1, change visibility or merge implementation to main without explicit approval.
 
-**Truthfulness gate:** the plan is locked; implementation and acceptance are not yet proven. Organizer requirements are the acceptance baseline. Never claim a requirement, test, metric, deployment, video or submission is complete without reproducible evidence.
+## Exactly three implementation chats
+
+1. Agno evidence foundation and local API.
+2. v0/Next.js frontend and complete adaptive learning loop.
+3. Evaluation, hardening, demo and submission package.
+
+## Truthful status
+
+The organizer requirements informed the final plan. The new Agno/Next.js architecture has not yet passed its own tests or full browser walkthrough. Metrics, public deployment, video recording and portal submission are not claimed complete. Free frontend hosting does not automatically host the backend; Ollama is the baseline for avoiding paid API calls.
+
+## Legacy launch
+
+The existing Streamlit app remains available while preserved: python -m streamlit run app/ui/main.py.
