@@ -101,7 +101,7 @@ def render_dashboard_view(services: dict) -> None:
     try:
         recommendation = recommendation_engine.recommend(learner_id)
         with st.container(border=True):
-            rec_col, action_col = st.columns([3, 1], vertical_alignment="center")
+            rec_col, action_col = st.columns([3, 1])
             with rec_col:
                 st.markdown(f"**{recommendation.recommended_action.replace('_', ' ').title()}**")
                 st.write(recommendation.rationale)
