@@ -1,3 +1,7 @@
+> **Historical copy / superseded phase handoff:** The canonical, current three-chat roadmap is on `main`: [FINAL_OVERHAUL_PLAN.md](https://github.com/SujitSaiY2007/CogniVault/blob/main/docs/FINAL_OVERHAUL_PLAN.md). The authoritative Chat 02 prompt is [CHAT02_EXECUTION_PROMPT.md](https://github.com/SujitSaiY2007/CogniVault/blob/main/docs/CHAT02_EXECUTION_PROMPT.md). This branch copy is retained for history; where its old Chat 2/Chat 3 wording differs, follow the canonical main roadmap. Chat 02 combines the Agno assessment/BKT/misconception/recommendation API work with the v0-generated Next.js frontend in one phase.
+
+---
+
 # CogniVault — Final Overhaul Plan: Agno AgentOS & Local-First Intelligence
 
 **Status:** AUTHORITATIVE TECHNICAL OVERHAUL SPECIFICATION  
