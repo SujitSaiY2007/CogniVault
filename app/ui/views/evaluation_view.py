@@ -26,9 +26,9 @@ def render_evaluation_view(services: dict):
     db = services["db"]
 
     render_page_header(
-        title="Deterministic Benchmark & Evaluation Suite",
-        description="Offline, reproducible evaluation suite verifying retrieval precision, fail-closed abstention, 100% citation addressability, BKT state transitions, and multi-turn learner simulations.",
-        badge_text="Module 7",
+        title="Evaluation Lab",
+        description="Run reproducible checks on evidence retrieval, grounded answers, abstention, and adaptive learning behavior. This is an advanced evaluation area, not a student progress report.",
+        badge_text="Advanced",
         badge_variant="indigo"
     )
 
