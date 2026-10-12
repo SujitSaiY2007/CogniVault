@@ -1,23 +1,56 @@
-# Current Handoff — Chat 01 Accepted; Start Chat 02 Product Loop
+# Current Handoff — Chat 02 Accepted; Ready for Chat 03 Final Polish & Evaluation Packaging
 
-**Reconciled:** 2026-10-11  
+**Date:** 2026-10-12  
 **Canonical roadmap on main:** [docs/FINAL_OVERHAUL_PLAN.md](https://github.com/SujitSaiY2007/CogniVault/blob/main/docs/FINAL_OVERHAUL_PLAN.md)  
-**Exact Chat 02 prompt on main:** [docs/CHAT02_EXECUTION_PROMPT.md](https://github.com/SujitSaiY2007/CogniVault/blob/main/docs/CHAT02_EXECUTION_PROMPT.md)
+**Phase Implementation Branch:** `overhaul/chat-02-product-loop`  
+**Base Commit:** `9d78ce50699e7f77877e3f1d1555c84951751343` (verified remote HEAD of `overhaul/chat-01-agno-foundation`)
 
-## Chat 01 verified remote handoff
-- Branch: `overhaul/chat-01-agno-foundation`
-- Original reported commit: `9189a4d2f2a91065f97417b512ab4de8e7904bed`
-- At reconciliation, the remote branch head exactly matched that commit. This document update will advance the branch HEAD; use the new live branch HEAD as Chat 02's base.
-- Reported tests: 118 passed in 165.14 seconds, per `docs/CHAT01_AGNO_FOUNDATION_REPORT.md`. This reconciliation did not rerun tests.
-- Delivered foundation: Agno AgentOS evidence tutor, local Ollama adapter/fallback, ChromaDB + SQLite/FTS5 retrieval, evidence sufficiency/citation checks and source/tutor/search/health APIs.
-- Pending: expose the existing assessment/question verification, BKT, misconception and recommendation logic through the API; build and connect the real Next.js frontend.
+---
 
-## Chat 02 scope — one integrated phase
-Create/use only `overhaul/chat-02-product-loop` from the freshly verified latest Chat 01 remote HEAD. Chat 02 must do both:
-1. Agno workflow/API integration for assessment generation, deterministic question/answer verification, duplicate prevention, answer scoring/feedback, persisted BKT mastery, misconception remediation, prerequisite-aware recommendations and cold-start diagnostic.
-2. v0-generated/exported Next.js + TypeScript + Tailwind frontend, connected to the real backend, covering ingestion, grounded tutoring/clickable citations, assessment, progress and recommendations.
+## Chat 02 Verified Deliverables
 
-Use [docs/CHAT02_EXECUTION_PROMPT.md on main](https://github.com/SujitSaiY2007/CogniVault/blob/main/docs/CHAT02_EXECUTION_PROMPT.md) as the exact executor prompt. Do not split the backend and frontend into separate chats. Do not start Chat 03 until Chat 02 passes its exit gate.
+### 1. Controlled Agno Multi-Role Learning Workflow
+- **Roles:**
+  - `EvidenceTutorAgent`: Grounded RAG with physical locators and fail-closed abstention.
+  - `AssessmentAgent`: MCQ, short-answer, and numerical practice generation with `DeterministicQuestionVerifier` and fingerprint repetition suppression.
+  - `LearningCoachAgent`: Deterministic Bayesian Knowledge Tracing ($P(L_t)$), 2-error misconception threshold diagnostics/remediation, prerequisite gating ($\ge 0.70$), and cold-start intake.
+- **Workflow:** `CogniVaultLearningWorkflow` coordinating all bounded roles with deterministic Python tools (`AssessmentTools`, `LearningCoachTools`).
+- **REST Endpoints (`app/agent_os/app.py`):**
+  - `/api/v1/assessment/*`: Selection, pre-release verification, scoring, explanation retrieval.
+  - `/api/v1/learner/*`: BKT mastery, observation logging, misconception diagnostics/resolution, prerequisite recommendations, cold-start diagnostic intake.
+  - `/api/v1/ingest/upload`: Multipart upload with SHA-256 provenance calculation and dual indexing.
+  - Boundary: `X-Learner-Id` header authorization enforcement preventing cross-learner state mutations (returns `403 Forbidden`).
+
+### 2. Modern Responsive Next.js Frontend (`frontend/`)
+- Exported, fully functional Next.js 14 + React 18 + TypeScript + TailwindCSS application.
+- Real views wired to typed API calls:
+  - Grounded Tutor with interactive clickable citation badges.
+  - Slide-in Citation Drawer showing source ID, SHA-256 hash, physical locator (page/slide/timestamp), term overlap score, and excerpt.
+  - Practice Arena for MCQ, short-answer, and numerical questions with instant verified feedback and BKT deltas.
+  - Real-time Learner Mastery Dashboard with $P(L_t)$ probabilities and audit history.
+  - Misconception Tracking & Remediation View.
+  - Prerequisite-Aware Next Step Recommendations.
+  - Course Materials Ingestion View with SHA-256 provenance hashes.
+  - Cold-Start Diagnostic Intake Modal.
+- Build status: `npm run build` static optimization 4/4 pages passed with 0 errors.
+
+### 3. Verification & Test Evidence
+- **Automated Python Tests:** 126 passed in 238.77s (100% pass rate, 0 failed, 0 errors).
+  - Includes 8 comprehensive integration tests in `tests/test_chat02_product_loop.py`.
+- **Live HTTP Walkthrough:** All 9 acceptance loop steps executed against running servers (`http://127.0.0.1:8000` & `http://localhost:3000`), verifying intake, question selection, answer scoring, BKT progression, tutor grounding, off-material abstention, and Next.js frontend delivery.
+
+---
+
+## Chat 03 Starting Base & Scope
+
+- **Starting Base for Chat 03:** Live branch HEAD of `overhaul/chat-02-product-loop`.
+- **Chat 03 Scope:**
+  1. Reproducible evaluation harness and benchmarks (grounding faithfulness, abstention correctness, BKT convergence across multi-turn simulated cohorts).
+  2. Security and UX hardening.
+  3. Final documentation, demo script, and hackathon packaging.
+- **Rules:** Do NOT begin Chat 03 on this branch. Do NOT merge implementation to `main`.
+
+---
 
 ## Preservation
-Preserve the Streamlit legacy path, all code/data/tests/user PDFs/reports/history/branches and PR #1. No force-push/reset, branch deletion/rename, PR #1 close/merge, repository visibility change, or implementation merge to `main` without explicit approval. Video recording/upload and portal submission remain human actions.
+Preserve all historical code, data, tests, user PDFs, reports, commit history, branches, PR #1, and the Streamlit legacy path (`app/ui/main.py`). No force-push, reset, deletion, or repository visibility changes.

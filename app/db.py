@@ -976,10 +976,30 @@ class EvidenceDB:
             for r in rows
         ]
 
+    def get_misconception(self, signal_id: str) -> MisconceptionSignal | None:
+        sql = "SELECT signal_id, learner_id, topic_id, concept_id, suspected_misconception, error_count, confidence, remediation_concept_id, remediation_evidence_ids_json, remediation_note, created_at FROM misconceptions WHERE signal_id=?"
+        row = self.conn.execute(sql, (signal_id,)).fetchone()
+        if not row:
+            return None
+        return MisconceptionSignal(
+            signal_id=row[0],
+            learner_id=row[1],
+            topic_id=row[2],
+            concept_id=row[3],
+            suspected_misconception=row[4],
+            error_count=int(row[5]),
+            confidence=float(row[6]),
+            remediation_concept_id=row[7],
+            remediation_evidence_ids=json.loads(row[8]),
+            remediation_note=row[9],
+            created_at=row[10],
+        )
+
     def clear_misconceptions(self, learner_id: str, topic_id: str | None = None):
         if topic_id:
             self.conn.execute("DELETE FROM misconceptions WHERE learner_id=? AND topic_id=?", (learner_id, topic_id))
         else:
             self.conn.execute("DELETE FROM misconceptions WHERE learner_id=?", (learner_id,))
         self.conn.commit()
+
 
