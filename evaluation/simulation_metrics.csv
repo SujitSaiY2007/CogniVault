@@ -1,0 +1,12 @@
+cohort,learner_id,session_step,p_mastery,assigned_difficulty,action
+progressing,cohort_progressing,1,0.4333,medium,targeted_practice
+progressing,cohort_progressing,2,0.8086,medium,mixed_application
+progressing,cohort_progressing,3,0.9575,hard,advance_topic
+progressing,cohort_progressing,4,0.9917,hard,advance_topic
+struggling,cohort_struggling,1,0.1616,easy,foundational_review
+struggling,cohort_struggling,2,0.17,easy,foundational_review
+struggling,cohort_struggling,3,0.1712,easy,foundational_review
+mixed,cohort_mixed,1,0.4333,medium,targeted_practice
+mixed,cohort_mixed,2,0.2242,easy,foundational_review
+mixed,cohort_mixed,3,0.6305,medium,targeted_practice
+mixed,cohort_mixed,4,0.902,hard,advance_topic

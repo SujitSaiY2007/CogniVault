@@ -102,8 +102,23 @@ class ColdStartIntakeRequest(BaseModel):
 
 
 # -----------------------------------------------------------------------------
-# Learner Boundary / Authorization Dependency
+# Learner Boundary & Security Dependencies
 # -----------------------------------------------------------------------------
+
+import re
+
+LEARNER_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_\-\.]{1,64}$")
+MAX_UPLOAD_SIZE = 25 * 1024 * 1024  # 25 MB
+
+
+def validate_learner_id_format(learner_id: str) -> None:
+    """Validates that learner_id conforms to safe alphanumeric/dash syntax."""
+    if not learner_id or not LEARNER_ID_PATTERN.match(learner_id.strip()):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid learner ID format. Must be alphanumeric with - or _, max 64 characters.",
+        )
+
 
 def verify_learner_boundary(
     learner_id: str,
@@ -114,11 +129,14 @@ def verify_learner_boundary(
     If client presents an X-Learner-Id header, it must match the path's learner_id.
     Prevents learner A from reading or mutating learner B's state.
     """
-    if x_learner_id and x_learner_id.strip() != learner_id.strip():
-        raise HTTPException(
-            status_code=403,
-            detail=f"Forbidden: Learner boundary mismatch. Header '{x_learner_id}' cannot mutate or read learner '{learner_id}'.",
-        )
+    validate_learner_id_format(learner_id)
+    if x_learner_id:
+        validate_learner_id_format(x_learner_id)
+        if x_learner_id.strip() != learner_id.strip():
+            raise HTTPException(
+                status_code=403,
+                detail=f"Forbidden: Learner boundary mismatch. Header '{x_learner_id}' cannot mutate or read learner '{learner_id}'.",
+            )
 
 
 # -----------------------------------------------------------------------------
@@ -243,16 +261,33 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         Extracts evidence units with exact locators, computes SHA-256 hash,
         and indexes into SQLite and ChromaDB.
         """
-        suffix = Path(file.filename or "").suffix.lower()
+        safe_filename = Path(file.filename or "").name
+        if not safe_filename:
+            raise HTTPException(status_code=400, detail="Filename cannot be empty.")
+
+        suffix = Path(safe_filename).suffix.lower()
         if suffix not in {".pdf", ".pptx", ".txt", ".vtt", ".srt"}:
             raise HTTPException(
                 status_code=400,
-                detail=f"Unsupported format '{suffix}'. Supported: .pdf, .pptx, .txt",
+                detail=f"Unsupported format '{suffix}'. Supported: .pdf, .pptx, .txt, .vtt, .srt",
             )
 
-        # Write to temporary file for safe ingestion
+        # Write to temporary file for safe ingestion with size enforcement
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            shutil.copyfileobj(file.file, tmp)
+            bytes_read = 0
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                bytes_read += len(chunk)
+                if bytes_read > MAX_UPLOAD_SIZE:
+                    tmp.close()
+                    Path(tmp.name).unlink(missing_ok=True)
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"Payload too large. File exceeds {MAX_UPLOAD_SIZE // (1024 * 1024)}MB maximum limit.",
+                    )
+                tmp.write(chunk)
             tmp_path = Path(tmp.name)
 
         try:
@@ -367,11 +402,14 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
           3. Checks for misconception accumulation.
           4. Returns prerequisite-aware next recommendation.
         """
-        if x_learner_id and x_learner_id.strip() != req.learner_id.strip():
-            raise HTTPException(
-                status_code=403,
-                detail=f"Forbidden: Learner boundary mismatch. Header '{x_learner_id}' cannot mutate or read learner '{req.learner_id}'.",
-            )
+        validate_learner_id_format(req.learner_id)
+        if x_learner_id:
+            validate_learner_id_format(x_learner_id)
+            if x_learner_id.strip() != req.learner_id.strip():
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"Forbidden: Learner boundary mismatch. Header '{x_learner_id}' cannot mutate or read learner '{req.learner_id}'.",
+                )
         try:
             return learning_service.submit_assessment_answer(
                 learner_id=req.learner_id,

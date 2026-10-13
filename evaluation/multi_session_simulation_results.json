@@ -1,0 +1,137 @@
+{
+  "timestamp": "2026-10-13T14:04:43.887302+00:00",
+  "cohorts": {
+    "progressing": {
+      "learner_id": "cohort_progressing",
+      "initial_p_mastery": 0.1,
+      "final_p_mastery": 0.9917,
+      "mastery_gain": 0.8917,
+      "steps": [
+        {
+          "session": 1,
+          "response": "correct",
+          "p_mastery_before": 0.1,
+          "p_mastery_after": 0.4333,
+          "difficulty_assigned": "medium",
+          "action": "targeted_practice"
+        },
+        {
+          "session": 2,
+          "response": "correct",
+          "p_mastery_before": 0.4333,
+          "p_mastery_after": 0.8086,
+          "difficulty_assigned": "medium",
+          "action": "mixed_application"
+        },
+        {
+          "session": 3,
+          "response": "correct",
+          "p_mastery_before": 0.8086,
+          "p_mastery_after": 0.9575,
+          "difficulty_assigned": "hard",
+          "action": "advance_topic"
+        },
+        {
+          "session": 4,
+          "response": "correct",
+          "p_mastery_before": 0.9575,
+          "p_mastery_after": 0.9917,
+          "difficulty_assigned": "hard",
+          "action": "advance_topic"
+        }
+      ],
+      "advanced_to_next_topic": true
+    },
+    "struggling": {
+      "learner_id": "cohort_struggling",
+      "initial_p_mastery": 0.1,
+      "final_p_mastery": 0.1712,
+      "steps": [
+        {
+          "session": 1,
+          "response": "incorrect",
+          "p_mastery_before": 0.1,
+          "p_mastery_after": 0.1616,
+          "difficulty_assigned": "easy",
+          "action": "foundational_review"
+        },
+        {
+          "session": 2,
+          "response": "incorrect",
+          "p_mastery_before": 0.1616,
+          "p_mastery_after": 0.17,
+          "difficulty_assigned": "easy",
+          "action": "foundational_review"
+        },
+        {
+          "session": 3,
+          "response": "incorrect",
+          "p_mastery_before": 0.17,
+          "p_mastery_after": 0.1712,
+          "difficulty_assigned": "easy",
+          "action": "foundational_review"
+        }
+      ],
+      "retained_in_foundational_review": true
+    },
+    "mixed": {
+      "learner_id": "cohort_mixed",
+      "final_p_mastery": 0.902,
+      "steps": [
+        {
+          "session": 1,
+          "outcome": "correct",
+          "p_mastery": 0.4333,
+          "difficulty": "medium",
+          "action": "targeted_practice"
+        },
+        {
+          "session": 2,
+          "outcome": "incorrect",
+          "p_mastery": 0.2242,
+          "difficulty": "easy",
+          "action": "foundational_review"
+        },
+        {
+          "session": 3,
+          "outcome": "correct",
+          "p_mastery": 0.6305,
+          "difficulty": "medium",
+          "action": "targeted_practice"
+        },
+        {
+          "session": 4,
+          "outcome": "correct",
+          "p_mastery": 0.902,
+          "difficulty": "hard",
+          "action": "advance_topic"
+        }
+      ]
+    },
+    "misconception": {
+      "learner_id": "cohort_misconception",
+      "attempt_1_diagnosed": false,
+      "attempt_2_diagnosed": true,
+      "diagnosed_concept": "Second Law",
+      "remediation_recommended": true,
+      "resolved_successfully": true
+    },
+    "prerequisite_gating": {
+      "unready_prerequisite_blocked": true,
+      "ready_prerequisite_advanced": false
+    },
+    "repetition_suppression": {
+      "topic_pool_size": 2,
+      "items_served_within_capacity": 2,
+      "duplicate_items_within_capacity": 0,
+      "within_capacity_repetition_rate": 0.0,
+      "zero_repetition_guarantee": true,
+      "pool_exhaustion_behavior": "Graceful fallback to full pool once all unique candidates have been served"
+    },
+    "persistence_check": {
+      "restarted_connection": true,
+      "persisted_mastery": 0.9917,
+      "verified_identical": true
+    }
+  }
+}

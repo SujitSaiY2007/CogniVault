@@ -237,3 +237,59 @@ def test_retrieval_duplicate_expected_evidence_safety():
     assert prec_mix == pytest.approx(0.50, rel=1e-3)
 
 
+def test_extended_grounding_confusion_matrix(temp_eval_db):
+    """Validates that extended grounding benchmark produces 100% precision/recall on confusion matrix."""
+    from evaluation.extended_evaluation import compute_grounding_and_abstention_benchmark
+    dataset_path = Path("evaluation/benchmark_dataset.json")
+    results = compute_grounding_and_abstention_benchmark(temp_eval_db, dataset_path)
+
+    cm = results["confusion_matrix"]
+    assert cm["true_positives"] >= 8
+    assert cm["true_negatives"] >= 3
+    assert cm["false_positives"] == 0
+    assert cm["false_negatives"] == 0
+    assert cm["precision"] == 1.0
+    assert cm["recall"] == 1.0
+    assert cm["f1_score"] == 1.0
+
+    ragas = results["ragas_equivalent_metrics"]
+    assert ragas["faithfulness"] >= 0.90
+    assert ragas["context_recall_at_3"] == 1.0
+
+    loc = results["citation_and_locator_integrity"]
+    assert loc["citation_addressability_rate"] == 1.0
+    assert loc["physical_locator_accuracy"] == 1.0
+
+
+def test_extended_multi_session_cohort_simulation(temp_eval_db, tmp_path):
+    """Validates multi-session cohort metrics, zero repeats within pool, and restart persistence."""
+    from evaluation.extended_evaluation import compute_multi_session_cohort_simulations
+    db_file = tmp_path / "cohort_test.sqlite"
+    db = EvidenceDB(str(db_file))
+    seed_database_from_corpus(db)
+
+    results = compute_multi_session_cohort_simulations(db, db_file)
+    cohorts = results["cohorts"]
+
+    # Progressing gains mastery
+    assert cohorts["progressing"]["mastery_gain"] > 0.70
+    assert cohorts["progressing"]["advanced_to_next_topic"] is True
+
+    # Struggling remains in foundational review
+    assert cohorts["struggling"]["retained_in_foundational_review"] is True
+
+    # Misconception triggers and resolves
+    assert cohorts["misconception"]["attempt_2_diagnosed"] is True
+    assert cohorts["misconception"]["remediation_recommended"] is True
+    assert cohorts["misconception"]["resolved_successfully"] is True
+
+    # Repetition suppression
+    assert cohorts["repetition_suppression"]["zero_repetition_guarantee"] is True
+
+    # Persistence across restart
+    assert cohorts["persistence_check"]["verified_identical"] is True
+
+    db.close()
+
+
+

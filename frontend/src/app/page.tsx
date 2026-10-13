@@ -46,6 +46,19 @@ export default function Home() {
 
   useEffect(() => {
     loadInitialData();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("demo_citation") === "true") {
+        setInspectCitation({
+          evidence_id: "physics_mechanics:e00001",
+          source_id: "physics_mechanics",
+          source_title: "Classical Mechanics & Dynamics",
+          modality: "pdf",
+          location: { page: 1 },
+          snippet: "Newton's Second Law of Motion: The rate of change of momentum of a body is directly proportional to the applied force: F = m * a.",
+        });
+      }
+    }
   }, []);
 
   const refreshLearners = async () => {
