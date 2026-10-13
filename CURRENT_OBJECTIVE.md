@@ -22,7 +22,7 @@
    - Full views: Materials Ingestion, Grounded Tutor, Interactive Citations Drawer, Assessment Practice, BKT Mastery Dashboard, Misconceptions, Recommendations, and Cold-Start Modal.
    - Zero-error production build (`npm run build`).
 4. **Verification:**
-   - 126/126 automated Python tests passed (100% pass rate).
+   - 127/127 automated Python tests passed (100% pass rate).
    - Live HTTP integration walkthrough successfully verified all 9 product loop steps.
 
 ---

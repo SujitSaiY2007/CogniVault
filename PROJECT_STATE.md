@@ -15,7 +15,7 @@
   - Multi-role Agno workflow (Evidence Tutor, Assessment, Learning Coach) with deterministic tools.
   - Typed REST API covering assessment lifecycle, BKT topic mastery, misconception diagnostics, prerequisite recommendations, cold-start intake, multipart ingestion, and learner authorization boundaries.
   - Real, responsive Next.js 14 frontend (`frontend/`) with 8 integrated interactive views, clickable citation drawer, and zero-error production build.
-  - Expanded test suite: 126/126 passed in 238.77s (100% pass rate).
+  - Expanded test suite: 127/127 passed in 232.91s (100% pass rate).
   - All 9 acceptance loop steps verified live on port 8000 (backend) and port 3000 (frontend).
 - **Chat 03 (Polish & Evaluation Packaging):** PENDING.
   - Next phase will run evaluation harnesses, learner cohort simulation benchmarks, security hardening, demo scripts, and final submission artifacts.

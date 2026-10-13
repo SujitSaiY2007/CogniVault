@@ -13,7 +13,7 @@
 
 In Chat 02 of the CogniVault system overhaul, we implemented the complete, single-loop **Product Loop (Agno + v0 + Next.js)** integrating backend adaptive learning intelligence, typed API contracts, and a responsive web application. This phase delivers on all Track D requirements for verifiable multi-role agency, Bayesian Knowledge Tracing (BKT) topic mastery, misconception diagnostics, prerequisite-gated recommendations, and source-grounded multimodal learning.
 
-All historical code, data contracts, evaluation benchmarks, the 4 reference PDFs, PR #1, and the 9-view Streamlit application shell (`app/ui/main.py`) were strictly preserved. The entire automated test suite was expanded to **126 automated tests**, achieving **100% pass rate** with zero regressions.
+All historical code, data contracts, evaluation benchmarks, the 4 reference PDFs, PR #1, and the 9-view Streamlit application shell (`app/ui/main.py`) were strictly preserved. The entire automated test suite was expanded to **127 automated tests**, achieving **100% pass rate** with zero regressions.
 
 ---
 
@@ -116,10 +116,10 @@ Built with modern Next.js 14, React 18, TypeScript, TailwindCSS, and Lucide Reac
 
 ### 3.1 Automated Python Regression Suite
 The complete test suite runs under pytest (`pytest tests/ -v`):
-- **Total Tests:** 126 tests
-- **Pass Rate:** 100% (126 passed, 0 failed, 0 errors)
+- **Total Tests:** 127 tests
+- **Pass Rate:** 100% (127 passed, 0 failed, 0 errors)
 - **Key Modules Tested:**
-  - `test_chat02_product_loop.py` (8 new comprehensive integration tests):
+  - `test_chat02_product_loop.py` (9 comprehensive integration tests):
     1. `test_assessment_selection_and_duplicate_suppression`: Proves adaptive selection, fingerprinting, and repetition suppression.
     2. `test_question_verification_endpoints`: Proves rejection of malformed questions and acceptance of verified ones.
     3. `test_answer_submission_bkt_mastery_and_interaction`: Proves atomic scoring, $P(L_t)$ update, and interaction recording.
@@ -128,6 +128,7 @@ The complete test suite runs under pytest (`pytest tests/ -v`):
     6. `test_cold_start_intake_flow`: Proves fresh learner calibration and baseline persistence.
     7. `test_learner_isolation_boundary`: Proves `403 Forbidden` on header/path learner mismatch.
     8. `test_ingest_upload_endpoint`: Proves multipart file upload, SHA-256 provenance, and hybrid searchability.
+    9. `test_topics_and_curriculum_endpoint`: Proves structured topic, concept, and prerequisite taxonomy retrieval.
   - Pre-existing suites: `test_agent_os_app.py`, `test_agent_os_service.py`, `test_agent_os_tools.py`, `test_chroma_store.py`, `test_ollama_provider.py`, `test_tutor.py`, `test_assessment.py`, `test_bkt.py`, `test_misconception.py`, `test_recommendation.py`, `test_evaluation_runner.py`, `test_simulate_learners.py`, `test_evidence_continuity.py`.
 
 ### 3.2 Frontend Build & Compilation

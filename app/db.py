@@ -521,6 +521,14 @@ class EvidenceDB:
         rows = self.conn.execute("SELECT concept_id, name, topic_id, description FROM concepts ORDER BY concept_id").fetchall()
         return [ConceptRecord(concept_id=r[0], name=r[1], topic_id=r[2], description=r[3] or "") for r in rows]
 
+    def get_concepts_for_topic(self, topic_id: str) -> list[ConceptRecord]:
+        rows = self.conn.execute(
+            "SELECT concept_id, name, topic_id, description FROM concepts WHERE topic_id=? ORDER BY concept_id",
+            (topic_id,)
+        ).fetchall()
+        return [ConceptRecord(concept_id=r[0], name=r[1], topic_id=r[2], description=r[3] or "") for r in rows]
+
+
     def link_concept_prerequisite(self, concept_id: str, prerequisite_concept_id: str):
         self.conn.execute("INSERT OR IGNORE INTO concepts (concept_id, name) VALUES (?,?)", (concept_id, concept_id))
         self.conn.execute("INSERT OR IGNORE INTO concepts (concept_id, name) VALUES (?,?)", (prerequisite_concept_id, prerequisite_concept_id))

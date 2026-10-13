@@ -35,8 +35,8 @@
 - Build status: `npm run build` static optimization 4/4 pages passed with 0 errors.
 
 ### 3. Verification & Test Evidence
-- **Automated Python Tests:** 126 passed in 238.77s (100% pass rate, 0 failed, 0 errors).
-  - Includes 8 comprehensive integration tests in `tests/test_chat02_product_loop.py`.
+- **Automated Python Tests:** 127 passed in 232.91s (100% pass rate, 0 failed, 0 errors).
+  - Includes 9 comprehensive integration tests in `tests/test_chat02_product_loop.py`.
 - **Live HTTP Walkthrough:** All 9 acceptance loop steps executed against running servers (`http://127.0.0.1:8000` & `http://localhost:3000`), verifying intake, question selection, answer scoring, BKT progression, tutor grounding, off-material abstention, and Next.js frontend delivery.
 
 ---

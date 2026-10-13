@@ -351,3 +351,18 @@ def test_ingest_upload_endpoint(product_loop_env):
     assert r_search.status_code == 200
     search_data = r_search.json()
     assert search_data["result_count"] >= 1
+
+
+def test_topics_and_curriculum_endpoint(product_loop_env):
+    client = TestClient(product_loop_env["app"])
+    r = client.get("/api/v1/topics")
+    assert r.status_code == 200
+    data = r.json()
+    assert isinstance(data, list)
+    assert len(data) >= 1
+    topic = data[0]
+    assert "topic_id" in topic
+    assert "name" in topic
+    assert "concepts" in topic
+    assert "prerequisites" in topic
+
