@@ -1,24 +1,25 @@
-# Current Handoff — Start Chat 02 Product Loop
+# Current Handoff — Start Chat 03 Evaluation & Submission Packaging
 
-As of 2026-10-11. Canonical roadmap: [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md). Copy/paste executor prompt: [docs/CHAT02_EXECUTION_PROMPT.md](docs/CHAT02_EXECUTION_PROMPT.md).
+**Date:** 2026-10-13  
+**Canonical roadmap:** [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md)  
+**Exact executor prompt:** [docs/CHAT03_EXECUTION_PROMPT.md](docs/CHAT03_EXECUTION_PROMPT.md)  
+**Latest completed phase:** Chat 02 — integrated Agno + Next.js product loop.
 
-## Verified Chat 01 handoff
-- Branch: `overhaul/chat-01-agno-foundation`
-- Original implementation commit: `9189a4d2f2a91065f97417b512ab4de8e7904bed`
-- Latest Chat 01 branch HEAD after documentation-only reconciliation: `9d78ce50699e7f77877e3f1d1555c84951751343`. The live branch was compared to this commit and matched exactly.
-- The four commits after the implementation commit only reconcile continuity docs and mark the branch-local roadmap copy as historical; no application code or tests were changed by these four commits.
-- The Chat 01 report records 118 tests passing in 165.14 seconds. This is reported evidence, not a fresh test run during this reconciliation.
-- Implemented: Agno AgentOS evidence tutor, Ollama local provider/offline fallback, ChromaDB + SQLite/FTS5 hybrid retrieval, sufficiency/citation checks, source/tutor/search/health endpoints.
-- Chat 01 known gaps: assessment/question verification and BKT/misconception/recommendation workflows are not yet exposed through the new AgentOS API.
+## Chat 02 remote verification
+- Branch: `overhaul/chat-02-product-loop`
+- Reported final commit: `4917668f0e93ed6851c50341768631ada7e943ce`
+- A live GitHub comparison confirmed the branch HEAD matched this commit at reconciliation time.
+- Report: [docs/CHAT02_PRODUCT_LOOP_REPORT.md](https://github.com/SujitSaiY2007/CogniVault/blob/overhaul/chat-02-product-loop/docs/CHAT02_PRODUCT_LOOP_REPORT.md)
+- The report records 127 Python tests passing in 232.91 seconds and a successful Next.js production build. These are report claims; this reconciliation did not rerun tests.
+- The report records live HTTP integration steps for intake, question selection/submission, BKT persistence, recommendations, grounded tutor/abstention, and frontend HTTP 200.
+- **Outstanding proof gap:** the IDE Playwright runner could not download its browser binary (HTTP 404). HTTP checks/build are not a substitute for an actual browser walkthrough. Chat 03 must resolve this or provide a clearly labelled manual screenshot walkthrough.
 
-## Next: Chat 02 — one integrated product loop
-Chat 02 must combine BOTH halves in a single branch `overhaul/chat-02-product-loop`, based on the freshly verified Chat 01 remote HEAD (`9d78ce50699e7f77877e3f1d1555c84951751343`, recheck before branching):
-1. Add Agno workflow/API integration for assessment generation and verification, answer submission/scoring, duplicate prevention, BKT persistence, misconception remediation, prerequisite recommendations and cold-start diagnostic.
-2. Use v0 to generate/refine real Next.js + TypeScript + Tailwind frontend code and connect all screens to the real backend.
-3. Verify the full fresh-learner path from ingestion and cited tutoring through assessment, persisted mastery update and recommendation.
-4. Run backend/frontend/API tests and actual desktop/mobile browser walkthrough; record commands and evidence.
+## Next phase — Chat 03
+Use [docs/CHAT03_EXECUTION_PROMPT.md](docs/CHAT03_EXECUTION_PROMPT.md) as the exact prompt in Antigravity.
 
-Do not split backend intelligence and frontend into separate chats. Do not begin Chat 03 until Chat 02's exit gate passes.
+Before any edits, inspect local git status, fetch remote refs, verify the live Chat 02 branch head and run the existing Python suite plus frontend build. Preserve dirty work. Then create/use only `overhaul/chat-03-evaluation-submission` from the verified live Chat 02 remote HEAD, not from `main`.
 
-## Preservation rules
-Preserve the existing Streamlit path, all source/data/tests/user PDFs/reports/history/branches and PR #1. No force-push/reset, branch deletion/rename, PR #1 close/merge, repository visibility change, or implementation merge to `main` without explicit approval. Video recording/upload and hackathon portal submission remain human actions.
+Chat 03 must produce reproducible grounding/abstention/citation evaluation, multi-session learner simulation results, security/UX hardening, and final documentation/demo checklist. Report real metrics and limitations. Do not fabricate a browser walkthrough or claim submission readiness without evidence.
+
+## Preservation
+Preserve all code, tests, corpus data, four user PDFs, reports, commit history, all branches, PR #1, and the legacy Streamlit UI. No force-push/reset, branch deletion/rename, PR #1 close/merge, repository visibility change, or implementation merge to `main`. Recording/uploading the video and submitting the hackathon portal remain human actions.
