@@ -1,33 +1,28 @@
-# CogniVault — Authoritative Project State
+# CogniVault — Project State (Ready for Chat 03)
 
-**Reconciled:** 2026-10-11  
-**Current phase:** Chat 01 handoff verified; Chat 02 integrated product loop is next.  
-**Authority:** [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md)  
-**Chat 02 prompt:** [docs/CHAT02_EXECUTION_PROMPT.md](docs/CHAT02_EXECUTION_PROMPT.md)
+**Reconciled:** 2026-10-13  
+**Canonical roadmap:** [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md)  
+**Exact next-phase prompt:** [docs/CHAT03_EXECUTION_PROMPT.md](docs/CHAT03_EXECUTION_PROMPT.md)
 
-## Verified handoff
-- Repository: `SujitSaiY2007/CogniVault`
-- Chat 01 branch: `overhaul/chat-01-agno-foundation`
-- Original implementation commit: `9189a4d2f2a91065f97417b512ab4de8e7904bed`
-- Latest Chat 01 branch HEAD after documentation-only reconciliation: `9d78ce50699e7f77877e3f1d1555c84951751343`; verified by comparing the live remote branch with this commit.
-- Four documentation-only commits reconcile handoff/objective/state and mark the branch-local roadmap as historical. They did not change application code or tests.
-- Chat 01 report records 118 tests passing in 165.14 seconds. This reconciliation did not rerun tests.
-- Chat 01 implementation includes Agno AgentOS evidence tutor, local Ollama adapter/fallback, ChromaDB + SQLite/FTS5 retrieval, evidence sufficiency/citation checks and API health/source/search/tutor routes.
+## Current phase
+Chat 02 — Agno + Next.js Product Loop — reported complete. Chat 03 evaluation, hardening and submission packaging is next.
 
-## Completed (reported by Chat 01)
-- Agno evidence tutor foundation and REST API.
-- Hybrid lexical/vector retrieval and local model adapter.
-- Evidence sufficiency, citation validation and off-material abstention path.
-- Legacy Streamlit path preserved.
+## Verified Chat 02 handoff
+- Branch: `overhaul/chat-02-product-loop`
+- Reported final SHA: `4917668f0e93ed6851c50341768631ada7e943ce`
+- Live GitHub compare confirmed the branch matched that SHA at reconciliation time; re-verify before branching.
+- Implementation report: `docs/CHAT02_PRODUCT_LOOP_REPORT.md`.
+- Reported tests: 127 passed in 232.91s; frontend production build succeeded. These results were not rerun during this reconciliation.
+- Reported product loop: Agno Evidence Tutor, Assessment Agent and Learning Coach; typed assessment/learner/ingestion APIs; responsive Next.js frontend; BKT persistence, question repetition suppression, misconception diagnostics, prerequisite recommendations and cold-start intake.
+- Known gap: the IDE Playwright browser runner failed downloading browser binaries with HTTP 404. Live HTTP checks and build output do not establish full visual/browser acceptance.
 
-## Pending in Chat 02
-- Assessment generation/selection, structural/source/answer-key verification, scoring/feedback and duplicate-question prevention through the new API.
-- Persistent BKT mastery updates, learner/session boundaries, misconception remediation, prerequisite-aware recommendations and cold-start diagnostic.
-- Real v0-generated Next.js frontend connected to backend, including ingestion, cited tutoring, assessments and progress.
-- Backend regression/API tests, frontend lint/type/build and desktop/mobile browser walkthrough.
-
-## Later in Chat 03
-- Reproducible grounding evaluation, multi-session simulated learner metrics, security/UX hardening, architecture documentation and final demo/submission package.
+## Chat 03 pending
+- Rerun baseline Python suite and frontend build before editing.
+- Reproducible grounding, retrieval, citation, abstention and assessment evaluation.
+- Multi-session simulated learners with BKT trajectory and question repetition metrics.
+- Browser walkthrough evidence (automated if possible; otherwise manual screenshots with the limitation stated).
+- Security, robust error handling, accessibility/responsive checks and regression tests.
+- Evaluation/hardening reports, architecture/grounding/learner model docs, demo script, evidence matrix and submission checklist.
 
 ## Preservation and truthfulness
-Keep all historical code/data/tests/user PDFs/reports/branches/commits and PR #1. No force-push/reset, branch deletion/rename, PR #1 merge/closure, repository visibility change or implementation merge to `main` without explicit approval. Historical test results do not prove later commits. Video recording/upload and portal submission are human actions.
+Preserve all source, tests, data, four user PDFs, reports, commits, branches, PR #1 and the legacy Streamlit path. No force-push/reset, branch deletion/rename, PR #1 close/merge, repository visibility change, or implementation merge to `main`. Historical tests are not proof for later commits. Never claim video recording/upload or portal submission without evidence; those remain human tasks.
