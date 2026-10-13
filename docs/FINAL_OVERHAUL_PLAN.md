@@ -139,3 +139,13 @@ The executor must not claim to have recorded/uploaded a YouTube video or submitt
 ## Final status
 
 This document locks the plan, technology choices, history-preservation rules, acceptance gates, and the only three executor prompts. It does not assert that the overhaul is implemented or that the project is already submission-ready.
+
+---
+
+## Chat 02 completion and Chat 03 execution handoff (2026-10-13)
+
+The Chat 02 implementation report is available at [`docs/CHAT02_PRODUCT_LOOP_REPORT.md` on `overhaul/chat-02-product-loop`](https://github.com/SujitSaiY2007/CogniVault/blob/overhaul/chat-02-product-loop/docs/CHAT02_PRODUCT_LOOP_REPORT.md). The reported Chat 02 commit is `4917668f0e93ed6851c50341768631ada7e943ce`; GitHub branch comparison confirmed the remote branch matched that commit at reconciliation time. The report records 127 Python tests passing and a successful Next.js build; these results were not rerun as part of this documentation handoff.
+
+**The exact next executor prompt is [`docs/CHAT03_EXECUTION_PROMPT.md`](https://github.com/SujitSaiY2007/CogniVault/blob/main/docs/CHAT03_EXECUTION_PROMPT.md).** It requires Chat 03 to rerun the baseline suite and frontend build before edits, verify the live Chat 02 head, and work only on `overhaul/chat-03-evaluation-submission` branched from that head. It explicitly addresses the Chat 02 Playwright limitation: HTTP integration checks are not a browser walkthrough; Chat 03 must produce real automated browser evidence or a clearly labelled manual desktop/mobile walkthrough with screenshots.
+
+Chat 03 is responsible for reproducible grounding/abstention/citation evaluation, multi-session learner simulations and repetition metrics, security/UX hardening, actual evidence artifacts, and the final demo/submission checklist. Do not merge implementation to `main`, alter repository visibility, or claim a video upload or portal submission without actual evidence. Preserve all historical code, data, PDFs, branches, PR #1, and commit history.
