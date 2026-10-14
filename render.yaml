@@ -3,7 +3,7 @@ services:
     name: cognivault-backend
     runtime: python
     plan: free
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "pip install -U pip && pip install -r requirements.txt"
     startCommand: "uvicorn app.agent_os.app:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
@@ -13,7 +13,7 @@ services:
       - key: MODEL_PROVIDER
         value: gemini
       - key: GEMINI_API_KEY
-        sync: false
+        value: ""
       - key: GEMINI_MODEL
         value: gemini-2.0-flash
       - key: CHROMA_PERSIST_DIR
