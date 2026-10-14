@@ -117,17 +117,28 @@ class EvidenceTutorAgent:
             norm_text = unicodedata.normalize("NFKD", unit.text)
             raw_lines = [line.strip() for line in norm_text.split("\n") if line.strip()]
 
-            # Group lines into semantic blocks (split on numbered items, bullet points, or section titles)
+            # Group lines into semantic blocks (paragraphs and numbered list items)
+            paras = [p.strip() for p in re.split(r"\n\s*\n", norm_text) if p.strip()]
+            raw_blocks = []
+            for p in paras:
+                lines = [l.strip() for l in p.split("\n") if l.strip()]
+                curr = []
+                for l in lines:
+                    if re.match(r"^\d+[\.\)]\s*", l) and curr:
+                        raw_blocks.append(curr)
+                        curr = [l]
+                    else:
+                        curr.append(l)
+                if curr:
+                    raw_blocks.append(curr)
+
+            # Merge definition/formula expansion blocks (e.g. lines starting with 'Where ')
             blocks = []
-            curr_block = []
-            for line in raw_lines:
-                if re.match(r"^(\d+[\.\)]|[A-Z][a-zA-Z\s]{2,}:|\-\s|\*\s)", line) and curr_block:
-                    blocks.append(curr_block)
-                    curr_block = [line]
+            for b in raw_blocks:
+                if blocks and b[0].lower().startswith("where "):
+                    blocks[-1].extend(b)
                 else:
-                    curr_block.append(line)
-            if curr_block:
-                blocks.append(curr_block)
+                    blocks.append(b)
 
             for block in blocks:
                 block_text = "\n".join(block)
@@ -137,14 +148,27 @@ class EvidenceTutorAgent:
                 matched_tokens = [w for w in set(query_words) if w in block_lower]
                 score = len(matched_tokens) * 3
 
+                # Bigram phrase matching from query (e.g. "snell law", "second law", "linear momentum")
+                for n in range(len(query_words) - 1):
+                    pair = f"{query_words[n]} {query_words[n+1]}"
+                    if pair in block_lower or f"{query_words[n]}'s {query_words[n+1]}" in block_lower:
+                        score += 6
+
                 # Boost if header contains query terms
                 first_line = block[0].lower()
                 if any(w in first_line for w in query_words):
                     score += 5
 
+                # Major boost if the header starts with the primary subject of query (first query token)
+                first_clean = re.sub(r"^\d+[\.\)]\s*", "", first_line).strip()
+                if query_words and first_clean.startswith(query_words[0]):
+                    score += 15
+                elif any(first_clean.startswith(w) for w in query_words):
+                    score += 5
+
                 # Boost for definitional phrases
                 if any(p in block_lower for p in ["states that", "defined as", "given by", "formula", "law", "equation", "where"]):
-                    score += 1
+                    score += 2
 
                 scored_candidates.append({
                     "score": score,
@@ -167,8 +191,16 @@ class EvidenceTutorAgent:
             formatted_lines = []
             for i, line in enumerate(lines):
                 if i == 0:
-                    clean_header = re.sub(r"^\d+[\.\)]\s*", "", line).rstrip(":")
-                    formatted_lines.append(f"**{clean_header}:**")
+                    clean_line = re.sub(r"^\d+[\.\)]\s*", "", line).strip()
+                    if ":" in clean_line and len(clean_line.split(":", 1)[0]) < 45:
+                        parts = clean_line.split(":", 1)
+                        hdr = parts[0].strip()
+                        rest = parts[1].strip()
+                        formatted_lines.append(f"**{hdr}:**")
+                        if rest:
+                            formatted_lines.append(rest)
+                    else:
+                        formatted_lines.append(f"**{clean_line}:**")
                 elif line.lower().startswith("where "):
                     formatted_lines.append(f"\n{line}")
                 elif line.startswith("-") or line.startswith("*"):
