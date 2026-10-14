@@ -5,6 +5,8 @@ Enforces deterministic sufficiency gating, exact source locators, and citation v
 from __future__ import annotations
 
 import os
+import re
+import unicodedata
 from typing import Optional
 
 try:
@@ -17,6 +19,7 @@ from ..model_provider import (
     create_active_model,
     create_ollama_model,
     get_active_provider_name,
+    is_gemini_available,
     is_ollama_available,
 )
 from .tools import AgentTools
@@ -54,19 +57,157 @@ class EvidenceTutorAgent:
         self.model_id = model_id or os.environ.get("OLLAMA_MODEL", "llama3.2:latest")
         self.host = host or os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 
-        # Initialize Agno Agent if agno is installed
+        # Initialize Agno Agent if agno is installed and model provider is reachable
         self.agno_agent: Optional[Agent] = None
         if Agent is not None:
-            model = create_active_model(self.model_id)
+            # Only connect model agent if a live provider is detected
+            if is_gemini_available() or is_ollama_available(self.host):
+                model = create_active_model(self.model_id)
+                if model is not None:
+                    self.agno_agent = Agent(
+                        name="CogniVault Evidence Tutor",
+                        description="Course-grounded tutor with exact locators and fail-closed abstention",
+                        instructions=TUTOR_SYSTEM_PROMPT,
+                        tools=self.tools_handler.get_tool_list(),
+                        model=model,
+                        markdown=True,
+                    )
 
-            self.agno_agent = Agent(
-                name="CogniVault Evidence Tutor",
-                description="Course-grounded tutor with exact locators and fail-closed abstention",
-                instructions=TUTOR_SYSTEM_PROMPT,
-                tools=self.tools_handler.get_tool_list(),
-                model=model,
-                markdown=True,
+    def _synthesize_grounded_answer(
+        self,
+        query: str,
+        citations: list[Citation],
+        cited_evidence_ids: list[str],
+    ) -> str:
+        """
+        Synthesizes a clean, plain-language, direct answer grounded in the cited course evidence.
+        Extracts the most relevant definitions, explanations, formulas, and bullet points.
+        """
+        if not citations:
+            return "Based on your course materials, no direct evidence was located."
+
+        # Tokenize query for relevance scoring
+        stop_words = {
+            "what", "is", "the", "of", "in", "and", "to", "a", "an", "for", "are", "by",
+            "that", "with", "on", "at", "from", "as", "it", "be", "this", "how", "explain",
+            "tell", "me", "about", "define", "does", "do", "can", "could", "would", "which",
+            "why", "when", "where", "who", "all", "any", "state", "give"
+        }
+        query_words = [
+            w.lower()
+            for w in re.findall(r"\w+", query)
+            if w.lower() not in stop_words and len(w) > 2
+        ]
+
+        scored_candidates = []
+
+        for citation in citations:
+            unit = self.db.get_evidence(citation.evidence_id)
+            if not unit or not unit.text:
+                continue
+
+            loc_name = citation.location.get("locator") or (
+                f"Page {citation.location.get('page')}"
+                if citation.location.get("page")
+                else "Course Material"
             )
+            title = citation.source_title or "Course Material"
+
+            # Normalize text to remove unicode ligature anomalies
+            norm_text = unicodedata.normalize("NFKD", unit.text)
+            raw_lines = [line.strip() for line in norm_text.split("\n") if line.strip()]
+
+            # Group lines into semantic blocks (split on numbered items, bullet points, or section titles)
+            blocks = []
+            curr_block = []
+            for line in raw_lines:
+                if re.match(r"^(\d+[\.\)]|[A-Z][a-zA-Z\s]{2,}:|\-\s|\*\s)", line) and curr_block:
+                    blocks.append(curr_block)
+                    curr_block = [line]
+                else:
+                    curr_block.append(line)
+            if curr_block:
+                blocks.append(curr_block)
+
+            for block in blocks:
+                block_text = "\n".join(block)
+                block_lower = block_text.lower()
+
+                # Relevance score based on query keywords
+                matched_tokens = [w for w in set(query_words) if w in block_lower]
+                score = len(matched_tokens) * 3
+
+                # Boost if header contains query terms
+                first_line = block[0].lower()
+                if any(w in first_line for w in query_words):
+                    score += 5
+
+                # Boost for definitional phrases
+                if any(p in block_lower for p in ["states that", "defined as", "given by", "formula", "law", "equation", "where"]):
+                    score += 1
+
+                scored_candidates.append({
+                    "score": score,
+                    "matched_count": len(matched_tokens),
+                    "title": title,
+                    "loc": loc_name,
+                    "block": block,
+                    "citation": citation,
+                })
+
+        # Sort candidate blocks by score descending
+        scored_candidates.sort(key=lambda x: (x["score"], x["matched_count"]), reverse=True)
+
+        # If we have a strong match (at least 1 matching keyword)
+        if scored_candidates and scored_candidates[0]["score"] > 0:
+            best = scored_candidates[0]
+            lines = best["block"]
+
+            # Format the primary answer clearly
+            formatted_lines = []
+            for i, line in enumerate(lines):
+                if i == 0:
+                    clean_header = re.sub(r"^\d+[\.\)]\s*", "", line).rstrip(":")
+                    formatted_lines.append(f"**{clean_header}:**")
+                elif line.lower().startswith("where "):
+                    formatted_lines.append(f"\n{line}")
+                elif line.startswith("-") or line.startswith("*"):
+                    formatted_lines.append(f"• {line.lstrip('-*').strip()}")
+                else:
+                    formatted_lines.append(line)
+
+            primary_body = "\n".join(formatted_lines)
+            answer = f"According to your course material in **{best['title']} ({best['loc']})**:\n\n{primary_body}"
+
+            # Check if there's a complementary secondary point matching substantial query tokens
+            secondary = None
+            for cand in scored_candidates[1:]:
+                if (
+                    cand["score"] >= 6
+                    and cand["matched_count"] >= 2
+                    and cand["title"] != best["title"]
+                    and cand["matched_count"] >= max(2, int(best["matched_count"] * 0.6))
+                ):
+                    secondary = cand
+                    break
+
+            if secondary:
+                sec_header = re.sub(r"^\d+[\.\)]\s*", "", secondary["block"][0]).rstrip(":")
+                sec_body = "\n".join(secondary["block"][1:] if len(secondary["block"]) > 1 else secondary["block"])
+                answer += f"\n\n**Additional Context from {secondary['title']} ({secondary['loc']}):**\n{sec_header}\n{sec_body}"
+
+            return answer
+
+        # Fallback if no specific keyword scored high: clean excerpt from primary citation
+        first_citation = citations[0]
+        first_unit = self.db.get_evidence(first_citation.evidence_id)
+        loc_name = first_citation.location.get("locator") or (
+            f"Page {first_citation.location.get('page')}"
+            if first_citation.location.get("page")
+            else "Course Material"
+        )
+        first_text = first_unit.text.strip() if first_unit else "Refer to the verified course citations."
+        return f"Based on your course materials in **{first_citation.source_title} ({loc_name})**:\n\n{first_text}"
 
     def ask(self, query: str, topic: Optional[str] = None) -> TutorResponse:
         """
@@ -143,23 +284,29 @@ class EvidenceTutorAgent:
                 prompt = (
                     f"Question: {query}\n\n"
                     f"Supported Course Evidence:\n{context_block}\n\n"
-                    f"Explain the answer clearly to the student, citing the locations above."
+                    f"Explain the answer clearly to the student in simple plain language, citing the locations above."
                 )
                 run_res = self.agno_agent.run(prompt)
                 if hasattr(run_res, "content") and run_res.content:
-                    answer_text = str(run_res.content).strip()
+                    raw_content = str(run_res.content).strip()
+                    # Filter out model provider connection error messages
+                    err_keywords = [
+                        "failed to connect to ollama",
+                        "check that ollama is downloaded",
+                        "connection refused",
+                        "cannot connect",
+                        "error communicating",
+                        "httperror",
+                        "rate limit",
+                    ]
+                    if not any(k in raw_content.lower() for k in err_keywords):
+                        answer_text = raw_content
             except Exception:
                 answer_text = ""
 
-        # Deterministic synthesis fallback if model is not configured or returns empty
+        # Grounded explanation synthesis from retrieved course evidence
         if not answer_text:
-            primary_evidence = self.db.get_evidence(cited_evidence_ids[0])
-            first_sentence = primary_evidence.text.split(".")[0] if primary_evidence else ""
-            loc_labels = " ".join([f"[{c.location.get('locator', 'Source')}]" for c in citations])
-            answer_text = (
-                f"Based on the course material, {first_sentence}. "
-                f"This is supported directly by your indexed resources {loc_labels}."
-            )
+            answer_text = self._synthesize_grounded_answer(query, citations, cited_evidence_ids)
 
         return TutorResponse(
             query=query.strip(),
