@@ -19,9 +19,7 @@ Judges and evaluators can interact with the live working system immediately with
 - 🚀 **Live Production Frontend (Vercel):** [https://cogni-vault.vercel.app](https://cogni-vault.vercel.app)
 - ⚡ **Live Production Backend API (Render):** [https://cognivault-backend-znn4.onrender.com/api/v1/health](https://cognivault-backend-znn4.onrender.com/api/v1/health)
 - 📖 **Interactive Swagger / OpenAPI Docs:** [https://cognivault-backend-znn4.onrender.com/docs](https://cognivault-backend-znn4.onrender.com/docs)
-- 🎬 **Official Demo Video Script & Storyboard:** [`docs/HACKATHON_DEMO_VIDEO_SCRIPT_AND_PLAN.md`](docs/HACKATHON_DEMO_VIDEO_SCRIPT_AND_PLAN.md)
 - 📋 **Devpost Submission Text & Details:** [`docs/DEVPOST_SUBMISSION_GUIDE.md`](docs/DEVPOST_SUBMISSION_GUIDE.md)
-- 🛡️ **Judge Technical Defense Q&A:** [`docs/JUDGE_TECHNICAL_DEFENSE_QA.md`](docs/JUDGE_TECHNICAL_DEFENSE_QA.md)
 
 ---
 
