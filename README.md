@@ -61,54 +61,42 @@ CogniVault fulfills 100% of the core Track D requirements and all optional enhan
 
 ## 🏛️ System Architecture
 
+The hosted request path is **Vercel Next.js → Render FastAPI/Agno AgentOS → evidence, assessment, and learner services → configured persistence/model provider**. The preserved Streamlit interface is a separate legacy/local entry point.
+
+```mermaid
+flowchart TB
+  U["Learner / Judge"] --> UI["Vercel · Next.js 14<br/>Responsive product UI"]
+  UI <-->|HTTPS JSON / multipart| API["Render · FastAPI / Agno AgentOS"]
+  API --> VAL["Request validation<br/>learner boundary · upload limits"]
+  VAL --> SVC["Application services<br/>Tutor · Assessment · Learning Coach"]
+
+  SVC --> ING["Ingestion + SHA-256 provenance<br/>PDF / PPTX / supported text<br/>page, slide, timestamp locators"]
+  SVC --> RET["Hybrid retrieval"]
+  RET <--> FTS[("SQLite FTS5 / BM25")]
+  RET <--> VEC[("ChromaDB dense vectors")]
+  RET --> GATE{"Evidence sufficient?"}
+  GATE -->|Yes| GEN["Tutor synthesis<br/>Gemini / reachable Ollama<br/>or documented deterministic mode"]
+  GEN --> VERIFY["Citation & source verification"]
+  VERIFY -->|Valid| ANSWER["Answer with source locators"]
+  GATE -->|No| ABSTAIN["Fail-closed abstention"]
+  VERIFY -->|Invalid| ABSTAIN
+
+  SVC --> Q["Assessment selection & verification"]
+  Q --> BKT["BKT topic mastery update"]
+  BKT --> ADAPT["Misconceptions · prerequisites<br/>targeted recommendations"]
+
+  ING --> DB[("SQLite source/evidence records<br/>assessments · learner state")]
+  ING --> VEC
+  ING --> FILES[("Configured source/asset paths")]
+  SVC <--> DB
+
+  PROVIDER["Backend model configuration"] --> GEN
+  LEGACY["Legacy Streamlit UI<br/>app/ui/main.py<br/>local/separate entry point"] -.-> DB
 ```
-                  ┌───────────────────────────────────────────────┐
-                  │    Course Materials (PDF, PPTX, Video, TXT)   │
-                  └───────────────────────┬───────────────────────┘
-                                          │
-                               ▼ Ingestion Pipeline
-                  ┌───────────────────────────────────────────────┐
-                  │   SHA-256 Provenance & Layout Parsing         │
-                  │   Extracts Text, Formulas, & Physical Locators│
-                  │   (PDF Page, PPTX Slide, Video Timestamp)     │
-                  └───────────────────────┬───────────────────────┘
-                                          │
-                        ┌─────────────────┴─────────────────┐
-                        ▼                                   ▼
-        ┌───────────────────────────────┐   ┌───────────────────────────────┐
-        │  SQLite FTS5 (Lexical BM25)   │   │ ChromaDB (Dense Vector Store) │
-        └───────────────┬───────────────┘   └───────────────┬───────────────┘
-                        │                                   │
-                        └─────────────────┬─────────────────┘
-                                          ▼
-                  ┌───────────────────────────────────────────────┐
-                  │    Dual Hybrid Retrieval Fusion Engine        │
-                  │    Score = 0.45 * Lexical + 0.55 * Semantic   │
-                  └───────────────────────┬───────────────────────┘
-                                          │
-                                          ▼
-                  ┌───────────────────────────────────────────────┐
-                  │    Deterministic Sufficiency Gate (Pre-flight)│
-                  │    Checks Minimum Confidence & Term Coverage  │
-                  └───────────────┬───────────────┬───────────────┘
-                                  │               │
-                     [Sufficient] │               │ [Insufficient]
-                                  ▼               ▼
-                  ┌───────────────────────┐   ┌───────────────────────────┐
-                  │ Agno Evidence Tutor   │   │   Fail-Closed Abstention  │
-                  │ Verified Citations    │   │  (Zero Hallucination Alert│
-                  └───────────────┬───────┘   └───────────────────────────┘
-                                  │
-                                  ▼
-         ┌─────────────────────────────────────────────────┐
-         │      Adaptive Assessment & Learner Modeling     │
-         │   • Deterministic AST Answer-Key Verifier       │
-         │   • Repetition Suppression Filter               │
-         │   • Bayesian Knowledge Tracing: P(Lt) Updates   │
-         │   • Prerequisite Gating (Mastery >= 0.70)       │
-         │   • Misconception Diagnostics (Consecutive >=2) │
-         └─────────────────────────────────────────────────┘
-```
+
+**Trust boundary:** the browser calls the API; provider credentials remain in backend environment variables. SQLite/ChromaDB filesystem persistence depends on the hosting configuration, so durable storage across cloud restarts must be verified rather than assumed.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for component responsibilities, data flows, grounding rules, learner adaptation, deployment boundaries, and failure handling.
 
 ---
 
