@@ -207,16 +207,22 @@ def build_embeddings(
     units_to_encode = [e for e in units if e.evidence_id not in existing_ids]
 
     if units_to_encode:
-        if model is None:
-            from sentence_transformers import SentenceTransformer
-            model = SentenceTransformer(model_name)
-        embeddings = []
-        for e in units_to_encode:
-            vec = model.encode(e.text, normalize_embeddings=True)
-            db.add_embedding(e.evidence_id, vec, model_name=model_name)
-            embeddings.append(vec)
-        if chroma_store is not None:
-            chroma_store.batch_add_evidence(units_to_encode, embeddings)
+        try:
+            if model is None:
+                from sentence_transformers import SentenceTransformer
+                model = SentenceTransformer(model_name)
+            embeddings = []
+            for e in units_to_encode:
+                vec = model.encode(e.text, normalize_embeddings=True)
+                db.add_embedding(e.evidence_id, vec, model_name=model_name)
+                embeddings.append(vec)
+            if chroma_store is not None:
+                chroma_store.batch_add_evidence(units_to_encode, embeddings)
+        except Exception as err:
+            import logging
+            logging.getLogger("cognivault.retrieval").warning(
+                f"Dense embeddings build skipped ({err}). Retaining fast SQLite FTS5 lexical indexing."
+            )
     elif chroma_store is not None and getattr(chroma_store, "count", lambda: 0)() == 0:
         chroma_store.sync_from_sqlite(db)
 
