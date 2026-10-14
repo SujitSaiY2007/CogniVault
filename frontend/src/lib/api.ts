@@ -59,7 +59,7 @@ async function request<T>(
     return (await res.json()) as T;
   } catch (error: any) {
     if (error.name === "TypeError" && error.message.includes("fetch")) {
-      throw new Error("Cannot connect to CogniVault backend. Is the AgentOS server running on port 8000?");
+      throw new Error(`Cannot connect to CogniVault backend (${API_BASE}). If the cloud container is waking up, please wait ~15 seconds and refresh.`);
     }
     throw error;
   }
