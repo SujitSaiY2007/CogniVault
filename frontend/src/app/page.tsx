@@ -90,11 +90,11 @@ export default function Home() {
 
       {/* Main View Area */}
       <main className="flex-1 overflow-x-hidden">
-        {activeTab === "tutor" && (
+        <div className={activeTab === "tutor" ? "block" : "hidden"}>
           <TutorView onOpenCitation={setInspectCitation} />
-        )}
+        </div>
 
-        {activeTab === "assessment" && (
+        <div className={activeTab === "assessment" ? "block" : "hidden"}>
           <AssessmentView
             activeLearner={activeLearner}
             topics={topics}
@@ -102,20 +102,20 @@ export default function Home() {
             onOpenCitation={setInspectCitation}
             onAssessmentCompleted={refreshLearners}
           />
-        )}
+        </div>
 
-        {activeTab === "mastery" && (
+        <div className={activeTab === "mastery" ? "block" : "hidden"}>
           <LearnerProgressView activeLearner={activeLearner} />
-        )}
+        </div>
 
-        {activeTab === "misconceptions" && (
+        <div className={activeTab === "misconceptions" ? "block" : "hidden"}>
           <MisconceptionsView
             activeLearner={activeLearner}
             onOpenCitation={setInspectCitation}
           />
-        )}
+        </div>
 
-        {activeTab === "recommendations" && (
+        <div className={activeTab === "recommendations" ? "block" : "hidden"}>
           <RecommendationsView
             activeLearner={activeLearner}
             onNavigateToPractice={(topicId) => {
@@ -123,14 +123,14 @@ export default function Home() {
               setActiveTab("assessment");
             }}
           />
-        )}
+        </div>
 
-        {activeTab === "materials" && (
+        <div className={activeTab === "materials" ? "block" : "hidden"}>
           <IngestionView
             onOpenCitation={setInspectCitation}
             onCurriculumUpdated={loadInitialData}
           />
-        )}
+        </div>
       </main>
 
       {/* Modals & Drawers */}
