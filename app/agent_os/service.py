@@ -154,22 +154,34 @@ class AgentOSLearningService:
         units = [e for e in self.db.all_evidence() if e.source_id == source_id]
         return [u.model_dump() for u in units]
 
-    def ingest_document(self, file_path: str | Path, source_id: Optional[str] = None, title: Optional[str] = None) -> dict[str, Any]:
+    def build_and_sync_embeddings(self):
+        """Build dense embeddings and sync to ChromaDB with graceful error handling."""
+        try:
+            build_embeddings(self.db)
+            self.sync_chroma()
+        except Exception as e:
+            import logging
+            logging.getLogger("cognivault.service").warning(f"Background embedding build: {e}")
+
+    def ingest_document(
+        self,
+        file_path: str | Path,
+        source_id: Optional[str] = None,
+        title: Optional[str] = None,
+        sync_embeddings: bool = True,
+    ) -> dict[str, Any]:
         """
         Ingest a PDF, PPTX, or transcript file:
           1. Extracts text and figure units with exact page/slide/timestamp locators.
           2. Computes SHA-256 provenance hash.
-          3. Indexes in SQLite FTS5 and builds dense embeddings.
-          4. Syncs to ChromaDB.
+          3. Indexes in SQLite FTS5.
+          4. Optionally syncs dense embeddings and ChromaDB.
         """
         p = Path(file_path)
         sid = ingest_file(p, self.db, source_id=source_id, title=title)
 
-        # Build embeddings for newly ingested units
-        build_embeddings(self.db)
-
-        # Sync into ChromaDB
-        self.sync_chroma()
+        if sync_embeddings:
+            self.build_and_sync_embeddings()
 
         source = self.db.get_source(sid)
         evidence_count = len([e for e in self.db.all_evidence() if e.source_id == sid])

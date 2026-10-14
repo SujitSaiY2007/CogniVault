@@ -16,7 +16,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -255,7 +255,10 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         return learning_service.get_source_evidence(source_id)
 
     @app.post("/api/v1/ingest/upload", tags=["Materials"])
-    async def upload_material(file: UploadFile = File(...)) -> dict[str, Any]:
+    async def upload_material(
+        background_tasks: BackgroundTasks,
+        file: UploadFile = File(...),
+    ) -> dict[str, Any]:
         """
         Upload course material (PDF, PPTX, or TXT transcript).
         Extracts evidence units with exact locators, computes SHA-256 hash,
@@ -291,7 +294,12 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
             tmp_path = Path(tmp.name)
 
         try:
-            result = learning_service.ingest_document(tmp_path, title=Path(safe_filename).stem)
+            result = learning_service.ingest_document(
+                tmp_path,
+                title=Path(safe_filename).stem,
+                sync_embeddings=False,
+            )
+            background_tasks.add_task(learning_service.build_and_sync_embeddings)
             return result
         finally:
             if tmp_path.exists():
