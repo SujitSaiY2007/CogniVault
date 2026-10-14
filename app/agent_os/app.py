@@ -184,6 +184,13 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
     app.state.service = learning_service
     app.state.tutor_service = learning_service
 
+    # Auto-seed default course corpus if database is empty on fresh container
+    try:
+        learning_service.seed_default_corpus_if_empty()
+    except Exception as e:
+        import logging
+        logging.getLogger("cognivault").warning(f"Startup corpus seeding failed: {e}")
+
     # =========================================================================
     # System Endpoints
     # =========================================================================
