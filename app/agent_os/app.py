@@ -291,7 +291,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
             tmp_path = Path(tmp.name)
 
         try:
-            result = learning_service.ingest_document(tmp_path)
+            result = learning_service.ingest_document(tmp_path, title=Path(safe_filename).stem)
             return result
         finally:
             if tmp_path.exists():

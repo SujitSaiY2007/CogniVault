@@ -12,8 +12,13 @@ try:
 except ImportError:
     Agent = None
 
-from ..models import Citation, TutorResponse
-from ..ollama_provider import create_ollama_model, is_ollama_available
+from ..models import Citation, Modality, TutorResponse
+from ..model_provider import (
+    create_active_model,
+    create_ollama_model,
+    get_active_provider_name,
+    is_ollama_available,
+)
 from .tools import AgentTools
 
 
@@ -52,9 +57,7 @@ class EvidenceTutorAgent:
         # Initialize Agno Agent if agno is installed
         self.agno_agent: Optional[Agent] = None
         if Agent is not None:
-            model = None
-            if is_ollama_available(self.host):
-                model = create_ollama_model(self.model_id, self.host)
+            model = create_active_model(self.model_id)
 
             self.agno_agent = Agent(
                 name="CogniVault Evidence Tutor",
@@ -134,8 +137,8 @@ class EvidenceTutorAgent:
         context_block = "\n".join(evidence_texts)
 
         answer_text = ""
-        # Try Agno Agent with Ollama if running
-        if self.agno_agent and is_ollama_available(self.host):
+        # Try Agno Agent if model is available
+        if self.agno_agent and getattr(self.agno_agent, "model", None) is not None:
             try:
                 prompt = (
                     f"Question: {query}\n\n"
@@ -148,7 +151,7 @@ class EvidenceTutorAgent:
             except Exception:
                 answer_text = ""
 
-        # Deterministic synthesis fallback if Ollama is not running or returns empty
+        # Deterministic synthesis fallback if model is not configured or returns empty
         if not answer_text:
             primary_evidence = self.db.get_evidence(cited_evidence_ids[0])
             first_sentence = primary_evidence.text.split(".")[0] if primary_evidence else ""

@@ -15,7 +15,7 @@ except ImportError:
 
 from ..assessment import AssessmentEngine, DeterministicQuestionVerifier, compute_question_fingerprint
 from ..models import AnswerEvaluation, Difficulty, LearnerSubmission, Question, QuestionOption, QuestionType, QuestionVerificationResult
-from ..ollama_provider import create_ollama_model, is_ollama_available
+from ..model_provider import create_active_model, create_ollama_model, is_ollama_available
 from .tools import AssessmentTools
 
 
@@ -51,9 +51,7 @@ class AssessmentAgent:
 
         self.agno_agent: Optional[Agent] = None
         if Agent is not None:
-            model = None
-            if is_ollama_available(self.host):
-                model = create_ollama_model(self.model_id, self.host)
+            model = create_active_model(self.model_id)
 
             self.agno_agent = Agent(
                 name="CogniVault Assessment Agent",

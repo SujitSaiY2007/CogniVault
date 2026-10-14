@@ -19,7 +19,7 @@ from ..db import EvidenceDB
 from ..learner_model import BKTModel, LearnerStateManager
 from ..misconceptions import MisconceptionDetector
 from ..models import MisconceptionSignal, Recommendation, TopicMasteryRecord
-from ..ollama_provider import create_ollama_model, is_ollama_available
+from ..model_provider import create_active_model, create_ollama_model, is_ollama_available
 from ..recommendation import AdaptiveRecommendationEngine
 from .tools import LearningCoachTools
 
@@ -63,9 +63,7 @@ class LearningCoachAgent:
 
         self.agno_agent: Optional[Agent] = None
         if Agent is not None:
-            model = None
-            if is_ollama_available(self.host):
-                model = create_ollama_model(self.model_id, self.host)
+            model = create_active_model(self.model_id)
 
             self.agno_agent = Agent(
                 name="CogniVault Learning Coach",

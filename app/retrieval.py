@@ -195,15 +195,28 @@ def build_embeddings(
     model=None,
     chroma_store=None,
 ):
-    if model is None:
-        from sentence_transformers import SentenceTransformer
-        model = SentenceTransformer(model_name)
     units = list(db.all_evidence())
-    embeddings = []
-    for e in units:
-        vec = model.encode(e.text, normalize_embeddings=True)
-        db.add_embedding(e.evidence_id, vec, model_name=model_name)
-        embeddings.append(vec)
-    if chroma_store is not None and units:
-        chroma_store.batch_add_evidence(units, embeddings)
+    if not units:
+        return
+
+    try:
+        existing_ids = {row[0] for row in db.conn.execute("SELECT evidence_id FROM embeddings").fetchall()}
+    except Exception:
+        existing_ids = set()
+
+    units_to_encode = [e for e in units if e.evidence_id not in existing_ids]
+
+    if units_to_encode:
+        if model is None:
+            from sentence_transformers import SentenceTransformer
+            model = SentenceTransformer(model_name)
+        embeddings = []
+        for e in units_to_encode:
+            vec = model.encode(e.text, normalize_embeddings=True)
+            db.add_embedding(e.evidence_id, vec, model_name=model_name)
+            embeddings.append(vec)
+        if chroma_store is not None:
+            chroma_store.batch_add_evidence(units_to_encode, embeddings)
+    elif chroma_store is not None and getattr(chroma_store, "count", lambda: 0)() == 0:
+        chroma_store.sync_from_sqlite(db)
 

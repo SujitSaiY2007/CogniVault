@@ -58,7 +58,7 @@ def _add_image_evidence(db: EvidenceDB, sid: str, eid: str, parent_modality: Mod
     )
     db.add_asset(aid, eid, mime_type, digest, data, width, height)
 
-def ingest_pdf(path: str | Path, db: EvidenceDB, source_id: str | None = None) -> str:
+def ingest_pdf(path: str | Path, db: EvidenceDB, source_id: str | None = None, title: str | None = None) -> str:
     import pymupdf
     p = Path(path)
     file_sha = _sha256(p)
@@ -69,7 +69,7 @@ def ingest_pdf(path: str | Path, db: EvidenceDB, source_id: str | None = None) -
             source_id=sid,
             path=str(p),
             modality=Modality.pdf,
-            title=p.stem,
+            title=title or p.stem,
             sha256=file_sha
         )
     )
@@ -110,7 +110,7 @@ def ingest_pdf(path: str | Path, db: EvidenceDB, source_id: str | None = None) -
             )
     return sid
 
-def ingest_pptx(path: str | Path, db: EvidenceDB, source_id: str | None = None) -> str:
+def ingest_pptx(path: str | Path, db: EvidenceDB, source_id: str | None = None, title: str | None = None) -> str:
     from pptx import Presentation
     p = Path(path)
     file_sha = _sha256(p)
@@ -121,7 +121,7 @@ def ingest_pptx(path: str | Path, db: EvidenceDB, source_id: str | None = None) 
             source_id=sid,
             path=str(p),
             modality=Modality.pptx,
-            title=p.stem,
+            title=title or p.stem,
             sha256=file_sha
         )
     )
@@ -157,7 +157,7 @@ def ingest_pptx(path: str | Path, db: EvidenceDB, source_id: str | None = None) 
                 )
     return sid
 
-def ingest_transcript(path: str | Path, db: EvidenceDB, source_id: str | None = None) -> str:
+def ingest_transcript(path: str | Path, db: EvidenceDB, source_id: str | None = None, title: str | None = None) -> str:
     p = Path(path)
     file_sha = _sha256(p)
     sid = source_id or file_sha[:16]
@@ -166,7 +166,7 @@ def ingest_transcript(path: str | Path, db: EvidenceDB, source_id: str | None = 
             source_id=sid,
             path=str(p),
             modality=Modality.video,
-            title=p.stem,
+            title=title or p.stem,
             sha256=file_sha
         )
     )
@@ -191,15 +191,15 @@ def ingest_transcript(path: str | Path, db: EvidenceDB, source_id: str | None = 
                 )
     return sid
 
-def ingest_file(path: str | Path, db: EvidenceDB, source_id: str | None = None) -> str:
+def ingest_file(path: str | Path, db: EvidenceDB, source_id: str | None = None, title: str | None = None) -> str:
     """Convenience dispatcher to ingest PDF, PPTX, or transcript file by extension."""
     p = Path(path)
     ext = p.suffix.lower()
     if ext == ".pdf":
-        return ingest_pdf(p, db, source_id=source_id)
+        return ingest_pdf(p, db, source_id=source_id, title=title)
     elif ext in {".pptx", ".ppt"}:
-        return ingest_pptx(p, db, source_id=source_id)
+        return ingest_pptx(p, db, source_id=source_id, title=title)
     elif ext in {".txt", ".vtt", ".srt"}:
-        return ingest_transcript(p, db, source_id=source_id)
+        return ingest_transcript(p, db, source_id=source_id, title=title)
     else:
         raise ValueError(f"Unsupported file format: '{ext}'. Supported: .pdf, .pptx, .txt")

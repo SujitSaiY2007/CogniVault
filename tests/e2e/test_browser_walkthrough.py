@@ -77,11 +77,13 @@ def ensure_servers_running(project_root: Path):
         if not wait_for_url("http://localhost:3000", max_wait=15.0):
             # Fallback to next start
             frontend_proc.terminate()
+            npx_cmd = "npx.cmd" if sys.platform == "win32" else "npx"
             frontend_proc2 = subprocess.Popen(
-                ["npx", "next", "start", "-p", "3000"],
+                [npx_cmd, "next", "start", "-p", "3000"],
                 cwd=str(project_root / "frontend"),
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
+                shell=(sys.platform == "win32"),
             )
             processes.append(frontend_proc2)
             assert wait_for_url("http://localhost:3000", max_wait=20.0), "Frontend failed to start on 3000"

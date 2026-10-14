@@ -25,6 +25,7 @@ from ..models import (
     TopicMasteryRecord,
     TutorResponse,
 )
+from ..model_provider import get_active_provider_info
 from ..ollama_provider import get_available_ollama_models, is_ollama_available
 from ..recommendation import AdaptiveRecommendationEngine
 from ..retrieval import HybridRetriever, build_embeddings
@@ -153,7 +154,7 @@ class AgentOSLearningService:
         units = [e for e in self.db.all_evidence() if e.source_id == source_id]
         return [u.model_dump() for u in units]
 
-    def ingest_document(self, file_path: str | Path, source_id: Optional[str] = None) -> dict[str, Any]:
+    def ingest_document(self, file_path: str | Path, source_id: Optional[str] = None, title: Optional[str] = None) -> dict[str, Any]:
         """
         Ingest a PDF, PPTX, or transcript file:
           1. Extracts text and figure units with exact page/slide/timestamp locators.
@@ -162,7 +163,7 @@ class AgentOSLearningService:
           4. Syncs to ChromaDB.
         """
         p = Path(file_path)
-        sid = ingest_file(p, self.db, source_id=source_id)
+        sid = ingest_file(p, self.db, source_id=source_id, title=title)
 
         # Build embeddings for newly ingested units
         build_embeddings(self.db)
@@ -370,6 +371,7 @@ class AgentOSLearningService:
                 "configured_model": OLLAMA_MODEL,
                 "installed_models": models,
             },
+            "model_provider": get_active_provider_info(),
             "agno_agents": {
                 "tutor": self.tutor_agent.agno_agent is not None,
                 "assessment": self.assessment_agent.agno_agent is not None,
