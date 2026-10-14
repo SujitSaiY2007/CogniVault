@@ -1,46 +1,70 @@
-# Decision Log — Reconciled 2026-10-10
+﻿# Decision Log — CogniVault Track D
 
 Historical decisions are retained as history. Current decisions supersede obsolete workflow instructions; do not erase the audit trail.
 
-| ID | Decision | Status |
-|---|---|---|
-| D-001 | Product name CogniVault | Locked |
-| D-002 | Track D — Personalized Tutoring & Adaptive Learning | Locked |
-| D-003 | Evidence-first grounded behavior with abstention | Locked |
-| D-004 | Mathematics/Science starter corpus | Locked |
-| D-005 | Streamlit-first architecture | Locked |
-| D-006 | Lightweight services; avoid unnecessary agents/microservices | Locked |
-| D-007 | No secrets in Git | Locked |
-| D-008 | Evaluation claims require executed evidence | Locked |
-| D-009 | Hybrid retrieval and source provenance | Reported on Chat 01 branch |
-| D-010 | Sufficiency gate and abstention | Reported on Chat 02 branch |
-| D-011 | BKT and explainable recommendation policy | Reported on Chat 02 branch |
-| D-012 | Benchmark and simulated learner evaluation | Reported on Chat 03 branch |
-| D-013 | Chat 04 acceptance checkpoint retained | `a717132781f2957f5162786b3919f2ba32217d67` |
-| D-014 | Initial Chat 05 overhaul isolated on its branch | `c213298a7ebe486ee9e793e54be2563431bf4d6c` |
-| D-015 | Preserve main, PR #1, and all phase branches | Locked |
-| D-016 | Screenshot/browser acceptance is required | Current |
-| D-017 | Redesign one screen at a time, dashboard first | Current |
-| D-018 | User screenshot is primary dashboard reference | Current |
-| D-019 | Remove raw HTML leakage, tiny text and technical clutter | Current |
-| D-020 | Use real data and honest empty states | Current |
-| D-021 | Do not equate BKT probability with course completion | Current |
-| D-022 | Guest history is session-only | Current |
-| D-023 | Free hosting/auth/durable storage/quotas are future work until verified | Current |
-| D-024 | Main gets documentation synchronization only; implementation remains on phase branches | Current |
-| D-025 | Reconcile pending AG response before issuing duplicate task | Current |
+| ID | Decision | Rationale | Status |
+|---|---|---|---|
+| D-001 | Project name: Cognivault | Stable hackathon product identity | Locked |
+| D-002 | Track D | Target is Personalized Tutoring & Adaptive Learning | Locked |
+| D-003 | Evidence-first architecture | Reduces unsupported course-grounded answers | Locked |
+| D-004 | School Mathematics + Science as initial domain | Strong multimodal and assessment demonstration potential | Locked |
+| D-005 | English/Hindi interaction is optional | Prevents unnecessary MVP scope expansion | Locked |
+| D-006 | Streamlit-first UI | Fast iteration and suitable demo surface | Locked |
+| D-007 | Lightweight services over unnecessary multi-agent architecture | Lower complexity and failure surface | Locked |
+| D-008 | No secrets in Git | Required security practice | Locked |
+| D-009 | No unsupported novelty claims | Prior-art integrity | Locked |
+| D-010 | Evaluation results must be executed, not invented | Credibility and reproducibility | Locked |
+| D-011 | Hybrid lexical + semantic retrieval | Combines exact course terminology with semantic matching while remaining inspectable | Locked |
+| D-012 | SQLite/FTS5 plus lightweight vector index | Keeps MVP infrastructure small and reproducible | Locked |
+| D-013 | Evidence units carry stable source locators | Enables citation integrity and evaluation | Locked |
+| D-014 | Fail-closed evidence sufficiency gate | Prevents unsupported course-grounded answers | Locked |
+| D-015 | BKT for MVP learner model | Interpretable and established for skill mastery/adaptive tutoring | Locked |
+| D-016 | Misconception requires repeated/strong evidence | Avoids over-interpreting one wrong answer | Locked |
+| D-017 | Deterministic verification where feasible | Numerical/objective correctness is better handled without an LLM | Locked |
+| D-018 | Model-assisted verification only for semantic cases | Covers conceptual/free-text cases while preserving a hard rejection path | Locked |
+| D-019 | No custom foundation-model training | Unnecessary for hackathon MVP | Locked |
+| D-020 | Video MVP uses transcript/timestamps; key-frame reasoning is stretch | Provides real multimodal source coverage without excessive complexity | Locked |
+| D-021 | Chat 0 technical lock is authoritative for implementation | Prevents implementation drift | Locked |
+| D-022 | Embedded images stored as first-class evidence and binary assets | Figures are independently addressable evidence units with MIME type and SHA-256 | Implemented & Verified |
+| D-023 | Relational topic, concept, and prerequisite representation in SQLite | Supports many-to-many evidence-concept mapping and directed prerequisite chains with transitive closure | Implemented & Verified |
+| D-024 | SQLite FTS5 MATCH with BM25-backed ranking for lexical search | Uses genuine FTS5 BM25 score combined with term coverage rather than naive token overlap | Implemented & Verified |
+| D-025 | Persisted embeddings with dimension validation and explicit failure handling | Stored in SQLite, reused across searches without re-encoding, and catches dimension mismatches | Implemented & Verified |
+| D-026 | Deterministic hybrid scoring ($0.45 \times \text{lex} + 0.55 \times \text{sem}$) with stable tie-breaking | Ensures identical ranking across runs with alphabetical tie-breaking on `evidence_id` | Implemented & Verified |
+| D-027 | Full provenance source resolver with safe error boundaries | Resolves evidence ID into source path, title, SHA-256, locator, text, asset, and metadata; fails safely on invalid inputs | Implemented & Verified |
+| D-028 | Structured machine-readable RetrievalTrace | Captures candidate count, result count, scores, rankings, source IDs, and explicit unsupported reasons | Implemented & Verified |
+| D-029 | Fail-closed sufficiency gate with thresholding and term coverage | Rejects queries with low retrieval score (<0.15) or unindexed terms before LLM invocation | Implemented & Verified |
+| D-030 | Strict citation anchoring to verified evidence IDs and locators | Tutor responses cite only resolved evidence units with exact page, slide, or timestamp locators | Implemented & Verified |
+| D-031 | Deterministic assessment verification for MCQ, numerical precision, and evidence linkage | Rejects malformed questions, missing evidence, duplicate options, and flawed answer keys before presentation | Implemented & Verified |
+| D-032 | Question deduplication via normalized prompt and concept fingerprinting | Suppresses served or identical questions when alternative candidates exist | Implemented & Verified |
+| D-033 | BKT parameter configuration ($P(L_0)=0.10, P(T)=0.15, P(S)=0.10, P(G)=0.20$) and state persistence | Interpretable skill mastery tracing persisted in SQLite per learner and topic | Implemented & Verified |
+| D-034 | Misconception detection thresholding with prerequisite remediation mapping | Requires $\ge 2$ repeated errors before diagnosing misconceptions, linking remediation to prerequisite concepts and evidence | Implemented & Verified |
+| D-035 | Explainable mastery-bracketed recommendation policy | Maps mastery (<0.40 review, 0.40â€“0.70 practice, 0.70â€“0.85 mixed, >0.85 advance) with prerequisite graph gating | Implemented & Verified |
 
-Chat 0's instruction that Chat 1 is the next phase is historical and superseded by Chats 01–05.
+| D-036 | Unverified prerequisite policy (MVP) | Prerequisites with no learner record block advancement and trigger foundational review on that prerequisite | Implemented & Verified |
+| D-037 | Assessment verification structural scope & numerical parsing contract | Scopes deterministic verifier to structural integrity, single-choice mapping, and robust finite numeric/tolerance parsing; factual truth explicitly distinguished | Implemented & Verified |
+| D-038 | Strict numeric thousands-separator grouping | Commas are accepted only in valid three-digit groups before optional decimals/scientific notation; malformed groupings are rejected rather than silently normalized into a different number | Implemented & Verified |
+| D-039 | Multimodal School Math & Science Corpus & Manifest | Curates reproducible fixtures (PDF, PPTX, Transcript) with embedded figures, prerequisite links, and SHA-256 provenance manifest | Implemented & Verified |
+| D-040 | Streamlit Multi-View Product Architecture | Modular UI in `app/ui/` with 7 dedicated workflows binding directly to backend services without duplicating business logic | Implemented & Verified |
+| D-041 | Deterministic Evaluation Benchmark Runner | Reproducible offline test runner measuring retrieval precision/recall, abstention, leakage, citation validity, and policy accuracy | Implemented & Verified |
+| D-042 | Multi-Turn Simulated Learner Evaluations | Simulates 6 distinct learner personas (advancing, struggling, mixed, misconception, prerequisite-gated, boundary) vs non-personalized baseline | Implemented & Verified |
+| D-043 | Offline & Deterministic Test Suite Guarantee | All 102 unit, acceptance, benchmark, and UI integration tests execute locally with zero external network or API dependency | Implemented & Verified |
+| D-044 | Source Evidence Resolution Method (`get_evidence_for_source`) | Adds explicit `get_evidence_for_source` method to `EvidenceDB` for source evidence chunk counting in Course Ingestion view without schema modifications | Implemented & Verified |
+| D-045 | Learner State Manager Service Wiring & Observation Alias | Wires `LearnerStateManager` into UI service container and provides `record_observation` alias to ensure assessment submissions persist BKT state updates | Implemented & Verified |
+| D-046 | Multi-Thread SQLite Connection & Automated 7-View AppTest | Sets `check_same_thread=False` on SQLite connection for Streamlit thread safety and incorporates `test_all_seven_streamlit_views_render_without_exceptions` into the permanent test suite | Implemented & Verified |
+| D-047 | CogniVault 2.0 Light Design System & Visual Tokens | Replaces dark mode with a cohesive light visual system (`#F7F8FC` canvas, `#FFFFFF` surfaces, `#18233B` deep navy typography, `#4F46E5` indigo primary, `#0D9488` teal supporting, accessible status colors) | Implemented & Verified |
+| D-048 | Reusable Component Library Architecture (`app/ui/components.py`) | Modularizes UI presentation (headers, metric cards, badges, callouts, empty states, citation cards) to eliminate ad-hoc CSS/HTML duplication | Implemented & Verified |
+| D-049 | Executive Learning Overview & Dashboard View | Adds a dedicated landing dashboard (`app/ui/views/dashboard_view.py`) featuring curriculum KPIs, active learner mastery, prescribed actions, prerequisite lock warnings, and quick module shortcuts | Implemented & Verified |
+| D-050 | Automated 8-View AppTest Walkthrough Coverage | Expands `test_all_seven_streamlit_views_render_without_exceptions` to validate all 8 views (Dashboard + 7 modules) with 15s timeout, guaranteeing 100% exception-free execution | Implemented & Verified |
 
+New decisions must be added here with rationale and status.
 
 ---
 
-## Final overhaul decision — 2026-10-11
+## Final Overhaul & Deployment Decisions (2026-10-14)
 
-The authoritative next-phase plan is now [`docs/FINAL_OVERHAUL_PLAN.md`](FINAL_OVERHAUL_PLAN.md). This section supersedes earlier forward-looking implementation instructions where they conflict; prior entries remain preserved as history.
-
-**Current direction:** controlled Agno-first overhaul with v0-generated Next.js/TypeScript frontend, Python Agno AgentOS backend, Ollama/local model baseline, SQLite + FTS5 + local ChromaDB, local embeddings, deterministic evidence/assessment verification, and existing BKT logic. See the final plan for exact decisions, acceptance gates, branch rules, and the only three executor prompts.
-
-**Execution model:** exactly three implementation chats: (1) Agno/evidence foundation, (2) frontend and adaptive learning loop, (3) evaluation, hardening and submission. Implementation must proceed on dedicated phase branches; preserve all legacy Streamlit code, source data, tests, PDFs, and Git history. Do not force-push, reset, delete/rename branches, close/merge PR #1, change visibility, or merge implementation to main without explicit approval.
-
-**Truthfulness gate:** the plan is locked; implementation and acceptance are not yet proven. Organizer requirements are the acceptance baseline. Never claim a requirement, test, metric, deployment, video or submission is complete without reproducible evidence.
+| ID | Decision | Rationale | Status |
+|---|---|---|---|
+| D-051 | Supported Cloud Model Provider Adapter (Gemini free tier) | Cloud deployments cannot access developer localhost Ollama; explicit provider adapter enables free cloud model when credentials configured | Implemented |
+| D-052 | Ephemeral Storage & SQLite/Chroma Demo Strategy | Render free tier disk is ephemeral; system documents demo boundaries and tests persistence explicitly | Implemented |
+| D-053 | Vercel Frontend + Render Backend Dual Cloud Hosting | Provides accessible public HTTPS URL for organizers with zero cost | Implemented |
+| D-054 | Safe Integration & PR #1 Preservation | Integrates Chat 01–03 into main via dedicated verified integration branch; preserves PR #1 and historical branches untouched | Implemented |

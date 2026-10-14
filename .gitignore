@@ -4,6 +4,8 @@ __pycache__/
 .venv/
 venv/
 env/
+*.egg-info/
+.pytest_cache/
 
 # Environment / secrets
 .env
@@ -18,13 +20,28 @@ data/local/
 uploads/
 cache/
 
+# Model caches
+.cache/
+hf_cache/
+models_cache/
+
 # Generated artifacts
 *.log
 reports/generated/
 evaluation/results/local/
+
+# Node / Frontend
+node_modules/
+.next/
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+scratch/
+data/chroma/
 
 # OS / IDE
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+

@@ -1,0 +1,386 @@
+{
+  "benchmark_timestamp": "2026-10-13T13:50:58.260014+00:00",
+  "benchmark_version": "1.0.0",
+  "total_test_cases": 28,
+  "metrics": {
+    "supported_answer_rate": 1.0,
+    "unsupported_abstention_rate": 1.0,
+    "unsupported_leakage_rate": 0.0,
+    "retrieval_precision_at_3": 0.3958,
+    "retrieval_recall_at_3": 1.0,
+    "grounded_faithfulness_proxy": 0.9688,
+    "citation_addressability_rate": 1.0,
+    "source_resolved_locator_accuracy": 1.0,
+    "question_verification_accuracy": 1.0,
+    "bkt_numerical_accuracy": 1.0,
+    "recommendation_policy_accuracy": 1.0,
+    "repetition_control_pass": true
+  },
+  "denominators": {
+    "supported_total": 8,
+    "unsupported_total": 3,
+    "retrieval_cases_evaluated": 8,
+    "citations_total": 21,
+    "citations_valid": 21,
+    "citations_source_resolved": 21,
+    "question_verification_total": 6,
+    "bkt_transitions_total": 5,
+    "recommendation_cases_total": 6
+  },
+  "metric_definitions": {
+    "supported_answer_rate": "Fraction of in-corpus questions answered with grounded citations",
+    "unsupported_abstention_rate": "Fraction of out-of-corpus questions where sufficiency gate explicitly abstained",
+    "unsupported_leakage_rate": "Fraction of out-of-corpus questions erroneously answered as course-supported",
+    "retrieval_precision_at_3": "Fraction of top-3 retrieved items matching exact expected evidence IDs (with denominator min(3, len(retrieved)))",
+    "retrieval_recall_at_3": "Number of expected evidence items retrieved in top-3 divided by total number of expected evidence items",
+    "grounded_faithfulness_proxy": "Token overlap ratio between reference answer concepts and grounded response",
+    "citation_addressability_rate": "Fraction of cited evidence IDs existing and resolvable in SQLite EvidenceDB",
+    "source_resolved_locator_accuracy": "Fraction of emitted citations whose location fields match source-resolved locators in EvidenceDB",
+    "question_verification_accuracy": "Fraction of assessment items where structural verifier matches expected valid/reject decision",
+    "bkt_numerical_accuracy": "Fraction of BKT posterior transitions matching analytical formula within 1e-4 tolerance",
+    "recommendation_policy_accuracy": "Fraction of learner mastery brackets generating exact expected action and difficulty",
+    "repetition_control_pass": "Boolean indicating that alternative questions are selected when available and graceful fallback occurs on pool exhaustion"
+  },
+  "details": {
+    "tutor_and_retrieval": [
+      {
+        "case_id": "tc_01_second_law",
+        "query": "What is the equation for Newton's Second Law of Motion?",
+        "expected_status": "supported",
+        "actual_status": "supported",
+        "is_grounded": true,
+        "retrieved_ids": [
+          "physics_mechanics:e00001",
+          "waves_optics:e00001",
+          "waves_optics:e00002"
+        ],
+        "citations_count": 3,
+        "precision_at_3": 0.3333,
+        "recall_at_3": 1.0,
+        "token_containment_score": 0.75
+      },
+      {
+        "case_id": "tc_02_kinetic_energy",
+        "query": "How is kinetic energy calculated from mass and speed?",
+        "expected_status": "supported",
+        "actual_status": "supported",
+        "is_grounded": true,
+        "retrieved_ids": [
+          "physics_mechanics:e00002",
+          "waves_optics:e00001",
+          "biology_cell_lecture:e00004"
+        ],
+        "citations_count": 4,
+        "precision_at_3": 0.3333,
+        "recall_at_3": 1.0,
+        "token_containment_score": 1.0
+      },
+      {
+        "case_id": "tc_03_wave_equation",
+        "query": "State the wave speed equation relating frequency and wavelength",
+        "expected_status": "supported",
+        "actual_status": "supported",
+        "is_grounded": true,
+        "retrieved_ids": [
+          "waves_optics:e00001",
+          "mathematics_calculus:e00001",
+          "physics_mechanics:e00002"
+        ],
+        "citations_count": 1,
+        "precision_at_3": 0.3333,
+        "recall_at_3": 1.0,
+        "token_containment_score": 1.0
+      },
+      {
+        "case_id": "tc_04_snells_law",
+        "query": "What is Snell's Law of Refraction formula?",
+        "expected_status": "supported",
+        "actual_status": "supported",
+        "is_grounded": true,
+        "retrieved_ids": [
+          "waves_optics:e00002",
+          "physics_mechanics:e00001",
+          "mathematics_calculus:e00001"
+        ],
+        "citations_count": 4,
+        "precision_at_3": 0.3333,
+        "recall_at_3": 1.0,
+        "token_containment_score": 1.0
+      },
+      {
+        "case_id": "tc_05_quadratic_formula",
+        "query": "What is the quadratic formula to solve standard quadratic equations?",
+        "expected_status": "supported",
+        "actual_status": "supported",
+        "is_grounded": true,
+        "retrieved_ids": [
+          "mathematics_calculus:e00001",
+          "physics_mechanics:e00001",
+          "waves_optics:e00001"
+        ],
+        "citations_count": 2,
+        "precision_at_3": 0.3333,
+        "recall_at_3": 1.0,
+        "token_containment_score": 1.0
+      },
+      {
+        "case_id": "tc_06_mitochondria_atp",
+        "query": "Which organelle is the powerhouse of the cell producing ATP?",
+        "expected_status": "supported",
+        "actual_status": "supported",
+        "is_grounded": true,
+        "retrieved_ids": [
+          "biology_cell_lecture:e00003",
+          "biology_cell_lecture:e00001",
+          "biology_cell_lecture:e00002"
+        ],
+        "citations_count": 2,
+        "precision_at_3": 0.3333,
+        "recall_at_3": 1.0,
+        "token_containment_score": 1.0
+      },
+      {
+        "case_id": "tc_07_diagram_evidence",
+        "query": "Free-body force vector diagram showing normal and gravitational forces",
+        "expected_status": "supported",
+        "actual_status": "supported",
+        "is_grounded": true,
+        "retrieved_ids": [
+          "physics_mechanics:e00002",
+          "physics_mechanics:e00001"
+        ],
+        "citations_count": 1,
+        "precision_at_3": 0.5,
+        "recall_at_3": 1.0,
+        "token_containment_score": 1.0
+      },
+      {
+        "case_id": "tc_08_cross_source_synthesis",
+        "query": "Wave speed equation and mechanical work done by force",
+        "expected_status": "supported",
+        "actual_status": "supported",
+        "is_grounded": true,
+        "retrieved_ids": [
+          "physics_mechanics:e00002",
+          "waves_optics:e00001",
+          "mathematics_calculus:e00001"
+        ],
+        "citations_count": 4,
+        "precision_at_3": 0.6667,
+        "recall_at_3": 1.0,
+        "token_containment_score": 1.0
+      },
+      {
+        "case_id": "tc_09_unsupported_quantum_gravity",
+        "query": "Superstring theory 11-dimensional M-theory Calabi-Yau compactification metrics",
+        "expected_status": "unsupported",
+        "actual_status": "unsupported",
+        "is_grounded": false,
+        "retrieved_ids": [
+          "biology_cell_lecture:e00002",
+          "waves_optics:e00001",
+          "physics_mechanics:e00002"
+        ],
+        "citations_count": 0
+      },
+      {
+        "case_id": "tc_10_unsupported_french_revolution",
+        "query": "Reign of Terror Maximilien Robespierre Committee of Public Safety 1793",
+        "expected_status": "unsupported",
+        "actual_status": "unsupported",
+        "is_grounded": false,
+        "retrieved_ids": [
+          "waves_optics:e00002",
+          "biology_cell_lecture:e00002",
+          "physics_mechanics:e00002"
+        ],
+        "citations_count": 0
+      },
+      {
+        "case_id": "tc_11_unsupported_monetary_policy",
+        "query": "Federal Reserve quantitative easing open market operations inflation target",
+        "expected_status": "unsupported",
+        "actual_status": "unsupported",
+        "is_grounded": false,
+        "retrieved_ids": [],
+        "citations_count": 0
+      }
+    ],
+    "question_verification": [
+      {
+        "id": "q_valid_mcq",
+        "expected_valid": true,
+        "actual_valid": true,
+        "passed": true,
+        "failure_reasons": []
+      },
+      {
+        "id": "q_invalid_key_mcq",
+        "expected_valid": false,
+        "actual_valid": false,
+        "passed": true,
+        "failure_reasons": [
+          "Expected answer 'Z' does not match any valid option key ['A', 'B'] or option text"
+        ]
+      },
+      {
+        "id": "q_duplicate_options_mcq",
+        "expected_valid": false,
+        "actual_valid": false,
+        "passed": true,
+        "failure_reasons": [
+          "Duplicate option texts found in MCQ options"
+        ]
+      },
+      {
+        "id": "q_valid_numerical",
+        "expected_valid": true,
+        "actual_valid": true,
+        "passed": true,
+        "failure_reasons": []
+      },
+      {
+        "id": "q_negative_tolerance_numerical",
+        "expected_valid": false,
+        "actual_valid": false,
+        "passed": true,
+        "failure_reasons": [
+          "Numerical tolerance cannot be negative or non-finite: -0.5"
+        ]
+      },
+      {
+        "id": "q_malformed_number",
+        "expected_valid": false,
+        "actual_valid": false,
+        "passed": true,
+        "failure_reasons": [
+          "Expected answer '3.14.15abc' is not a valid parseable finite number"
+        ]
+      }
+    ],
+    "bkt_updates": [
+      {
+        "step": 1,
+        "prior": 0.1,
+        "is_correct": true,
+        "expected_posterior": 0.433333,
+        "actual_posterior": 0.433333,
+        "delta": 0.0,
+        "passed": true
+      },
+      {
+        "step": 2,
+        "prior": 0.433333,
+        "is_correct": false,
+        "expected_posterior": 0.224161,
+        "actual_posterior": 0.224161,
+        "delta": 0.0,
+        "passed": true
+      },
+      {
+        "step": 3,
+        "prior": 0.224161,
+        "is_correct": true,
+        "expected_posterior": 0.630463,
+        "actual_posterior": 0.630462,
+        "delta": 1e-06,
+        "passed": true
+      },
+      {
+        "step": 4,
+        "prior": 0.630463,
+        "is_correct": true,
+        "expected_posterior": 0.902045,
+        "actual_posterior": 0.902044,
+        "delta": 1e-06,
+        "passed": true
+      },
+      {
+        "step": 5,
+        "prior": 0.1,
+        "is_correct": false,
+        "expected_posterior": 0.161644,
+        "actual_posterior": 0.161644,
+        "delta": 0.0,
+        "passed": true
+      }
+    ],
+    "recommendation_policy": [
+      {
+        "case_id": "rec_below_40",
+        "p_mastery": 0.25,
+        "expected_action": "foundational_review",
+        "actual_action": "foundational_review",
+        "expected_difficulty": "easy",
+        "actual_difficulty": "easy",
+        "passed": true
+      },
+      {
+        "case_id": "rec_exact_40",
+        "p_mastery": 0.4,
+        "expected_action": "targeted_practice",
+        "actual_action": "targeted_practice",
+        "expected_difficulty": "medium",
+        "actual_difficulty": "medium",
+        "passed": true
+      },
+      {
+        "case_id": "rec_mid_55",
+        "p_mastery": 0.55,
+        "expected_action": "targeted_practice",
+        "actual_action": "targeted_practice",
+        "expected_difficulty": "medium",
+        "actual_difficulty": "medium",
+        "passed": true
+      },
+      {
+        "case_id": "rec_exact_70",
+        "p_mastery": 0.7,
+        "expected_action": "mixed_application",
+        "actual_action": "mixed_application",
+        "expected_difficulty": "medium",
+        "actual_difficulty": "medium",
+        "passed": true
+      },
+      {
+        "case_id": "rec_exact_85",
+        "p_mastery": 0.85,
+        "expected_action": "mixed_application",
+        "actual_action": "mixed_application",
+        "expected_difficulty": "medium",
+        "actual_difficulty": "medium",
+        "passed": true
+      },
+      {
+        "case_id": "rec_above_85",
+        "p_mastery": 0.86,
+        "expected_action": "advance_topic",
+        "actual_action": "advance_topic",
+        "expected_difficulty": "hard",
+        "actual_difficulty": "hard",
+        "passed": true
+      }
+    ],
+    "repetition_control": [
+      {
+        "scenario": "alternative_selection_on_multi_question_topic",
+        "topic": "Newtonian Mechanics",
+        "first_served": "q_seed_01",
+        "second_served": "q_seed_01_alt",
+        "suppressed_duplicate": true,
+        "passed": true
+      },
+      {
+        "scenario": "graceful_fallback_when_pool_exhausted",
+        "topic": "Newtonian Mechanics",
+        "served_pool": [
+          "q_seed_01",
+          "q_seed_01_alt"
+        ],
+        "fallback_served": "q_seed_01",
+        "fallback_succeeded": true,
+        "passed": true
+      }
+    ]
+  }
+}

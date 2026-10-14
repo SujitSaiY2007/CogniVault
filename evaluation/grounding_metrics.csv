@@ -1,0 +1,12 @@
+case_id,query,expected_status,actual_status,classification,context_precision,context_recall,faithfulness,answer_relevancy,citations_count
+tc_01_second_law,What is the equation for Newton's Second Law of Motion?,supported,supported,TP,0.3333,1.0,0.75,0.6,3
+tc_02_kinetic_energy,How is kinetic energy calculated from mass and speed?,supported,supported,TP,0.3333,1.0,1.0,0.6667,4
+tc_03_wave_equation,State the wave speed equation relating frequency and wavelength,supported,supported,TP,0.3333,1.0,1.0,0.7143,1
+tc_04_snells_law,What is Snell's Law of Refraction formula?,supported,supported,TP,0.3333,1.0,1.0,0.5,4
+tc_05_quadratic_formula,What is the quadratic formula to solve standard quadratic equations?,supported,supported,TP,0.3333,1.0,1.0,0.5714,2
+tc_06_mitochondria_atp,Which organelle is the powerhouse of the cell producing ATP?,supported,supported,TP,0.3333,1.0,1.0,0.6667,2
+tc_07_diagram_evidence,Free-body force vector diagram showing normal and gravitational forces,supported,supported,TP,0.5,1.0,1.0,1.0,1
+tc_08_cross_source_synthesis,Wave speed equation and mechanical work done by force,supported,supported,TP,0.6667,1.0,1.0,1.0,4
+tc_09_unsupported_quantum_gravity,Superstring theory 11-dimensional M-theory Calabi-Yau compactification metrics,unsupported,unsupported,TN,0.0,0.0,1.0,0.0,0
+tc_10_unsupported_french_revolution,Reign of Terror Maximilien Robespierre Committee of Public Safety 1793,unsupported,unsupported,TN,0.0,0.0,1.0,0.0,0
+tc_11_unsupported_monetary_policy,Federal Reserve quantitative easing open market operations inflation target,unsupported,unsupported,TN,0.0,0.0,1.0,0.0,0

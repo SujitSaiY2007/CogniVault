@@ -1,4 +1,4 @@
-# Next Chat — Final Integration, Live Verification & Submission
+﻿# Next Chat â€” Final Integration, Live Verification & Submission
 
 The old UI-overhaul handoff in this file is historical and stale. The current final-chat instructions are now canonical:
 
@@ -9,7 +9,7 @@ Use that complete prompt as the first user message in the final ChatGPT conversa
 Current key facts:
 - Chat 03 reported SHA: `0e1b0552da1676ff4f77d1108966a05b3fd2efbe`.
 - Integration PR #2: https://github.com/SujitSaiY2007/CogniVault/pull/2; GitHub initially reported `mergeable=false` because main and the implementation branch diverged.
-- User locally saw the frontend homepage render, then Course Materials showed “Ingesting…” and source count 0. The actual upload request result/root cause remains unverified.
+- User locally saw the frontend homepage render, then Course Materials showed â€œIngestingâ€¦â€ and source count 0. The actual upload request result/root cause remains unverified.
 - Chat 03 test/build/evaluation outcomes are report claims until rerun.
 - Preserve PR #1, all branches/history, corpus/PDFs and legacy Streamlit. Do not force-push, reset, rewrite published history, delete/rename branches, or change repository visibility.
-- Final human-only tasks: record a 3–5 minute demo, upload to YouTube Unlisted or Google Drive, and submit repository/video links through the hackathon portal.
+- Final human-only tasks: record a 3â€“5 minute demo, upload to YouTube Unlisted or Google Drive, and submit repository/video links through the hackathon portal.

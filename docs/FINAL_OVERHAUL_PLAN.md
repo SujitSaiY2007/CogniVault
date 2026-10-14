@@ -1,10 +1,10 @@
-# CogniVault — Final Overhaul Plan and Three-Chat Execution Contract
+﻿# CogniVault â€” Final Overhaul Plan and Three-Chat Execution Contract
 
 **Date:** 2026-10-11  
-**Project:** CogniVault — Evidence-First Adaptive Learning  
-**Hackathon:** Multimodal AI Hackathon 2026, Track D — Personalized Tutoring & Adaptive Learning  
+**Project:** CogniVault â€” Evidence-First Adaptive Learning  
+**Hackathon:** Multimodal AI Hackathon 2026, Track D â€” Personalized Tutoring & Adaptive Learning  
 **Canonical repository:** https://github.com/SujitSaiY2007/CogniVault  
-**Status:** Chat 01–03 implementation is reported complete on its phase branch. Final integration into `main`, live ingestion acceptance, and final browser verification remain outstanding; see the current handoff and final-chat prompt.
+**Status:** Chat 01â€“03 implementation is reported complete on its phase branch. Final integration into `main`, live ingestion acceptance, and final browser verification remain outstanding; see the current handoff and final-chat prompt.
 
 ## Executive decision
 
@@ -13,12 +13,12 @@ This is a continuation and controlled overhaul, not a new project. The original 
 ### Winning strategy
 
 Prioritize the organizer's weighted rubric:
-- Knowledge base and grounding — 20%
-- Personalization effectiveness — 20%
-- Assessment quality — 15%
-- User experience and demo video — 15%
-- System evaluation — 15%
-- Technical implementation — 15%
+- Knowledge base and grounding â€” 20%
+- Personalization effectiveness â€” 20%
+- Assessment quality â€” 15%
+- User experience and demo video â€” 15%
+- System evaluation â€” 15%
+- Technical implementation â€” 15%
 
 A polished frontend is necessary but not sufficient. The judging story must show evidence traceability, correct abstention, verified assessment, measured adaptation over multiple simulated sessions, and reproducible evaluation.
 
@@ -34,7 +34,7 @@ Based on the organizer Track D problem statement and submission guidance:
 7. Update per-topic learner mastery after quizzes and tutoring interactions; support a new learner through diagnostic assessment or intake.
 8. Evaluate faithfulness, answer relevancy, context precision, and context recall on a team-built set with known locators and unsupported queries.
 9. Simulate multiple learner profiles across multiple sessions and report mastery gains and question repetition rate.
-10. Deliver working ingestion, grounded tutor, adaptive assessment, dashboard, architecture/grounding/learner-model documentation, evaluation results, simulated-student results, and a 3–10 minute YouTube demonstration.
+10. Deliver working ingestion, grounded tutor, adaptive assessment, dashboard, architecture/grounding/learner-model documentation, evaluation results, simulated-student results, and a 3â€“10 minute YouTube demonstration.
 
 Do not claim that an organizer requirement is met unless a test, trace, reproducible artifact, or observable demo proves it.
 
@@ -62,11 +62,11 @@ Do not claim that an organizer requirement is met unless a test, trace, reproduc
 ## Agno architecture: maximum practical use, not agent-for-everything
 
 Use one Agno workflow as the orchestration boundary and three narrowly scoped specialists:
-1. **Evidence Tutor Agent** — calls retrieval/source-resolution tools, uses only supplied evidence for grounded claims, and returns citations/abstention in a structured response.
-2. **Assessment Agent** — drafts/selects MCQ, short-answer, and numerical questions; deterministic validators check schema, source/topic/difficulty, answer integrity, and duplicate policy before questions become usable.
-3. **Learning Coach Agent** — reads verified learner-state tools and recommends a next action. BKT calculations and mastery persistence remain deterministic tools, not free-form model output.
+1. **Evidence Tutor Agent** â€” calls retrieval/source-resolution tools, uses only supplied evidence for grounded claims, and returns citations/abstention in a structured response.
+2. **Assessment Agent** â€” drafts/selects MCQ, short-answer, and numerical questions; deterministic validators check schema, source/topic/difficulty, answer integrity, and duplicate policy before questions become usable.
+3. **Learning Coach Agent** â€” reads verified learner-state tools and recommends a next action. BKT calculations and mastery persistence remain deterministic tools, not free-form model output.
 
-Shared tools: hybrid retrieval, source locator resolver, question verifier, assessment scorer, BKT observation updater, misconception/prerequisite lookup, and recommendation candidate selector. Workflow order: request validation → retrieval → evidence sufficiency → response/assessment generation → deterministic verification → citation/source validation → permitted learner-state update → structured UI response.
+Shared tools: hybrid retrieval, source locator resolver, question verifier, assessment scorer, BKT observation updater, misconception/prerequisite lookup, and recommendation candidate selector. Workflow order: request validation â†’ retrieval â†’ evidence sufficiency â†’ response/assessment generation â†’ deterministic verification â†’ citation/source validation â†’ permitted learner-state update â†’ structured UI response.
 
 Use Agno sessions/memory for conversational context, not as the source of truth for long-term mastery. Store durable learner state in SQLite. Use structured outputs, tool boundaries, input/output checks, tracing and evaluations. Start with a single workflow and direct agent calls; add a multi-agent team only if a measurable test proves it helps. No uncontrolled agent-to-agent loops.
 
@@ -82,22 +82,22 @@ Use Agno sessions/memory for conversational context, not as the source of truth 
 
 ## Exactly three implementation chats
 
-### Chat 1 — Agno foundation and evidence contract
+### Chat 1 â€” Agno foundation and evidence contract
 **Branch:** `overhaul/chat-01-agno-foundation` (create only if absent; base from the agreed latest preserved implementation branch after auditing all remote heads).  
 **Goal:** prove a locally runnable Agno AgentOS backend can use existing evidence/retrieval contracts.  
 **Tasks:** audit current branches and all project docs; map old modules to the new architecture; preserve old code; establish dependency lock/config and secrets policy; implement local model adapter; wire one Evidence Tutor Agent and retrieval/source-resolver tools; preserve exact page/slide/timestamp locators; add health/API checks; add unsupported-query abstention; document local run. Do not yet rebuild every frontend screen.  
 **Exit gate:** clean install/run instructions; API-level supported and unsupported query tests pass; citations resolve to actual source locators; no paid API required; no legacy tests weakened; change report includes exact commands and outcomes.
 
-### Chat 2 — v0/Next.js product and adaptive learning loop
+### Chat 2 â€” v0/Next.js product and adaptive learning loop
 **Branch:** `overhaul/chat-02-product-loop`, based on accepted Chat 1 head.  
 **Goal:** connect a polished frontend to a working backend, not a static mockup.  
 **Tasks:** generate/iterate UI using v0 and commit exported Next.js/TypeScript code; implement course/material ingestion UX, grounded tutor with clickable source locators, MCQ/short-answer/numerical practice, feedback, progress/mastery, recommendations and cold-start diagnostic/intake. Wire the Assessment Agent and Learning Coach through the workflow. Keep all mutations server-side; persist sessions/interactions/mastery in SQLite; retain BKT and deterministic verification. Provide a documented local dev command and environment example without secrets.  
 **Exit gate:** a fresh learner can ingest supported materials, ask a grounded question, open a citation, answer a question, receive verified feedback, and see a persisted topic-level state/recommendation. Browser walkthrough at normal desktop and mobile widths; no fake dashboard data or unconnected controls.
 
-### Chat 3 — evaluation, hardening, demo and submission package
+### Chat 3 â€” evaluation, hardening, demo and submission package
 **Branch:** `overhaul/chat-03-evaluation-submission`, based on accepted Chat 2 head.  
 **Goal:** prove, package and demonstrate the system against organizer criteria.  
-**Tasks:** run regression/unit/API/browser tests; repair critical defects; execute the known-locator/off-material evaluation set; report faithfulness, answer relevancy, context precision/recall using a named framework or documented equivalent; run multi-session simulated learners and report mastery gains/repetition rate; add error cases, security checks, setup instructions, architecture/grounding/BKT docs, evaluation outputs, demo script and 3–10 minute recording checklist. Confirm the frontend/backend hosting story honestly. Do not fabricate or manually inflate scores.  
+**Tasks:** run regression/unit/API/browser tests; repair critical defects; execute the known-locator/off-material evaluation set; report faithfulness, answer relevancy, context precision/recall using a named framework or documented equivalent; run multi-session simulated learners and report mastery gains/repetition rate; add error cases, security checks, setup instructions, architecture/grounding/BKT docs, evaluation outputs, demo script and 3â€“10 minute recording checklist. Confirm the frontend/backend hosting story honestly. Do not fabricate or manually inflate scores.  
 **Exit gate:** reproducible test/evaluation artifacts, actual results and limitations, successful end-to-end walkthrough, documented demo link once user records/uploads it, and final submission checklist. External video upload and portal submission require user authorization/actions.
 
 ## Mandatory acceptance gates
@@ -112,7 +112,7 @@ Use Agno sessions/memory for conversational context, not as the source of truth 
 - [ ] Cold-start diagnostic/intake.
 - [ ] RAG evaluation metrics and multi-session learner metrics are reproducible and honestly labelled.
 - [ ] Responsive usable interface, no fake data, no dead controls, no secrets exposed.
-- [ ] Fresh setup instructions, dependency lock, tests and a 3–10 minute demo plan.
+- [ ] Fresh setup instructions, dependency lock, tests and a 3â€“10 minute demo plan.
 - [ ] Git history and existing branches preserved; no implementation merge to main until explicit final acceptance.
 
 ## Automated workflow and tool choice
@@ -123,18 +123,18 @@ At the start of each chat the executor must: fetch remote refs; inspect status/b
 
 ## The only three executor prompts
 
-### PROMPT 1 — Agno foundation
+### PROMPT 1 â€” Agno foundation
 You are the local implementation executor for the existing CogniVault repository. Read `docs/FINAL_OVERHAUL_PLAN.md` and all listed project control documents, `docs/CHAT0_TECHNICAL_LOCK.md`, `docs/PRIOR_ART_AND_POSITIONING.md`, the organizer Track D PDF/requirements available in the repository or supplied local files, and the existing app, tests, dependencies, evaluation and data. GitHub is canonical. Preserve all code, data, tests, documents, user PDFs, and branches. Do not touch main implementation, force-push, reset, delete/rename branches, or close/merge PR #1. Inspect every remote head before selecting the best preserved implementation baseline. Create/use only `overhaul/chat-01-agno-foundation` for changes. Implement the smallest complete Agno AgentOS + local Ollama + SQLite/FTS5/ChromaDB evidence-tutor path that reuses existing source/retrieval contracts, exact page/slide/timestamp locators, deterministic sufficiency/abstention and citation validation. Keep existing Streamlit code as a working historical path. Add dependency/config/run instructions and tests. No mandatory paid APIs, no secrets in source, no invented features. Run actual tests and API smoke tests; fix failures rather than weaken assertions. Commit/push this branch, verify remote SHA, update its implementation report and handoff. End with exact changed files, commands, test output, known gaps and Chat 2 starting SHA. Do not start Chat 2 in this run.
 
-### PROMPT 2 — v0 frontend and learning loop
+### PROMPT 2 â€” v0 frontend and learning loop
 Continue the same CogniVault repository from the freshly verified accepted Chat 1 remote HEAD and read `docs/FINAL_OVERHAUL_PLAN.md`, `docs/CHAT01_AGNO_FOUNDATION_REPORT.md`, all current control documents and organizer requirements. The exact reconciled prompt is maintained at `docs/CHAT02_EXECUTION_PROMPT.md`. Preserve the existing Streamlit path, evidence contracts, prior code/tests/data, all branches and PR #1. Create/use only `overhaul/chat-02-product-loop` from accepted Chat 1 HEAD. **Chat 02 is one integrated phase combining both backend intelligence and frontend work; do not split these into separate chats.** Use v0 to generate/refine and commit real responsive Next.js + TypeScript + Tailwind frontend code, not a static mockup. Connect it to Agno AgentOS through typed API contracts. In the same phase expose assessment generation/selection, structural/source/answer-key verification, answer submission/scoring/feedback and duplicate prevention; expose deterministic BKT updates and durable SQLite learner state, misconception diagnosis/remediation, prerequisite-aware recommendations and cold-start diagnostic/intake using existing domain logic. Implement actual course/material ingestion, grounded tutor with clickable exact citations, MCQ/short-answer/numerical practice, progress/mastery and recommendations. Keep mutations server-side; no fake dashboard data or unconnected controls. Use Ollama/local embeddings by default and keep hosted free-tier providers optional. Provide safe env examples and reproducible Windows run commands. Run backend regression and targeted API tests, frontend lint/type/build, integration tests and actual desktop/mobile browser walkthrough; fix failures. Commit/push only this branch, verify remote SHA, update report/continuity docs and list remaining acceptance gaps. Do not start Chat 3.
 
-### PROMPT 3 — prove, harden and package
-Continue from the accepted Chat 2 remote SHA. Read `docs/FINAL_OVERHAUL_PLAN.md`, organizer requirements, all project governance docs, implementation reports and current code/tests. Preserve all history and branches; no force-push, reset, deletion, branch renames, PR #1 merge/closure, or unapproved repository visibility changes. Create/use only `overhaul/chat-03-evaluation-submission` from accepted Chat 2 HEAD. Run the complete regression suite, frontend checks, API/integration tests and end-to-end browser walkthrough. Build/execute a reproducible team test set with known page/slide/timestamp locators and off-material questions; report faithfulness, answer relevancy, context precision and context recall using RAGAS or a clearly documented equivalent. Run multi-session simulated learner profiles and report mastery gains and question repetition rate. Include failures, confidence/limitations and exact commands; never fabricate metrics or claim test success without output. Fix critical defects, verify citations and abstention, assessment correctness and BKT persistence, inspect secrets/dependencies/accessibility/responsiveness, and produce architecture, grounding, learner-model, setup, evaluation, demo script and 3–10 minute recording checklist. Verify branch and remote SHA, update all continuity docs, create final report and state precisely what is ready versus what still requires the user's video recording/portal submission. Do not merge to main or publish/change repository visibility without explicit approval.
+### PROMPT 3 â€” prove, harden and package
+Continue from the accepted Chat 2 remote SHA. Read `docs/FINAL_OVERHAUL_PLAN.md`, organizer requirements, all project governance docs, implementation reports and current code/tests. Preserve all history and branches; no force-push, reset, deletion, branch renames, PR #1 merge/closure, or unapproved repository visibility changes. Create/use only `overhaul/chat-03-evaluation-submission` from accepted Chat 2 HEAD. Run the complete regression suite, frontend checks, API/integration tests and end-to-end browser walkthrough. Build/execute a reproducible team test set with known page/slide/timestamp locators and off-material questions; report faithfulness, answer relevancy, context precision and context recall using RAGAS or a clearly documented equivalent. Run multi-session simulated learner profiles and report mastery gains and question repetition rate. Include failures, confidence/limitations and exact commands; never fabricate metrics or claim test success without output. Fix critical defects, verify citations and abstention, assessment correctness and BKT persistence, inspect secrets/dependencies/accessibility/responsiveness, and produce architecture, grounding, learner-model, setup, evaluation, demo script and 3â€“10 minute recording checklist. Verify branch and remote SHA, update all continuity docs, create final report and state precisely what is ready versus what still requires the user's video recording/portal submission. Do not merge to main or publish/change repository visibility without explicit approval.
 
 ## Human-only actions and honest limits
 
-The executor must not claim to have recorded/uploaded a YouTube video or submitted the hackathon portal unless the user explicitly completes/authorizes that action and provides evidence. A private repository may fail an organizer's public-repository requirement; do not change visibility silently—flag it for explicit user approval in Chat 3. A free public always-on backend is not assumed. Do not include proprietary or user-sensitive content in public demo data.
+The executor must not claim to have recorded/uploaded a YouTube video or submitted the hackathon portal unless the user explicitly completes/authorizes that action and provides evidence. A private repository may fail an organizer's public-repository requirement; do not change visibility silentlyâ€”flag it for explicit user approval in Chat 3. A free public always-on backend is not assumed. Do not include proprietary or user-sensitive content in public demo data.
 
 ## Final status
 
@@ -151,12 +151,12 @@ The Chat 02 implementation report is available at [`docs/CHAT02_PRODUCT_LOOP_REP
 Chat 03 is responsible for reproducible grounding/abstention/citation evaluation, multi-session learner simulations and repetition metrics, security/UX hardening, actual evidence artifacts, and the final demo/submission checklist. Do not merge implementation to `main`, alter repository visibility, or claim a video upload or portal submission without actual evidence. Preserve all historical code, data, PDFs, branches, PR #1, and commit history.
 
 
-## Final handoff reconciliation — 2026-10-14
+## Final handoff reconciliation â€” 2026-10-14
 
 Chat 03 execution report states that branch `overhaul/chat-03-evaluation-submission` ended at `0e1b0552da1676ff4f77d1108966a05b3fd2efbe`, with 138/138 Python tests, frontend production build, grounding/citation evaluation, six synthetic learner profiles, security tests and 13 browser screenshots. These are reported outcomes and must be rerun in the final verification chat before being described as newly verified.
 
 The final integration PR is [PR #2](https://github.com/SujitSaiY2007/CogniVault/pull/2). GitHub comparison reported that `main` and the Chat 03 branch diverged and PR #2 initially had `mergeable=false`. Do not blindly merge or force-push; use a real local checkout, review all conflicts and the resulting diff, and only merge after tests pass. Keep PR #1 open and untouched.
 
-The user launched the Next.js homepage locally, then observed the Course Materials page stuck on “Ingesting…” with zero indexed sources. Backend logs showed successful source evidence GET requests and embedding weights at 100%, but the actual upload request result/root cause remains unknown. Final acceptance must inspect `POST /api/v1/ingest/upload`, backend logs and persisted source/evidence records, then fix and test the confirmed cause.
+The user launched the Next.js homepage locally, then observed the Course Materials page stuck on â€œIngestingâ€¦â€ with zero indexed sources. Backend logs showed successful source evidence GET requests and embedding weights at 100%, but the actual upload request result/root cause remains unknown. Final acceptance must inspect `POST /api/v1/ingest/upload`, backend logs and persisted source/evidence records, then fix and test the confirmed cause.
 
 The canonical final-chat task contract is [`docs/CHAT04_FINAL_VERIFICATION_PROMPT.md`](CHAT04_FINAL_VERIFICATION_PROMPT.md). It covers safe main integration, ingestion diagnosis, live browser verification, full tests/build, documentation hygiene and the final recording/submission checklist. Human-only recording, video upload and portal submission are not complete until the user performs them.

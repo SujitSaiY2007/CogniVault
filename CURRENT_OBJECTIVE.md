@@ -1,24 +1,21 @@
-# Current Objective — Final Integration, Live Verification & Hackathon Submission
+﻿# Current Objective — Final Integration, Free Cloud Deployment, Live Acceptance & Release
 
-**Status:** Chat 03 is reported complete on its phase branch; final integration into `main` and live ingestion/browser acceptance remain outstanding.  
-**Canonical plan:** [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md)  
-**Exact final-chat prompt:** [docs/CHAT04_FINAL_VERIFICATION_PROMPT.md](docs/CHAT04_FINAL_VERIFICATION_PROMPT.md)  
-**Integration PR:** [#2](https://github.com/SujitSaiY2007/CogniVault/pull/2)
+**Status:** Final safe integration active; cloud deployment, live acceptance, and hackathon packaging underway.  
+**Canonical Plan:** [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md)  
+**Implementation Base:** `overhaul/chat-03-evaluation-submission` (`0e1b0552da1676ff4f77d1108966a05b3fd2efbe`)  
+**Canonical Branch:** `main` (`8a852cabf605235a0759c84195277d3ddb2cb765`)  
+**Dedicated Integration Branch:** `integration/final-safe-integration`  
 
-## Required exit criteria
+---
 
-1. Re-fetch and verify actual `main` and Chat 03 remote heads. Inspect local worktree and preserve user changes.
-2. Integrate the Chat 01–03 implementation into `main` safely. PR #2 initially reported `mergeable=false` because histories diverged; inspect and resolve conflicts locally. No blind merge, reset, force push, rebase of published phase branches, or partial file-copy pretending to be a merge.
-3. Diagnose the locally observed ingestion state (“Ingesting…” with source count 0) using the actual `POST /api/v1/ingest/upload` status/body, backend logs, and persisted source/evidence checks. Implement only a confirmed minimal fix.
-4. Verify the real browser product loop: upload/source locators, grounded tutor/citation drawer, off-material abstention, assessment feedback, BKT persistence, misconceptions, prerequisite recommendations, learner switching, errors/loading/empty states, and responsive behavior.
-5. Rerun Python tests, relevant ingestion/evaluation/security tests, frontend production build, API integration and real browser walkthrough. Report exact commands, exit codes, duration, and limitations.
-6. Update README and current governance docs to actual facts, retain historical reports as historical, review links/secrets/repo hygiene, and leave `main` clean and presentation-ready.
-7. Produce a final evidence report and the 3–5 minute recording/submission checklist.
+## Required Exit Criteria
 
-## Reported Chat 03 evidence — must be rerun for final current verification
-
-The supplied Chat 03 report states 138/138 Python tests passed, frontend production build passed, 8 TP / 3 TN / 0 FP / 0 FN on its defined grounding benchmark, 21/21 citation locators resolved, six synthetic learner profiles, 8/8 security tests, and 13 browser screenshots. Do not generalize these small benchmark results to all possible queries or represent synthetic learners as real users.
-
-## Preservation constraints
-
-Keep PR #1 open and unchanged; preserve all branches/history, corpus, user PDFs and legacy Streamlit UI. No destructive Git operations or repository visibility changes. Human-only final tasks are video recording/upload and portal submission.
+1. **Safe Integration:** Safely integrate Chat 01–03 implementation into `main` without destructive operations. Keep PR #1 open and untouched; merge PR #2 once verified.
+2. **Cloud Model Provider Configuration:** Implement dual model support: preserve local Ollama for local development, and enable cloud model provider (Google Gemini free tier) when configured in hosted environments with server-side API keys.
+3. **Free Cloud Deployment:**
+   - Frontend: Vercel deployment of Next.js frontend with `NEXT_PUBLIC_API_URL` pointing to backend HTTPS.
+   - Backend: Render deployment of FastAPI/Agno service on free tier, listening on `0.0.0.0:$PORT` with CORS enabled.
+   - Zero hosting charges: strictly free plans only.
+4. **Persistence & Free-Tier Boundaries:** Address Render ephemeral disk boundaries, document storage lifecycle, and avoid large repeated model downloads.
+5. **Live Acceptance:** Verify the public frontend and backend end-to-end: health, ingestion, citation drawer, fail-closed abstention, assessment with BKT update, and restart resilience.
+6. **Documentation & Release:** Update README, documentation, and create `docs/FINAL_VERIFICATION_AND_SUBMISSION_REPORT.md` with real public URLs, exact test outputs, and a 3–5 minute video recording script.

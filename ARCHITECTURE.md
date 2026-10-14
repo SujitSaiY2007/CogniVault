@@ -1,42 +1,117 @@
-# CogniVault — Architecture Reference
+﻿# CogniVault — Architecture Reference
 
-**Scope note:** This describes the intended/reported phase-branch system. Main remains the original scaffold/control baseline; this document does not mean the code has been merged to main.
-
-## System flow
-Course sources → ingestion/extraction → normalized evidence with stable IDs and locators → lexical/semantic retrieval → sufficiency/addressability gate → grounded tutor or verified assessment → learner state → recommendation → evaluation.
-
-## Layers
-1. Presentation: Streamlit shell and course, evidence, tutor, assessment, progress, recommendation and evaluation views.
-2. Application services: orchestration and validation.
-3. Evidence/retrieval: source manifest, SQLite/FTS5, semantic embeddings/vector search, deterministic fusion and traces.
-4. Grounding: evidence sufficiency, citation resolver and fail-closed abstention.
-5. Assessment: verified questions and answer validation.
-6. Learner state: per-topic BKT, interaction history and misconception signals.
-7. Recommendation: mastery, prerequisites, errors, misconceptions and repetition.
-8. Evaluation: fixed cases, simulated learner trajectories and reproducible metrics.
-9. Persistence: existing local storage contracts; durable cloud persistence is not verified.
-
-## Technology boundary
-Python, Streamlit, SQLite/FTS5, lightweight semantic retrieval, one permitted LLM/multimodal provider and deterministic Python verification. No framework replacement or architecture expansion without a demonstrated need.
-
-## Current UI scope
-Chat 05 Stage 1 is presentation-only. Preserve database schema, service contracts, retrieval, citations, assessment, BKT parameters, recommendation policy and evaluation formulas. Use real data, not fake demo records.
-
-## Failure boundaries
-Provider failure → explicit error. Retrieval/sufficiency failure → abstention. Citation resolution failure → do not present as grounded. Invalid assessment item → reject. Unknown quota/history/progress → honest unavailable/empty state.
-
-## Branch distinction
-The code on phase branches is not present on main merely because architecture docs describe it.
-
+**Project:** CogniVault — Evidence-First Adaptive Learning  
+**Hackathon Track:** Track D — Personalized Tutoring & Adaptive Learning  
+**Repository:** `https://github.com/SujitSaiY2007/CogniVault`
 
 ---
 
-## Final overhaul decision — 2026-10-11
+## 1. Dual Runtime Architecture
 
-The authoritative next-phase plan is now [`docs/FINAL_OVERHAUL_PLAN.md`](FINAL_OVERHAUL_PLAN.md). This section supersedes earlier forward-looking implementation instructions where they conflict; prior entries remain preserved as history.
+CogniVault supports two concurrent, fully integrated runtimes:
 
-**Current direction:** controlled Agno-first overhaul with v0-generated Next.js/TypeScript frontend, Python Agno AgentOS backend, Ollama/local model baseline, SQLite + FTS5 + local ChromaDB, local embeddings, deterministic evidence/assessment verification, and existing BKT logic. See the final plan for exact decisions, acceptance gates, branch rules, and the only three executor prompts.
+```
+                                  +----------------------------------------------------+
+                                  |                  CogniVault User                   |
+                                  +-------------------------+--------------------------+
+                                                            |
+                             +------------------------------+------------------------------+
+                             |                                                             |
+                             v                                                             v
+              +------------------------------+                              +------------------------------+
+              |    Historical Streamlit UI   |                              |         Agno AgentOS         |
+              |     (app/ui/main.py: 8501)    |                              |   FastAPI Service (:8000)    |
+              +--------------+---------------+                              +--------------+---------------+
+                             |                                                             |
+                             +------------------------------+------------------------------+
+                                                            |
+                                                            v
+                                            +-------------------------------+
+                                            |   Core Application Services   |
+                                            +---------------+---------------+
+                                                            |
+                             +------------------------------+------------------------------+
+                             |                              |                              |
+                             v                              v                              v
+               +---------------------------+  +---------------------------+  +---------------------------+
+               |     Evidence Retrieval    |  |     Tutor & Verification  |  |    Learner & Adaptive     |
+               | - SQLite FTS5 (Lexical)   |  | - Agno Agent (Ollama/Cloud|  | - BKT State Tracker       |
+               | - ChromaDB (Semantic)     |  | - EvidenceGate (Abstain)  |  | - Misconception Engine    |
+               | - Deterministic Fusion    |  | - Source Citation Resolver|  | - Prerequisite Navigator  |
+               +-------------+-------------+  +-------------+-------------+  +-------------+-------------+
+                             |                              |                              |
+                             +------------------------------+------------------------------+
+                                                            |
+                                                            v
+                                            +-------------------------------+
+                                            |       Persistent Storage      |
+                                            | - SQLite: cognivault.db       |
+                                            | - ChromaDB: data/chroma/      |
+                                            | - Source Assets: data/corpus/ |
+                                            +-------------------------------+
+```
 
-**Execution model:** exactly three implementation chats: (1) Agno/evidence foundation, (2) frontend and adaptive learning loop, (3) evaluation, hardening and submission. Implementation must proceed on dedicated phase branches; preserve all legacy Streamlit code, source data, tests, PDFs, and Git history. Do not force-push, reset, delete/rename branches, close/merge PR #1, change visibility, or merge implementation to main without explicit approval.
+1. **Next.js 14 Frontend (`frontend/`) + Agno AgentOS REST API (`app/agent_os/`):**
+   - Modern, responsive TypeScript/Tailwind application with 8 modular interactive views (`Dashboard`, `Courses`, `Add Materials`, `AI Tutor`, `Practice`, `My Progress`, `Recommendations`, `Evaluation`).
+   - Grounded Evidence Tutor Agent, Assessment Agent, and Learning Coach powered by Agno AgentOS.
+   - Dual model provider adapter: zero-cost local Ollama (`llama3.2:latest`) for local development, with free-tier cloud provider adapter (Gemini) when configured for hosted deployment.
+   - Hybrid retrieval fusing SQLite FTS5 BM25 lexical search with ChromaDB dense vector search.
+   - Clickable citation drawer resolving directly to source physical locators.
 
-**Truthfulness gate:** the plan is locked; implementation and acceptance are not yet proven. Organizer requirements are the acceptance baseline. Never claim a requirement, test, metric, deployment, video or submission is complete without reproducible evidence.
+2. **Historical Streamlit UI (`app/ui/main.py`):**
+   - Preserved 9-view desktop/demonstration shell executing on `http://localhost:8501`.
+   - Verified via in-memory `streamlit.testing.v1.AppTest`.
+
+---
+
+## 2. Core Application Pipeline
+
+```
+Course Materials (PDF, PPTX, Video, Images)
+  → Multimodal Ingestion & SHA-256 Provenance (app/ingest.py)
+  → Normalized Evidence Units with Physical Locators (Page, Slide, Timestamp)
+  → Hybrid Indexing: SQLite FTS5 (BM25) + ChromaDB (Dense Vectors)
+  → Deterministic Evidence Sufficiency Gate (Relevance & Term Coverage) (app/sufficiency.py)
+  → Agno Grounded Tutor Agent (Local Ollama / Cloud Adapter / Fail-Closed Abstention) (app/agent_os/tutor_agent.py)
+  → Claim-by-Claim Citation Verification & Source Resolver (app/source_resolver.py)
+  → Verified Adaptive Assessment & Bayesian Knowledge Tracing (BKT) (app/assessment.py, app/learner_model.py)
+  → Misconception Diagnostics & Targeted Prerequisite Remediation (app/misconceptions.py, app/recommendation.py)
+```
+
+---
+
+## 3. Retrieval Engine & Provenance
+
+- **Lexical Retrieval:** SQLite FTS5 `MATCH` queries ranked by Okapi BM25 combined with query term coverage.
+- **Semantic Retrieval:** ChromaDB dense vector store with persistent storage and cosine similarity search.
+- **Hybrid Fusion:** Deterministic linear combination: $0.45 \times \text{lexical} + 0.55 \times \text{semantic}$, with stable alphabetical tie-breaking on `evidence_id`.
+- **Retrieval Trace:** Machine-readable trace capturing candidate count, result count, scores breakdown, rankings, source IDs, and fail-closed unsupported reasons.
+- **Source Resolver:** Verifiable resolution from `evidence_id` back to exact source location, file path, SHA-256, and text/asset payload.
+
+---
+
+## 4. Grounding & Abstention Gate
+
+- Generation is permitted only when retrieved evidence satisfies threshold relevance ($\ge 0.15$) and essential query term coverage ($\ge 35\%$).
+- If evidence is insufficient, the system deterministically triggers fail-closed abstention with an explicit explanation rather than hallucinating answers.
+- Every substantive factual claim is anchored to a verified citation pointing to a physical page, slide, or timestamp.
+
+---
+
+## 5. Learner Modeling & Adaptation
+
+- **Bayesian Knowledge Tracing (BKT):** Latent skill mastery $P(L_t)$ per topic updated via analytical Bayes rule:
+  $$P(L_{t+1} \mid \text{obs}) = \text{posterior} + (1 - \text{posterior}) \times P(T)$$
+- **Misconception Detection:** Requires $\ge 2$ repeated errors on the same concept before diagnosing a misconception, linking directly to prerequisite evidence for targeted remediation.
+- **Prerequisite Gating:** Enforces mastery thresholds ($\ge 0.70$) on prerequisite topics before unlocking dependent advanced topics.
+- **Repetition Suppression:** Question fingerprinting suppresses previously served questions within the topic pool.
+
+---
+
+## 6. Failure Boundaries & Security
+
+- **Provider Failure:** Explicit fallback / unavailable status; no fake responses.
+- **Retrieval Insufficiency:** Fail-closed abstention banner with transparent audit reason.
+- **Citation Mapping Failure:** Response rejected or ungrounded claims suppressed.
+- **Question Verification Failure:** Question rejected from the pool before learner presentation.
+- **Security Boundaries:** Learner ID regex validation, 25MB upload payload limits, filename sanitization, and header/body learner identity enforcement.
