@@ -13,7 +13,8 @@ STOP_WORDS = {
     "s", "t", "can", "will", "just", "don", "should", "now", "what", "which",
     "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was",
     "were", "be", "been", "being", "have", "has", "had", "having", "do", "does",
-    "did", "doing", "how", "why", "where", "explain", "describe", "define", "give", "tell"
+    "did", "doing", "how", "why", "where", "explain", "describe", "define", "give", "tell",
+    "of", "it", "its"
 }
 
 def _extract_keywords(text: str) -> set[str]:
