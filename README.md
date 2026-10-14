@@ -3,7 +3,6 @@
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Production%20Live-brightgreen)](https://cogni-vault.vercel.app)
 [![Render Backend](https://img.shields.io/badge/Render-API%20Healthy-blue)](https://cognivault-backend-znn4.onrender.com/api/v1/health)
 [![Tests](https://img.shields.io/badge/Tests-143%20Passing-success)](https://github.com/SujitSaiY2007/CogniVault)
-[![Track D](https://img.shields.io/badge/Hackathon-Track%20D%20Winner-purple)](https://github.com/SujitSaiY2007/CogniVault)
 [![Python](https://img.shields.io/badge/Python-3.12-blue)](https://python.org)
 [![Zero Cost](https://img.shields.io/badge/Deployment-100%25%20Free%20Tier-green)](https://github.com/SujitSaiY2007/CogniVault)
 
