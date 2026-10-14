@@ -1,27 +1,24 @@
-# Current Objective — Chat 03: Evaluation, Hardening & Submission Package
+# Current Objective — Final Integration, Live Verification & Hackathon Submission
 
-**Status:** Chat 02 branch verified; Chat 03 not yet implemented.  
+**Status:** Chat 03 is reported complete on its phase branch; final integration into `main` and live ingestion/browser acceptance remain outstanding.  
 **Canonical plan:** [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md)  
-**Exact executor prompt:** [docs/CHAT03_EXECUTION_PROMPT.md](docs/CHAT03_EXECUTION_PROMPT.md)
+**Exact final-chat prompt:** [docs/CHAT04_FINAL_VERIFICATION_PROMPT.md](docs/CHAT04_FINAL_VERIFICATION_PROMPT.md)  
+**Integration PR:** [#2](https://github.com/SujitSaiY2007/CogniVault/pull/2)
 
-## Verified starting point
-- Branch: `overhaul/chat-02-product-loop`
-- Reported SHA: `4917668f0e93ed6851c50341768631ada7e943ce`
-- Live GitHub compare confirmed this SHA matches the remote branch head at reconciliation time. Re-fetch and re-verify before branching.
-- Chat 02 report records 127 Python tests passing in 232.91s and a successful frontend build; this documentation step did not rerun those commands.
-- Important known gap: Playwright browser binary download failed with HTTP 404, so a full automated browser walkthrough was not established.
+## Required exit criteria
 
-## Chat 03 goals
-1. Run the full Python suite and frontend build before changes; inspect the local checkout and preserve dirty work.
-2. Create/use `overhaul/chat-03-evaluation-submission` from the verified latest Chat 02 remote HEAD, never from `main`.
-3. Run reproducible evidence-grounding, citation-locator, supported/unsupported abstention and retrieval benchmarks with transparent definitions, denominators and limitations.
-4. Run multi-session synthetic learner profiles and report BKT mastery trajectories, misconception/prerequisite behavior, persistence and question repetition rate.
-5. Close the browser evidence gap with real automated browser checks if possible; otherwise perform a documented manual desktop/mobile walkthrough with screenshots. Never label HTTP checks as browser testing.
-6. Perform security, robustness, accessibility and responsive UI checks; fix confirmed defects with regression tests.
-7. Produce evidence-backed evaluation/hardening reports, architecture and grounding docs, a 3–10 minute demo script, requirement-to-evidence matrix and submission checklist.
+1. Re-fetch and verify actual `main` and Chat 03 remote heads. Inspect local worktree and preserve user changes.
+2. Integrate the Chat 01–03 implementation into `main` safely. PR #2 initially reported `mergeable=false` because histories diverged; inspect and resolve conflicts locally. No blind merge, reset, force push, rebase of published phase branches, or partial file-copy pretending to be a merge.
+3. Diagnose the locally observed ingestion state (“Ingesting…” with source count 0) using the actual `POST /api/v1/ingest/upload` status/body, backend logs, and persisted source/evidence checks. Implement only a confirmed minimal fix.
+4. Verify the real browser product loop: upload/source locators, grounded tutor/citation drawer, off-material abstention, assessment feedback, BKT persistence, misconceptions, prerequisite recommendations, learner switching, errors/loading/empty states, and responsive behavior.
+5. Rerun Python tests, relevant ingestion/evaluation/security tests, frontend production build, API integration and real browser walkthrough. Report exact commands, exit codes, duration, and limitations.
+6. Update README and current governance docs to actual facts, retain historical reports as historical, review links/secrets/repo hygiene, and leave `main` clean and presentation-ready.
+7. Produce a final evidence report and the 3–5 minute recording/submission checklist.
 
-## Exit gate
-All commands, exit codes, actual test outputs, metrics, screenshots/logs, limitations and changed files are recorded. No fabricated metrics, browser success, deployment, video upload or portal submission claims. Push only the Chat 03 branch and verify remote SHA. Do not merge implementation to `main`.
+## Reported Chat 03 evidence — must be rerun for final current verification
 
-## Preservation
-Keep all historical code/data/tests/user PDFs/reports/branches/commit history and PR #1. No force-push/reset, branch deletion/rename, PR #1 close/merge, repository visibility change or unapproved main merge. Video recording/upload and portal submission remain human tasks.
+The supplied Chat 03 report states 138/138 Python tests passed, frontend production build passed, 8 TP / 3 TN / 0 FP / 0 FN on its defined grounding benchmark, 21/21 citation locators resolved, six synthetic learner profiles, 8/8 security tests, and 13 browser screenshots. Do not generalize these small benchmark results to all possible queries or represent synthetic learners as real users.
+
+## Preservation constraints
+
+Keep PR #1 open and unchanged; preserve all branches/history, corpus, user PDFs and legacy Streamlit UI. No destructive Git operations or repository visibility changes. Human-only final tasks are video recording/upload and portal submission.
