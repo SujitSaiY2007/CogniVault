@@ -1,25 +1,33 @@
-# Current Handoff — Start Chat 03 Evaluation & Submission Packaging
+# Current Handoff — Final Integration, Live Verification & Submission
 
-**Date:** 2026-10-13  
-**Canonical roadmap:** [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md)  
-**Exact executor prompt:** [docs/CHAT03_EXECUTION_PROMPT.md](docs/CHAT03_EXECUTION_PROMPT.md)  
-**Latest completed phase:** Chat 02 — integrated Agno + Next.js product loop.
+**Date:** 2026-10-14  
+**Canonical plan:** [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md)  
+**Final-chat prompt:** [docs/CHAT04_FINAL_VERIFICATION_PROMPT.md](docs/CHAT04_FINAL_VERIFICATION_PROMPT.md)  
+**Implementation branch:** [overhaul/chat-03-evaluation-submission](https://github.com/SujitSaiY2007/CogniVault/tree/overhaul/chat-03-evaluation-submission)  
+**Reported Chat 03 SHA:** `0e1b0552da1676ff4f77d1108966a05b3fd2efbe)
 
-## Chat 02 remote verification
-- Branch: `overhaul/chat-02-product-loop`
-- Reported final commit: `4917668f0e93ed6851c50341768631ada7e943ce`
-- A live GitHub comparison confirmed the branch HEAD matched this commit at reconciliation time.
-- Report: [docs/CHAT02_PRODUCT_LOOP_REPORT.md](https://github.com/SujitSaiY2007/CogniVault/blob/overhaul/chat-02-product-loop/docs/CHAT02_PRODUCT_LOOP_REPORT.md)
-- The report records 127 Python tests passing in 232.91 seconds and a successful Next.js production build. These are report claims; this reconciliation did not rerun tests.
-- The report records live HTTP integration steps for intake, question selection/submission, BKT persistence, recommendations, grounded tutor/abstention, and frontend HTTP 200.
-- **Outstanding proof gap:** the IDE Playwright runner could not download its browser binary (HTTP 404). HTTP checks/build are not a substitute for an actual browser walkthrough. Chat 03 must resolve this or provide a clearly labelled manual screenshot walkthrough.
+## Current truth — important
 
-## Next phase — Chat 03
-Use [docs/CHAT03_EXECUTION_PROMPT.md](docs/CHAT03_EXECUTION_PROMPT.md) as the exact prompt in Antigravity.
+- Chat 03 execution report states 138/138 Python tests passed in 275.84s, Next.js production build passed (4/4 pages), evaluation/simulation/security artifacts were produced, and 13 Playwright screenshots were committed. These are reported results; rerun in final chat before describing them as currently verified.
+- The user launched the frontend locally and confirmed the homepage rendered with an API Online badge.
+- During local testing, Course Materials displayed **“Ingesting…”** while the source count was 0. Backend output showed successful GET requests for existing source evidence and embedding weights reached 100%, but the actual upload request status/root cause has not been established. Final chat must diagnose and retest this.
+- Current GitHub `main` was observed at `0ddc110b723f0cd278bca7d943adaeebcea9d9f4` before the final prompt commit. Chat 03 implementation branch is not yet integrated into `main`.
+- Integration PR #2 was opened: [Final integration PR #2](https://github.com/SujitSaiY2007/CogniVault/pull/2). GitHub initially reported `mergeable=false` because the histories diverged. Do not blindly merge it. Inspect conflicts locally and resolve safely, or keep it open and explain the blocker.
+- PR #1 remains open/draft and must be preserved.
 
-Before any edits, inspect local git status, fetch remote refs, verify the live Chat 02 branch head and run the existing Python suite plus frontend build. Preserve dirty work. Then create/use only `overhaul/chat-03-evaluation-submission` from the verified live Chat 02 remote HEAD, not from `main`.
+## Final chat sequence
 
-Chat 03 must produce reproducible grounding/abstention/citation evaluation, multi-session learner simulation results, security/UX hardening, and final documentation/demo checklist. Report real metrics and limitations. Do not fabricate a browser walkthrough or claim submission readiness without evidence.
+1. Inspect local Git state, fetch, verify current remote SHAs, preserve dirty work and inspect the full integration diff.
+2. Run the current baseline tests/build.
+3. Safely integrate Chat 01–03 into `main` with reviewed conflict resolution and no destructive Git operations.
+4. Diagnose the real ingestion stall using browser Network request status, backend logs and source/evidence persistence. Fix only a reproduced defect.
+5. Perform end-to-end live browser verification, run tests/build again, update current docs to actual outcomes, and leave a clean presentation-ready `main`.
+6. Produce final report and user-friendly run/recording/submission checklist.
 
-## Preservation
-Preserve all code, tests, corpus data, four user PDFs, reports, commit history, all branches, PR #1, and the legacy Streamlit UI. No force-push/reset, branch deletion/rename, PR #1 close/merge, repository visibility change, or implementation merge to `main`. Recording/uploading the video and submitting the hackathon portal remain human actions.
+## Human-only actions remaining
+
+The user must record the 3–5 minute demo, upload it as Unlisted to YouTube or to Google Drive, and submit repository/video links through the hackathon portal. Do not claim those actions are done.
+
+## Preservation rules
+
+Preserve PR #1, all branches/history, corpus and four user PDFs, the legacy Streamlit UI at `app/ui/main.py`, and historical reports. No force-push, reset, published-history rewrite, branch deletion/rename, PR #1 closure/merge, or repository visibility change.
