@@ -140,6 +140,12 @@ export const api = {
     });
   },
 
+  async seedCorpus(): Promise<{ status: string; stats: any }> {
+    return request<{ status: string; stats: any }>("/api/v1/corpus/seed", {
+      method: "POST",
+    });
+  },
+
   // Curriculum & Topics
   async listTopics(): Promise<CurriculumTopic[]> {
     return request<CurriculumTopic[]>("/api/v1/topics");

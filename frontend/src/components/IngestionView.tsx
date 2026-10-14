@@ -19,15 +19,17 @@ import {
 
 interface IngestionViewProps {
   onOpenCitation: (cit: Citation) => void;
+  onCurriculumUpdated?: () => void;
 }
 
-export const IngestionView: React.FC<IngestionViewProps> = ({ onOpenCitation }) => {
+export const IngestionView: React.FC<IngestionViewProps> = ({ onOpenCitation, onCurriculumUpdated }) => {
   const [sources, setSources] = useState<SourceRecord[]>([]);
   const [selectedSource, setSelectedSource] = useState<SourceRecord | null>(null);
   const [evidenceUnits, setEvidenceUnits] = useState<EvidenceUnit[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,6 +91,21 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onOpenCitation }) 
     }
   };
 
+  const handleSeedCorpus = async () => {
+    setSeeding(true);
+    setError(null);
+    try {
+      await api.seedCorpus();
+      setSyncStatus("Successfully seeded baseline curriculum topics and verified question bank!");
+      await loadSources();
+      if (onCurriculumUpdated) onCurriculumUpdated();
+    } catch (err: any) {
+      setError(err.message || "Failed to seed default corpus.");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const getModalityBadge = (m: string) => {
     switch (m.toLowerCase()) {
       case "pdf":
@@ -116,7 +133,16 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onOpenCitation }) 
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleSeedCorpus}
+            disabled={seeding}
+            className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${seeding ? "animate-spin" : ""}`} />
+            <span>{seeding ? "Seeding Corpus..." : "Seed Default Corpus"}</span>
+          </button>
+
           <button
             onClick={handleSyncChroma}
             disabled={syncing}

@@ -403,6 +403,45 @@ def seed_database_from_corpus(db: EvidenceDB, data_dir: Path | str | None = None
         solution="Snell's law is given by n1 * sin(theta1) = n2 * sin(theta2)."
     )
 
+    # Question 6: Differential Calculus MCQ
+    engine.build_and_verify_question(
+        question_id="q_seed_06",
+        topic_id="Differential Calculus",
+        concept_id="Power Rule",
+        prompt="Using the power rule of differentiation (d/dx [x^n] = n * x^(n-1)), what is the derivative of f(x) = x^3?",
+        expected_answer="B",
+        evidence_ids=ev_math[:1],
+        difficulty=Difficulty.easy,
+        question_type=QuestionType.mcq,
+        options=[
+            QuestionOption(key="A", text="3 * x"),
+            QuestionOption(key="B", text="3 * x^2"),
+            QuestionOption(key="C", text="x^2 / 3"),
+            QuestionOption(key="D", text="3 * x^4")
+        ],
+        solution="By the power rule: d/dx [x^3] = 3 * x^(3-1) = 3 * x^2."
+    )
+
+    # Question 7: Wave Properties MCQ
+    ev_wave = [e.evidence_id for e in db.get_evidence_for_topic("Wave Properties") or list(db.all_evidence())[:1]]
+    engine.build_and_verify_question(
+        question_id="q_seed_07",
+        topic_id="Wave Properties",
+        concept_id="Wave Properties",
+        prompt="What is the wave speed equation relating propagation speed (v), frequency (f), and wavelength (lambda)?",
+        expected_answer="A",
+        evidence_ids=ev_optics[:1] if not ev_wave else ev_wave[:1],
+        difficulty=Difficulty.easy,
+        question_type=QuestionType.mcq,
+        options=[
+            QuestionOption(key="A", text="v = f * lambda"),
+            QuestionOption(key="B", text="v = f / lambda"),
+            QuestionOption(key="C", text="v = f + lambda"),
+            QuestionOption(key="D", text="v = lambda / f^2")
+        ],
+        solution="The wave speed equation relates propagation speed v, frequency f, and wavelength lambda: v = f * lambda."
+    )
+
     stats = {
         "sources": len(db.all_sources()),
         "evidence_units": len(list(db.all_evidence())),

@@ -315,6 +315,16 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
                 except Exception:
                     pass
 
+    @app.post("/api/v1/corpus/seed", tags=["Ingestion"])
+    def seed_corpus() -> dict[str, Any]:
+        """
+        Manually trigger or reset baseline curriculum seeding (topics, concepts, questions, and baseline sources).
+        """
+        from ..corpus import seed_database_from_corpus
+        data_dir = Path(__file__).resolve().parent.parent.parent / "data"
+        stats = seed_database_from_corpus(learning_service.db, data_dir)
+        return {"status": "seeded", "stats": stats}
+
     @app.get("/api/v1/topics", tags=["Curriculum"])
     def list_topics() -> list[dict[str, Any]]:
         """List curriculum topics, concepts, and prerequisite topology."""
@@ -510,12 +520,18 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
     def resolve_misconception(learner_id: str, signal_id: str) -> dict[str, Any]:
         """Mark misconception resolved after successful foundational remediation."""
         misc = learning_service.db.get_misconception(signal_id)
-        if not misc or misc.learner_id != learner_id:
-            raise HTTPException(status_code=404, detail="Misconception signal not found.")
+        if misc:
+            if misc.learner_id != learner_id:
+                raise HTTPException(status_code=403, detail="Forbidden: Learner boundary mismatch.")
+            topic_id = misc.topic_id
+            concept_id = misc.concept_id
+        else:
+            topic_id = signal_id.replace(f"misc_{learner_id}_", "")
+            concept_id = None
         return learning_service.resolve_misconception(
             learner_id=learner_id,
-            topic_id=misc.topic_id,
-            concept_id=misc.concept_id,
+            topic_id=topic_id,
+            concept_id=concept_id,
         )
 
     @app.get(

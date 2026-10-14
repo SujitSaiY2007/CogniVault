@@ -155,19 +155,26 @@ class AgentOSLearningService:
         return [u.model_dump() for u in units]
 
     def seed_default_corpus_if_empty(self):
-        """Pre-populate the database from data/corpus if empty (for fresh cloud containers)."""
-        existing = list(self.db.all_sources())
-        if not existing:
-            corpus_dir = Path(__file__).resolve().parent.parent.parent / "data" / "corpus"
-            if corpus_dir.exists():
-                for p in sorted(corpus_dir.iterdir()):
-                    if p.suffix.lower() in {".pdf", ".pptx", ".txt", ".vtt", ".srt"}:
-                        try:
-                            title = p.stem.replace("_", " ").title()
-                            self.ingest_document(p, title=title, sync_embeddings=False)
-                        except Exception as e:
-                            import logging
-                            logging.getLogger("cognivault.service").warning(f"Seeding {p.name}: {e}")
+        """Pre-populate the database with curriculum, topics, questions, and sources if missing."""
+        from ..corpus import seed_database_from_corpus
+        data_dir = Path(__file__).resolve().parent.parent.parent / "data"
+
+        # Check if database lacks sources, topics, or verified questions
+        has_sources = bool(self.db.all_sources())
+        has_topics = bool(self.db.all_topics())
+        has_questions = bool(self.db.all_questions())
+
+        if not has_sources or not has_topics or not has_questions:
+            try:
+                import logging
+                logging.getLogger("cognivault.service").info(
+                    "Database needs baseline seeding (sources=%s, topics=%s, questions=%s). Seeding...",
+                    has_sources, has_topics, has_questions
+                )
+                seed_database_from_corpus(self.db, data_dir)
+            except Exception as e:
+                import logging
+                logging.getLogger("cognivault.service").warning(f"Startup corpus seeding failed: {e}")
 
     def build_and_sync_embeddings(self):
         """Build dense embeddings and sync to ChromaDB with graceful error handling."""

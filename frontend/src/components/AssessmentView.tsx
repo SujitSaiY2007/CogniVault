@@ -22,6 +22,7 @@ import {
 interface AssessmentViewProps {
   activeLearner: string;
   topics: CurriculumTopic[];
+  initialTopic?: string;
   onOpenCitation: (cit: Citation) => void;
   onAssessmentCompleted?: () => void;
 }
@@ -29,10 +30,11 @@ interface AssessmentViewProps {
 export const AssessmentView: React.FC<AssessmentViewProps> = ({
   activeLearner,
   topics,
+  initialTopic,
   onOpenCitation,
   onAssessmentCompleted,
 }) => {
-  const [selectedTopic, setSelectedTopic] = useState<string>("");
+  const [selectedTopic, setSelectedTopic] = useState<string>(initialTopic || "");
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | undefined>(undefined);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [servedIds, setServedIds] = useState<string[]>([]);
@@ -42,22 +44,26 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
   const [result, setResult] = useState<AssessmentCycleResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Set default topic when loaded
-  useEffect(() => {
-    if (topics.length > 0 && !selectedTopic) {
-      setSelectedTopic(topics[0].topic_id);
+  const fetchNextQuestion = async (topicOverride?: string, difficultyOverride?: Difficulty) => {
+    const topicToUse = topicOverride || selectedTopic || (topics.length > 0 ? topics[0].topic_id : "");
+    if (!topicToUse) {
+      setError("Please select a curriculum topic above to start adaptive practice.");
+      return;
     }
-  }, [topics, selectedTopic]);
-
-  const fetchNextQuestion = async () => {
-    if (!selectedTopic) return;
+    if (selectedTopic !== topicToUse) {
+      setSelectedTopic(topicToUse);
+    }
     setLoadingQuestion(true);
     setError(null);
     setResult(null);
     setUserAnswer("");
 
     try {
-      const q = await api.selectAdaptiveQuestion(selectedTopic, servedIds, selectedDifficulty);
+      const q = await api.selectAdaptiveQuestion(
+        topicToUse,
+        servedIds,
+        difficultyOverride !== undefined ? difficultyOverride : selectedDifficulty
+      );
       setCurrentQuestion(q);
       setServedIds((prev) => [...prev, q.question_id]);
     } catch (err: any) {
@@ -66,6 +72,34 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
     } finally {
       setLoadingQuestion(false);
     }
+  };
+
+  // Sync initial or default topic and auto-load first question
+  useEffect(() => {
+    if (initialTopic && initialTopic !== selectedTopic) {
+      setSelectedTopic(initialTopic);
+      fetchNextQuestion(initialTopic);
+      return;
+    }
+    if (topics.length > 0) {
+      const topicToUse = selectedTopic || topics[0].topic_id;
+      if (!selectedTopic) {
+        setSelectedTopic(topicToUse);
+      }
+      if (!currentQuestion && !loadingQuestion && !error) {
+        fetchNextQuestion(topicToUse);
+      }
+    }
+  }, [topics, initialTopic]);
+
+  const handleTopicChange = (newTopic: string) => {
+    setSelectedTopic(newTopic);
+    fetchNextQuestion(newTopic);
+  };
+
+  const handleDifficultyChange = (diff?: Difficulty) => {
+    setSelectedDifficulty(diff);
+    fetchNextQuestion(selectedTopic, diff);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,9 +145,10 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
           {/* Topic Select */}
           <select
             value={selectedTopic}
-            onChange={(e) => setSelectedTopic(e.target.value)}
+            onChange={(e) => handleTopicChange(e.target.value)}
             className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
+            {topics.length === 0 && <option value="">Loading topics...</option>}
             {topics.map((t) => (
               <option key={t.topic_id} value={t.topic_id}>
                 {t.name}
@@ -124,7 +159,7 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
           {/* Difficulty Select */}
           <select
             value={selectedDifficulty || ""}
-            onChange={(e) => setSelectedDifficulty((e.target.value as Difficulty) || undefined)}
+            onChange={(e) => handleDifficultyChange((e.target.value as Difficulty) || undefined)}
             className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
             <option value="">Any Difficulty</option>
@@ -134,7 +169,7 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
           </select>
 
           <button
-            onClick={fetchNextQuestion}
+            onClick={() => fetchNextQuestion()}
             disabled={loadingQuestion}
             className="flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-3.5 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-600/25 transition-all disabled:opacity-50"
           >
@@ -203,14 +238,16 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
                 {currentQuestion.options.map((opt) => {
                   const isSelected = userAnswer === opt.key;
                   return (
-                    <label
+                    <button
+                      type="button"
                       key={opt.key}
                       onClick={() => !result && setUserAnswer(opt.key)}
-                      className={`flex items-center gap-3.5 p-3.5 sm:p-4 rounded-xl border text-sm transition-all cursor-pointer ${
+                      disabled={!!result}
+                      className={`w-full text-left flex items-center gap-3.5 p-3.5 sm:p-4 rounded-xl border text-sm transition-all ${
                         isSelected
                           ? "border-indigo-500 bg-indigo-500/10 text-white shadow-sm shadow-indigo-500/20"
                           : "border-slate-800 bg-slate-950/70 text-slate-300 hover:border-slate-700 hover:bg-slate-950"
-                      } ${result ? "cursor-default opacity-85" : ""}`}
+                      } ${result ? "cursor-default opacity-85" : "cursor-pointer"}`}
                     >
                       <span
                         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-bold text-xs ${
@@ -222,7 +259,7 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
                         {opt.key}
                       </span>
                       <span className="flex-1">{opt.text}</span>
-                    </label>
+                    </button>
                   );
                 })}
               </div>
@@ -359,7 +396,7 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
               {/* Action Button: Next Question */}
               <div className="flex justify-end pt-2">
                 <button
-                  onClick={fetchNextQuestion}
+                  onClick={() => fetchNextQuestion()}
                   className="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-indigo-600/25 transition-all"
                 >
                   <span>Next Adaptive Question</span>
@@ -382,7 +419,7 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
             </p>
           </div>
           <button
-            onClick={fetchNextQuestion}
+            onClick={() => fetchNextQuestion()}
             className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all"
           >
             <span>Start Adaptive Practice</span>

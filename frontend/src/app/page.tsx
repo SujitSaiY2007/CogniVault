@@ -19,6 +19,7 @@ export default function Home() {
   const [learners, setLearners] = useState<string[]>(["learner_demo"]);
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [topics, setTopics] = useState<CurriculumTopic[]>([]);
+  const [practiceTopic, setPracticeTopic] = useState<string>("");
   const [inspectCitation, setInspectCitation] = useState<Citation | null>(null);
   const [coldStartOpen, setColdStartOpen] = useState<boolean>(false);
 
@@ -93,6 +94,7 @@ export default function Home() {
           <AssessmentView
             activeLearner={activeLearner}
             topics={topics}
+            initialTopic={practiceTopic}
             onOpenCitation={setInspectCitation}
             onAssessmentCompleted={refreshLearners}
           />
@@ -112,12 +114,18 @@ export default function Home() {
         {activeTab === "recommendations" && (
           <RecommendationsView
             activeLearner={activeLearner}
-            onNavigateToPractice={(topicId) => setActiveTab("assessment")}
+            onNavigateToPractice={(topicId) => {
+              setPracticeTopic(topicId);
+              setActiveTab("assessment");
+            }}
           />
         )}
 
         {activeTab === "materials" && (
-          <IngestionView onOpenCitation={setInspectCitation} />
+          <IngestionView
+            onOpenCitation={setInspectCitation}
+            onCurriculumUpdated={loadInitialData}
+          />
         )}
       </main>
 

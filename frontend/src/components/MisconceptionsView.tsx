@@ -46,16 +46,12 @@ export const MisconceptionsView: React.FC<MisconceptionsViewProps> = ({
   }, [activeLearner]);
 
   const handleResolve = async (pkg: RemediationPackage) => {
-    // Generate signal_id key convention or resolve via topic
+    const signalIdToResolve = pkg.signal_id || `misc_${activeLearner}_${pkg.concept_id || pkg.topic_id}`;
     setResolvingId(pkg.topic_id);
     try {
-      // Find signal_id from active list or resolve directly
-      const rawMisc = await api.getMisconceptions(activeLearner, pkg.topic_id);
-      // Call resolve on the topic
-      await api.resolveMisconception(activeLearner, `misc_${activeLearner}_${pkg.concept_id || pkg.topic_id}`);
+      await api.resolveMisconception(activeLearner, signalIdToResolve);
       await loadMisconceptions();
-    } catch (err: any) {
-      // Fallback: reload
+    } catch {
       await loadMisconceptions();
     } finally {
       setResolvingId(null);

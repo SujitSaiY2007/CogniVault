@@ -119,6 +119,7 @@ export interface MisconceptionSignal {
 }
 
 export interface RemediationPackage {
+  signal_id?: string;
   learner_id: string;
   topic_id: string;
   concept_id?: string | null;

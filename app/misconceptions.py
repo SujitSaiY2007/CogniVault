@@ -95,6 +95,7 @@ class MisconceptionDetector:
                 })
 
         return {
+            "signal_id": signal.signal_id,
             "learner_id": signal.learner_id,
             "topic_id": signal.topic_id,
             "concept_id": signal.concept_id,
