@@ -2,11 +2,11 @@
 
 **Hackathon:** Multimodal AI Hackathon 2026 · Track D — Personalized Tutoring & Adaptive Learning  
 **Plan date:** 2026-10-11  
-**Plan status:** Locked; implementation not yet verified.
+**Current status:** Chat 01–03 implementation is reported complete on its phase branch. Final integration into `main` and live ingestion/browser acceptance remain outstanding. See [Current Handoff](CURRENT_HANDOFF.md).
 
 ## Start here
 
-The authoritative final plan, architecture, acceptance gates and the only three executor prompts are in [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md).
+The authoritative plan is [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md). The final integration and verification prompt is [docs/CHAT04_FINAL_VERIFICATION_PROMPT.md](docs/CHAT04_FINAL_VERIFICATION_PROMPT.md).
 
 ## Final planned stack
 
@@ -33,8 +33,20 @@ This is a continuation, not a replacement project. Preserve the Streamlit implem
 
 ## Truthful status
 
-The organizer requirements informed the final plan. The new Agno/Next.js architecture has not yet passed its own tests or full browser walkthrough. Metrics, public deployment, video recording and portal submission are not claimed complete. Free frontend hosting does not automatically host the backend; Ollama is the baseline for avoiding paid API calls.
+The Chat 03 report records 138/138 Python tests, a successful Next.js build, benchmark metrics, learner simulations, security tests and 13 Playwright screenshots. Treat these as reported until the final chat reruns them. The user's local homepage rendered, but a live ingestion attempt remained at “Ingesting…” with zero sources; the upload request outcome is not yet known. Do not claim final acceptance, video recording or portal submission complete. Free frontend hosting does not automatically host the backend; Ollama is the baseline for avoiding paid API calls.
 
 ## Legacy launch
 
 The existing Streamlit app remains available while preserved: python -m streamlit run app/ui/main.py.
+
+
+## Current integration status
+
+The implementation branch is [`overhaul/chat-03-evaluation-submission`](https://github.com/SujitSaiY2007/CogniVault/tree/overhaul/chat-03-evaluation-submission). Integration PR [#2](https://github.com/SujitSaiY2007/CogniVault/pull/2) was opened, but GitHub initially reported it not mergeable because `main` and the implementation branch diverged. Do not assume this default branch already contains the final application. The final chat must inspect conflicts and integrate safely before calling `main` presentation-ready.
+
+## Next steps
+
+1. Run [the final verification prompt](docs/CHAT04_FINAL_VERIFICATION_PROMPT.md) in the next ChatGPT chat with Antigravity executing local work.
+2. Safely integrate the phase implementation and resolve the real ingestion stall.
+3. Rerun tests/build and conduct the full live walkthrough.
+4. Record the 3–5 minute demo, upload it to YouTube (Unlisted) or Google Drive, and submit the repository/video links to the hackathon portal.
