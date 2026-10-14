@@ -4,11 +4,11 @@
 **Project:** CogniVault — Evidence-First Adaptive Learning  
 **Hackathon:** Multimodal AI Hackathon 2026, Track D — Personalized Tutoring & Adaptive Learning  
 **Canonical repository:** https://github.com/SujitSaiY2007/CogniVault  
-**Status:** Final plan locked; implementation not yet verified under this architecture.
+**Status:** Chat 01–03 implementation is reported complete on its phase branch. Final integration into `main`, live ingestion acceptance, and final browser verification remain outstanding; see the current handoff and final-chat prompt.
 
 ## Executive decision
 
-This is a continuation and controlled overhaul, not a new project. The objective is to complete the strongest reproducible submission in exactly three implementation chats after this plan. GitHub `main` is the canonical project plan and governance source. The three chats should use dedicated phase branches and must not merge implementation to `main` until final acceptance and explicit approval.
+This is a continuation and controlled overhaul, not a new project. The original three implementation phases are reported complete on dedicated phase branches. The final chat must integrate the verified implementation into `main` only after inspecting and resolving the divergent histories safely, then perform final live verification. GitHub `main` remains the canonical governance source.
 
 ### Winning strategy
 
@@ -149,3 +149,14 @@ The Chat 02 implementation report is available at [`docs/CHAT02_PRODUCT_LOOP_REP
 **The exact next executor prompt is [`docs/CHAT03_EXECUTION_PROMPT.md`](https://github.com/SujitSaiY2007/CogniVault/blob/main/docs/CHAT03_EXECUTION_PROMPT.md).** It requires Chat 03 to rerun the baseline suite and frontend build before edits, verify the live Chat 02 head, and work only on `overhaul/chat-03-evaluation-submission` branched from that head. It explicitly addresses the Chat 02 Playwright limitation: HTTP integration checks are not a browser walkthrough; Chat 03 must produce real automated browser evidence or a clearly labelled manual desktop/mobile walkthrough with screenshots.
 
 Chat 03 is responsible for reproducible grounding/abstention/citation evaluation, multi-session learner simulations and repetition metrics, security/UX hardening, actual evidence artifacts, and the final demo/submission checklist. Do not merge implementation to `main`, alter repository visibility, or claim a video upload or portal submission without actual evidence. Preserve all historical code, data, PDFs, branches, PR #1, and commit history.
+
+
+## Final handoff reconciliation — 2026-10-14
+
+Chat 03 execution report states that branch `overhaul/chat-03-evaluation-submission` ended at `0e1b0552da1676ff4f77d1108966a05b3fd2efbe`, with 138/138 Python tests, frontend production build, grounding/citation evaluation, six synthetic learner profiles, security tests and 13 browser screenshots. These are reported outcomes and must be rerun in the final verification chat before being described as newly verified.
+
+The final integration PR is [PR #2](https://github.com/SujitSaiY2007/CogniVault/pull/2). GitHub comparison reported that `main` and the Chat 03 branch diverged and PR #2 initially had `mergeable=false`. Do not blindly merge or force-push; use a real local checkout, review all conflicts and the resulting diff, and only merge after tests pass. Keep PR #1 open and untouched.
+
+The user launched the Next.js homepage locally, then observed the Course Materials page stuck on “Ingesting…” with zero indexed sources. Backend logs showed successful source evidence GET requests and embedding weights at 100%, but the actual upload request result/root cause remains unknown. Final acceptance must inspect `POST /api/v1/ingest/upload`, backend logs and persisted source/evidence records, then fix and test the confirmed cause.
+
+The canonical final-chat task contract is [`docs/CHAT04_FINAL_VERIFICATION_PROMPT.md`](CHAT04_FINAL_VERIFICATION_PROMPT.md). It covers safe main integration, ingestion diagnosis, live browser verification, full tests/build, documentation hygiene and the final recording/submission checklist. Human-only recording, video upload and portal submission are not complete until the user performs them.
