@@ -1,4 +1,4 @@
-﻿# CogniVault — Evidence-First Adaptive Learning
+# CogniVault — Evidence-First Adaptive Learning
 
 **Multimodal AI Hackathon 2026 · Track D: Personalized Tutoring & Adaptive Learning**  
 **Repository:** [https://github.com/SujitSaiY2007/CogniVault](https://github.com/SujitSaiY2007/CogniVault)  
@@ -83,7 +83,7 @@ streamlit run app/ui/main.py
 ## Automated Tests & Empirical Evaluation
 
 ```powershell
-# Run complete automated test suite (138 tests)
+# Run complete automated test suite (143 tests)
 pytest -v --durations=10
 
 # Build Next.js frontend production bundle
@@ -97,7 +97,7 @@ python -m evaluation.simulate_learners
 ```
 
 ### Empirical Verification Summary
-- **Automated Tests:** 138 passing tests across unit, integration, and security suites.
+- **Automated Tests:** 143 passing tests across unit, integration, model provider, and security suites (100% pass rate).
 - **Grounding Benchmark:** Precision = 1.0, Recall = 1.0, F1 = 1.0, Faithfulness = 0.9688.
 - **Citation Addressability:** 21/21 physical citations verified against source locators (100%).
 - **Multi-Session Simulations:** 6 distinct profiles verified: Progressing ($+0.8917$ gain), Struggling, Misconception remediation, Prerequisite gating ($\ge 0.70$), 0.0% question repetition.
