@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CurriculumTopic, Recommendation } from "@/lib/types";
+import { CurriculumTopic, DEFAULT_CURRICULUM_TOPICS, Recommendation } from "@/lib/types";
 import { api } from "@/lib/api";
 import {
   ArrowRight,
@@ -26,7 +26,7 @@ export const RecommendationsView: React.FC<RecommendationsViewProps> = ({
   onNavigateToPractice,
 }) => {
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
-  const [topics, setTopics] = useState<CurriculumTopic[]>([]);
+  const [topics, setTopics] = useState<CurriculumTopic[]>(DEFAULT_CURRICULUM_TOPICS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,10 +36,14 @@ export const RecommendationsView: React.FC<RecommendationsViewProps> = ({
     try {
       const [recData, topicList] = await Promise.all([
         api.getRecommendations(activeLearner),
-        api.listTopics(),
+        api.listTopics().catch(() => []),
       ]);
       setRecommendation(recData);
-      setTopics(topicList);
+      if (topicList && topicList.length > 0) {
+        setTopics(topicList);
+      } else {
+        setTopics(DEFAULT_CURRICULUM_TOPICS);
+      }
     } catch (err: any) {
       setError(err.message || "Failed to load curriculum recommendations.");
     } finally {

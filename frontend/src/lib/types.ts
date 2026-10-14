@@ -170,6 +170,58 @@ export interface CurriculumTopic {
   prerequisites: string[];
 }
 
+export const DEFAULT_CURRICULUM_TOPICS: CurriculumTopic[] = [
+  {
+    topic_id: "Newtonian Mechanics",
+    name: "Newtonian Mechanics",
+    description: "Forces and motion",
+    concepts: ["First Law", "Second Law", "Third Law", "Momentum"],
+    prerequisites: [],
+  },
+  {
+    topic_id: "Work and Energy",
+    name: "Work and Energy",
+    description: "Work, kinetic and potential energy",
+    concepts: ["Work", "Kinetic Energy"],
+    prerequisites: ["Newtonian Mechanics"],
+  },
+  {
+    topic_id: "Wave Properties",
+    name: "Wave Properties",
+    description: "Wave speed, frequency, wavelength",
+    concepts: ["Wave Equation"],
+    prerequisites: [],
+  },
+  {
+    topic_id: "Geometric Optics",
+    name: "Geometric Optics",
+    description: "Reflection and refraction",
+    concepts: ["Reflection", "Snell's Law", "Refraction"],
+    prerequisites: ["Wave Properties"],
+  },
+  {
+    topic_id: "Algebra",
+    name: "Algebra",
+    description: "Polynomials and quadratic equations",
+    concepts: ["Quadratic Formula", "Discriminant"],
+    prerequisites: [],
+  },
+  {
+    topic_id: "Differential Calculus",
+    name: "Differential Calculus",
+    description: "Limits and derivatives",
+    concepts: ["Power Rule", "Trig Derivatives"],
+    prerequisites: ["Algebra"],
+  },
+  {
+    topic_id: "Cell Biology",
+    name: "Cell Biology",
+    description: "Cellular organelles and respiration",
+    concepts: ["Cell Theory", "Mitochondria", "Chloroplasts"],
+    prerequisites: [],
+  },
+];
+
 export interface SystemHealth {
   status: "healthy" | "ok" | "degraded";
   sqlite_db: {

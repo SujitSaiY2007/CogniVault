@@ -224,6 +224,9 @@ class AgentOSLearningService:
     def list_topics(self) -> list[dict[str, Any]]:
         """List all topics, concepts, and prerequisite topological links."""
         topics = list(self.db.all_topics())
+        if not topics:
+            self.seed_default_corpus_if_empty()
+            topics = list(self.db.all_topics())
         result = []
         for t in topics:
             concepts = list(self.db.get_concepts_for_topic(t.topic_id))
@@ -248,6 +251,9 @@ class AgentOSLearningService:
         question_type: Optional[QuestionType] = None,
     ) -> list[dict[str, Any]]:
         """List questions matching topic or difficulty filters."""
+        if not self.db.all_questions():
+            self.seed_default_corpus_if_empty()
+
         if topic_id:
             qs = self.db.get_questions_for_topic(topic_id, verified_only=False)
         else:
@@ -272,11 +278,24 @@ class AgentOSLearningService:
         target_difficulty: Optional[Difficulty] = None,
     ) -> Optional[dict[str, Any]]:
         """Select next adaptive practice question avoiding repeats."""
+        if not self.db.all_questions():
+            self.seed_default_corpus_if_empty()
+
         q = self.workflow.select_practice_question(
             topic_id=topic_id,
             served_question_ids=served_question_ids,
             target_difficulty=target_difficulty,
         )
+        if not q:
+            # Fallback 1: match topic case-insensitively
+            all_qs = self.db.all_questions(verified_only=True)
+            topic_match = [item for item in all_qs if item.topic_id.lower() == topic_id.lower()]
+            if topic_match:
+                q = topic_match[0]
+            elif all_qs:
+                # Fallback 2: return first verified question from any topic
+                q = all_qs[0]
+
         return q.model_dump() if q else None
 
     def verify_question(self, question: Question) -> QuestionVerificationResult:

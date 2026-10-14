@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Citation, CurriculumTopic, Difficulty, Question, QuestionType, AssessmentCycleResult } from "@/lib/types";
+import {
+  Citation,
+  CurriculumTopic,
+  DEFAULT_CURRICULUM_TOPICS,
+  Difficulty,
+  Question,
+  QuestionType,
+  AssessmentCycleResult,
+} from "@/lib/types";
 import { api } from "@/lib/api";
 import {
   AlertTriangle,
@@ -34,7 +42,10 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
   onOpenCitation,
   onAssessmentCompleted,
 }) => {
-  const [selectedTopic, setSelectedTopic] = useState<string>(initialTopic || "");
+  const effectiveTopics = topics && topics.length > 0 ? topics : DEFAULT_CURRICULUM_TOPICS;
+  const [selectedTopic, setSelectedTopic] = useState<string>(
+    initialTopic || (topics && topics.length > 0 ? topics[0].topic_id : DEFAULT_CURRICULUM_TOPICS[0].topic_id)
+  );
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | undefined>(undefined);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [servedIds, setServedIds] = useState<string[]>([]);
@@ -45,11 +56,7 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const fetchNextQuestion = async (topicOverride?: string, difficultyOverride?: Difficulty) => {
-    const topicToUse = topicOverride || selectedTopic || (topics.length > 0 ? topics[0].topic_id : "");
-    if (!topicToUse) {
-      setError("Please select a curriculum topic above to start adaptive practice.");
-      return;
-    }
+    const topicToUse = topicOverride || selectedTopic || effectiveTopics[0].topic_id;
     if (selectedTopic !== topicToUse) {
       setSelectedTopic(topicToUse);
     }
@@ -81,14 +88,12 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
       fetchNextQuestion(initialTopic);
       return;
     }
-    if (topics.length > 0) {
-      const topicToUse = selectedTopic || topics[0].topic_id;
-      if (!selectedTopic) {
-        setSelectedTopic(topicToUse);
-      }
-      if (!currentQuestion && !loadingQuestion && !error) {
-        fetchNextQuestion(topicToUse);
-      }
+    const topicToUse = selectedTopic || effectiveTopics[0].topic_id;
+    if (!selectedTopic) {
+      setSelectedTopic(topicToUse);
+    }
+    if (!currentQuestion && !loadingQuestion) {
+      fetchNextQuestion(topicToUse);
     }
   }, [topics, initialTopic]);
 
@@ -148,8 +153,7 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
             onChange={(e) => handleTopicChange(e.target.value)}
             className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
-            {topics.length === 0 && <option value="">Loading topics...</option>}
-            {topics.map((t) => (
+            {effectiveTopics.map((t) => (
               <option key={t.topic_id} value={t.topic_id}>
                 {t.name}
               </option>

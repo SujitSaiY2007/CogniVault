@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Citation, CurriculumTopic, SystemHealth } from "@/lib/types";
+import { Citation, CurriculumTopic, DEFAULT_CURRICULUM_TOPICS, SystemHealth } from "@/lib/types";
 import { api } from "@/lib/api";
 import { Navbar } from "@/components/Navbar";
 import { TutorView } from "@/components/TutorView";
@@ -18,7 +18,7 @@ export default function Home() {
   const [activeLearner, setActiveLearner] = useState<string>("learner_demo");
   const [learners, setLearners] = useState<string[]>(["learner_demo"]);
   const [health, setHealth] = useState<SystemHealth | null>(null);
-  const [topics, setTopics] = useState<CurriculumTopic[]>([]);
+  const [topics, setTopics] = useState<CurriculumTopic[]>(DEFAULT_CURRICULUM_TOPICS);
   const [practiceTopic, setPracticeTopic] = useState<string>("");
   const [inspectCitation, setInspectCitation] = useState<Citation | null>(null);
   const [coldStartOpen, setColdStartOpen] = useState<boolean>(false);
@@ -32,7 +32,11 @@ export default function Home() {
       ]);
 
       if (healthData) setHealth(healthData);
-      if (topicData) setTopics(topicData);
+      if (topicData && topicData.length > 0) {
+        setTopics(topicData);
+      } else {
+        setTopics(DEFAULT_CURRICULUM_TOPICS);
+      }
       if (learnerList && learnerList.length > 0) {
         const ids = learnerList.map((l: any) => l.learner_id);
         setLearners(ids);

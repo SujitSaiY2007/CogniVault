@@ -497,6 +497,23 @@ class EvidenceDB:
 
     def all_topics(self) -> list[TopicRecord]:
         rows = self.conn.execute("SELECT topic_id, name, description FROM topics ORDER BY topic_id").fetchall()
+        if not rows:
+            default_topics = [
+                ("Newtonian Mechanics", "Newtonian Mechanics", "Forces and motion"),
+                ("Work and Energy", "Work and Energy", "Work, kinetic and potential energy"),
+                ("Wave Properties", "Wave Properties", "Wave speed, frequency, wavelength"),
+                ("Geometric Optics", "Geometric Optics", "Reflection and refraction"),
+                ("Algebra", "Algebra", "Polynomials and quadratic equations"),
+                ("Differential Calculus", "Differential Calculus", "Limits and derivatives"),
+                ("Cell Biology", "Cell Biology", "Cellular organelles and respiration"),
+            ]
+            for tid, tname, tdesc in default_topics:
+                self.conn.execute(
+                    "INSERT OR IGNORE INTO topics (topic_id, name, description) VALUES (?,?,?)",
+                    (tid, tname, tdesc)
+                )
+            self.conn.commit()
+            rows = self.conn.execute("SELECT topic_id, name, description FROM topics ORDER BY topic_id").fetchall()
         return [TopicRecord(topic_id=r[0], name=r[1], description=r[2] or "") for r in rows]
 
     def add_concept(self, concept_id: str, name: str, topic_id: str | None = None, description: str = ""):
@@ -805,7 +822,7 @@ class EvidenceDB:
         )
 
     def get_questions_for_topic(self, topic_id: str, verified_only: bool = True) -> list[Question]:
-        sql = "SELECT question_id, topic_id, concept_id, evidence_ids_json, difficulty, question_type, prompt, options_json, expected_answer, tolerance, solution, verification_status, verification_reason, fingerprint, repetition_count, metadata_json FROM questions WHERE topic_id=?"
+        sql = "SELECT question_id, topic_id, concept_id, evidence_ids_json, difficulty, question_type, prompt, options_json, expected_answer, tolerance, solution, verification_status, verification_reason, fingerprint, repetition_count, metadata_json FROM questions WHERE topic_id=? COLLATE NOCASE"
         params = [topic_id]
         if verified_only:
             sql += " AND verification_status='verified'"
