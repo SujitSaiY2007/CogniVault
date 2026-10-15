@@ -97,7 +97,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({ citation, onClos
         <div className="mt-6 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-medium text-slate-100 transition-colors"
+            className="px-5 py-2.5 rounded-xl border-2 border-slate-600 bg-slate-800 hover:bg-slate-700 text-sm font-bold text-white shadow-md transition-all cursor-pointer"
           >
             Dismiss
           </button>

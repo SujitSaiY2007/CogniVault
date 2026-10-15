@@ -75,7 +75,7 @@ export const MisconceptionsView: React.FC<MisconceptionsViewProps> = ({
         <button
           onClick={loadMisconceptions}
           disabled={loading}
-          className="flex items-center gap-1.5 self-start sm:self-auto rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
+          className="flex items-center gap-2 self-start sm:self-auto rounded-xl border-2 border-slate-600 bg-slate-800 hover:border-indigo-400 px-4 py-2 text-xs font-bold text-slate-100 hover:text-white shadow-md transition-all cursor-pointer"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           <span>Refresh</span>
@@ -167,9 +167,9 @@ export const MisconceptionsView: React.FC<MisconceptionsViewProps> = ({
                 <button
                   onClick={() => handleResolve(m)}
                   disabled={resolvingId === m.topic_id}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-xs font-extrabold text-white shadow-lg shadow-emerald-600/30 border-2 border-emerald-400/50 transition-all disabled:opacity-50 cursor-pointer hover:scale-105 active:scale-95"
                 >
-                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <CheckCircle2 className="h-4 w-4" />
                   <span>Mark Remediated & Reset Signals</span>
                 </button>
               </div>

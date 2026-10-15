@@ -96,7 +96,7 @@ export const LearnerProgressView: React.FC<LearnerProgressViewProps> = ({ active
         <button
           onClick={loadProfile}
           disabled={loading}
-          className="flex items-center gap-1.5 self-start sm:self-auto rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
+          className="flex items-center gap-2 self-start sm:self-auto rounded-xl border-2 border-slate-600 bg-slate-800 hover:border-indigo-400 px-4 py-2 text-xs font-bold text-slate-100 hover:text-white shadow-md transition-all cursor-pointer"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           <span>Refresh Data</span>

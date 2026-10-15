@@ -144,6 +144,7 @@ export default function Home() {
         onClose={() => setColdStartOpen(false)}
         topics={topics}
         onComplete={(newLearnerId) => {
+          setLearners((prev) => (prev.includes(newLearnerId) ? prev : [...prev, newLearnerId]));
           setActiveLearner(newLearnerId);
           refreshLearners();
           setActiveTab("mastery");

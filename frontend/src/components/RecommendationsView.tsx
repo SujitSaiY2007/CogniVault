@@ -89,7 +89,7 @@ export const RecommendationsView: React.FC<RecommendationsViewProps> = ({
         <button
           onClick={loadData}
           disabled={loading}
-          className="flex items-center gap-1.5 self-start sm:self-auto rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
+          className="flex items-center gap-2 self-start sm:self-auto rounded-xl border-2 border-slate-600 bg-slate-800 hover:border-indigo-400 px-4 py-2 text-xs font-bold text-slate-100 hover:text-white shadow-md transition-all cursor-pointer"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           <span>Refresh</span>
@@ -104,10 +104,10 @@ export const RecommendationsView: React.FC<RecommendationsViewProps> = ({
 
       {/* Recommended Next Step Hero Card */}
       {recommendation && (
-        <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-slate-900 via-indigo-950/20 to-slate-900 p-6 sm:p-7 shadow-xl space-y-4">
+        <div className="rounded-2xl border-2 border-indigo-500/40 bg-gradient-to-br from-slate-900 via-indigo-950/30 to-slate-900 p-6 sm:p-7 shadow-2xl space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-400">
+              <span className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-indigo-400">
                 <Sparkles className="h-4 w-4" />
                 <span>Next Pedagogical Recommendation</span>
               </span>
@@ -121,22 +121,22 @@ export const RecommendationsView: React.FC<RecommendationsViewProps> = ({
             <h3 className="text-xl font-bold text-slate-100">
               Target Topic: {recommendation.topic_id}
             </h3>
-            <p className="text-sm text-slate-300 mt-2 leading-relaxed">
+            <p className="text-sm text-slate-300 mt-2 leading-relaxed font-medium">
               {recommendation.rationale}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800">
             <div className="flex items-center gap-3 text-xs text-slate-400">
-              <span>Suggested Difficulty: <strong className="text-slate-200 capitalize">{recommendation.difficulty}</strong></span>
-              <span>Evidence units to review: <strong className="text-slate-200">{recommendation.suggested_evidence_ids.length}</strong></span>
+              <span>Suggested Difficulty: <strong className="text-slate-200 capitalize font-bold">{recommendation.difficulty}</strong></span>
+              <span>Evidence units to review: <strong className="text-slate-200 font-bold">{recommendation.suggested_evidence_ids.length}</strong></span>
             </div>
 
             <button
               onClick={() => onNavigateToPractice(recommendation.topic_id)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all"
+              className="flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-xs font-extrabold text-white shadow-xl shadow-indigo-600/35 border-2 border-indigo-300/60 transition-all cursor-pointer hover:scale-105 active:scale-95"
             >
-              <span>Start Suggested Action</span>
+              <span>Practice Suggested Topic</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>

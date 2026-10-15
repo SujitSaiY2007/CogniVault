@@ -103,15 +103,15 @@ export const TutorView: React.FC<TutorViewProps> = ({ onOpenCitation }) => {
 
       {/* Suggested Quick Prompts */}
       <div className="flex items-center gap-2 py-3 overflow-x-auto text-xs">
-        <span className="text-slate-500 text-[11px] font-semibold uppercase tracking-wider shrink-0">
-          Try:
+        <span className="text-indigo-400 text-[11px] font-extrabold uppercase tracking-wider shrink-0">
+          Try Quick Prompt:
         </span>
         {sampleQueries.map((s, idx) => (
           <button
             key={idx}
             onClick={() => handleSend(s.query)}
             disabled={loading}
-            className="shrink-0 rounded-full border border-slate-800 bg-slate-900/80 px-3 py-1 text-slate-300 hover:border-indigo-500/50 hover:text-indigo-300 hover:bg-slate-800 transition-all text-xs"
+            className="shrink-0 rounded-full border-2 border-slate-600 bg-slate-800 px-3.5 py-1 text-slate-100 font-semibold hover:border-indigo-400 hover:text-white hover:bg-slate-700 shadow-sm transition-all text-xs cursor-pointer hover:scale-102"
           >
             {s.label}
           </button>
@@ -261,14 +261,14 @@ export const TutorView: React.FC<TutorViewProps> = ({ onOpenCitation }) => {
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
             placeholder="Ask a question grounded in your course materials..."
-            className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            className="flex-1 rounded-xl border-2 border-slate-600 bg-slate-900 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30 shadow-inner"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition-all disabled:opacity-40"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/35 border-2 border-indigo-300/50 transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-5 w-5" />
           </button>
         </form>
       </div>

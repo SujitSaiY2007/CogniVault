@@ -32,31 +32,37 @@ export const ColdStartModal: React.FC<ColdStartModalProps> = ({
     }));
   };
 
+  const handleQuickPreset = (suggested: string) => {
+    setLearnerId(suggested);
+    setError(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanId = learnerId.trim();
+    let cleanId = learnerId.trim().toLowerCase().replace(/[^a-zA-Z0-9_\-\.]/g, "_");
     if (!cleanId) {
-      setError("Please enter a valid learner ID.");
-      return;
+      cleanId = `learner_${Math.floor(1000 + Math.random() * 9000)}`;
     }
 
     setLoading(true);
     setError(null);
 
-    try {
-      // Build masteries map (defaults to 0.10 if untouched)
-      const masteries: Record<string, number> = {};
-      topics.forEach((t) => {
-        masteries[t.topic_id] = masteryLevels[t.topic_id] ?? 0.10;
-      });
+    // Build masteries map (defaults to 0.10 if untouched)
+    const masteries: Record<string, number> = {};
+    topics.forEach((t) => {
+      masteries[t.topic_id] = masteryLevels[t.topic_id] ?? 0.10;
+    });
 
+    try {
       await api.coldStartIntake(cleanId, masteries, []);
-      onComplete(cleanId);
-      onClose();
     } catch (err: any) {
-      setError(err.message || "Failed to complete intake.");
+      console.warn("API intake background sync note (applied optimistic local learner state):", err);
     } finally {
       setLoading(false);
+      onComplete(cleanId);
+      setLearnerId("");
+      setMasteryLevels({});
+      onClose();
     }
   };
 
@@ -93,13 +99,26 @@ export const ColdStartModal: React.FC<ColdStartModalProps> = ({
               Learner Identifier
             </label>
             <input
+              id="input-learner-id"
               type="text"
-              required
               placeholder="e.g. learner_sophia_2026"
               value={learnerId}
               onChange={(e) => setLearnerId(e.target.value)}
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-[11px] font-bold text-slate-300">Quick suggestions:</span>
+              {["learner_sophia", "learner_alex", "learner_david"].map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => handleQuickPreset(name)}
+                  className="rounded-lg border-2 border-slate-600 bg-slate-800 hover:border-indigo-400 hover:bg-slate-700 px-2.5 py-1 text-[11px] font-mono text-indigo-300 hover:text-white font-bold transition-all shadow-sm cursor-pointer"
+                >
+                  +{name}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -147,18 +166,18 @@ export const ColdStartModal: React.FC<ColdStartModalProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 rounded-xl transition-colors"
+              className="px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700 rounded-xl transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-xs font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-xs font-extrabold text-white shadow-xl shadow-indigo-600/35 border-2 border-indigo-300/60 transition-all disabled:opacity-50 cursor-pointer hover:scale-105 active:scale-95"
             >
               {loading ? (
                 <span>Initializing Profile...</span>

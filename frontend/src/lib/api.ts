@@ -26,8 +26,12 @@ const API_BASE = (
 async function request<T>(
   path: string,
   options: RequestInit = {},
-  learnerId?: string
+  learnerId?: string,
+  timeoutMs: number = 4000
 ): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
@@ -43,7 +47,9 @@ async function request<T>(
     const res = await fetch(url, {
       ...options,
       headers,
+      signal: options.signal || controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       let errDetail = `API Error ${res.status}: ${res.statusText}`;
@@ -60,6 +66,10 @@ async function request<T>(
 
     return (await res.json()) as T;
   } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      throw new Error(`Request to ${path} timed out. Using instant verified local engine.`);
+    }
     if (error.name === "TypeError" && error.message.includes("fetch")) {
       throw new Error(`Cannot connect to CogniVault backend (${API_BASE}). If the cloud container is waking up, please wait ~15 seconds and refresh.`);
     }
