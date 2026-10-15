@@ -124,7 +124,7 @@ In strict accordance with the **Multimodal AI Hackathon 2026 AI Tools Policy**:
 
 ## ⚖️ Honest Technical Evaluation (+ss and -ss)
 
-Judges value scientific honesty over exaggerated claims. Here is our transparent self-assessment:
+Here is our transparent self-assessment:
 
 ### Strengths (+ss):
 1. **100% Citation Addressability:** 21/21 physical citations in automated evaluation link to real, addressable textbook pages and slide numbers.
