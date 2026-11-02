@@ -588,7 +588,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
                     "evidence_id": unit.evidence_id, "owner_id": owner_id, "source_id": source_id,
                     "modality": unit.modality.value, "evidence_text": unit.text,
                     "location": unit.location, "evidence_type": unit.evidence_type,
-                    "metadata": {**(unit.metadata or {}), "source_title": source.title if source else Path(safe_filename).stem},
+                    "metadata": {**(unit.metadata or {}), "source_title": source.title if source else Path(safe_filename).stem, "topics": unit.topics, "concepts": unit.concepts, "prerequisites": unit.prerequisites},
                 })
                 if len(batch) >= 100:
                     request.app.state.user_materials.create_evidence_batch(batch)
