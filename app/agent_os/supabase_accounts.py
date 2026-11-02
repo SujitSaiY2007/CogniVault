@@ -89,10 +89,10 @@ class SupabaseUserMaterials:
         return rows[0] if rows else None
 
     def list_evidence(self, owner_id: str, source_id: str):
-        rows = self.store.select("user_evidence", params={
+        rows = _paged_select(self.store, "user_evidence", {
             "select": "evidence_id,source_id,modality,evidence_text,location,evidence_type,metadata",
             "owner_id": _eq(owner_id), "source_id": _eq(source_id), "order": "evidence_id.asc",
-        }) or []
+        })
         result = []
         for row in rows:
             meta = row.get("metadata") or {}
