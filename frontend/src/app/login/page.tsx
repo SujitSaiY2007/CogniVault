@@ -23,7 +23,7 @@ export default function LoginPage() {
       window.localStorage.setItem("cognivault_session", session.access_token);
       window.localStorage.setItem("cognivault_username", session.username);
       window.localStorage.setItem("cognivault_learner_id", session.learner_id);
-      router.replace("/workspace");
+      const nextTab = search.get("next"); router.replace(nextTab ? `/workspace?tab=${encodeURIComponent(nextTab)}` : "/workspace");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to continue. Please try again.");
     } finally { setBusy(false); }
