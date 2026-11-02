@@ -487,6 +487,11 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
             token = _bearer_token(authorization)
             owner_id = _resolve_owner(request, token)
             private_sources = request.app.state.user_materials.list_sources(owner_id)
+            private_sources = [{
+                "source_id": item["source_id"], "title": item["title"], "modality": item["modality"],
+                "path": item["filename"], "sha256": item["sha256"], "evidence_count": item["evidence_count"],
+                "metadata": {"private": True, "file_size_bytes": item.get("file_size_bytes", 0)},
+            } for item in private_sources]
             return public_sources + private_sources
         return public_sources
 
@@ -501,7 +506,12 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
             owner_id = _resolve_owner(request, _bearer_token(authorization))
             private = request.app.state.user_materials.get_source(owner_id, source_id)
             if private:
-                return {key: private[key] for key in ("source_id", "filename", "title", "modality", "sha256", "evidence_count", "file_size_bytes", "created_at") if key in private}
+                return {
+                    "source_id": private["source_id"], "title": private["title"],
+                    "modality": private["modality"], "path": private["filename"],
+                    "sha256": private["sha256"], "evidence_count": private["evidence_count"],
+                    "metadata": {"private": True, "file_size_bytes": private.get("file_size_bytes", 0)},
+                }
         src = learning_service.get_source_details(source_id)
         if not src:
             raise HTTPException(status_code=404, detail=f"Source '{source_id}' not found.")
