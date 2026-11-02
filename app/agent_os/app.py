@@ -31,7 +31,7 @@ except ImportError:
     AgentOS = None
 
 from ..models import Difficulty, Question, QuestionOption, QuestionType
-from .service import AgentOSLearningService, AgentOSTutorService
+from .service import AgentOSLearningService, AgentOSTutorService\nfrom .supabase_store import SupabaseStore\nfrom .supabase_accounts import SupabaseAuth, SupabaseUserMaterials
 
 
 # -----------------------------------------------------------------------------
@@ -269,21 +269,32 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         username = _normalize_username(req.username)
         if len(req.password) < 8:
             raise HTTPException(status_code=400, detail="Password must be at least 8 characters.")
+        learner_id = "user_" + username
+        if app.state.supabase_enabled:
+            app.state.supabase_auth.create_user(username, _password_hash(req.password), learner_id)
+            token = secrets.token_urlsafe(36)
+            app.state.supabase_auth.issue_session(token, username, learner_id)
+            return AuthResponse(access_token=token, username=username, learner_id=learner_id)
         conn = _auth_connection(app.state.auth_db_path)
         try:
-            learner_id = "user_" + username
-            try:
-                conn.execute("INSERT INTO auth_users(username,password_hash,learner_id,created_at) VALUES(?,?,?,?)", (username, _password_hash(req.password), learner_id, int(time.time())))
-                conn.commit()
-            except sqlite3.IntegrityError:
-                raise HTTPException(status_code=409, detail="That username is already taken. Try signing in or choose another.")
+            conn.execute("INSERT INTO auth_users(username,password_hash,learner_id,created_at) VALUES(?,?,?,?)", (username, _password_hash(req.password), learner_id, int(time.time())))
+            conn.commit()
             return _issue_session(conn, username, learner_id)
+        except sqlite3.IntegrityError:
+            raise HTTPException(status_code=409, detail="That username is already taken. Try signing in or choose another.")
         finally:
             conn.close()
 
     @app.post("/api/v1/auth/login", response_model=AuthResponse, tags=["Authentication"])
     def login(req: CredentialsRequest) -> AuthResponse:
         username = _normalize_username(req.username)
+        if app.state.supabase_enabled:
+            row = app.state.supabase_auth.get_user(username)
+            if not row or not _password_matches(req.password, row["password_hash"]):
+                raise HTTPException(status_code=401, detail="Username or password is incorrect.")
+            token = secrets.token_urlsafe(36)
+            app.state.supabase_auth.issue_session(token, username, row["learner_id"])
+            return AuthResponse(access_token=token, username=username, learner_id=row["learner_id"])
         conn = _auth_connection(app.state.auth_db_path)
         try:
             row = conn.execute("SELECT password_hash, learner_id FROM auth_users WHERE username=?", (username,)).fetchone()
@@ -298,6 +309,11 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         if not authorization or not authorization.lower().startswith("bearer "):
             raise HTTPException(status_code=401, detail="Sign in required.")
         token = authorization.split(" ", 1)[1].strip()
+        if app.state.supabase_enabled:
+            row = app.state.supabase_auth.resolve_token(token)
+            if not row:
+                raise HTTPException(status_code=401, detail="Session expired. Sign in again.")
+            return {"username": row[0], "learner_id": row[1]}
         conn = _auth_connection(app.state.auth_db_path)
         try:
             row = conn.execute("SELECT u.username,u.learner_id FROM auth_sessions s JOIN auth_users u ON u.username=s.username WHERE s.token_hash=? AND s.expires_at>?", (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
@@ -311,12 +327,15 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
     def auth_logout(authorization: Optional[str] = Header(None, alias="Authorization")) -> dict[str, str]:
         if authorization and authorization.lower().startswith("bearer "):
             token = authorization.split(" ", 1)[1].strip()
-            conn = _auth_connection(app.state.auth_db_path)
-            try:
-                conn.execute("DELETE FROM auth_sessions WHERE token_hash=?", (hashlib.sha256(token.encode()).hexdigest(),))
-                conn.commit()
-            finally:
-                conn.close()
+            if app.state.supabase_enabled:
+                app.state.supabase_auth.revoke_token(token)
+            else:
+                conn = _auth_connection(app.state.auth_db_path)
+                try:
+                    conn.execute("DELETE FROM auth_sessions WHERE token_hash=?", (hashlib.sha256(token.encode()).hexdigest(),))
+                    conn.commit()
+                finally:
+                    conn.close()
         return {"status": "signed_out"}
 
     # =========================================================================
