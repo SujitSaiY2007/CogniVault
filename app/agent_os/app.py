@@ -30,7 +30,7 @@ try:
 except ImportError:
     AgentOS = None
 
-from ..models import Difficulty, Question, QuestionOption, QuestionType
+from ..models import Difficulty, Question, QuestionOption, QuestionType\nfrom ..db import EvidenceDB\nfrom ..ingest import ingest_file
 from .service import AgentOSLearningService, AgentOSTutorService\nfrom .supabase_store import SupabaseStore\nfrom .supabase_accounts import SupabaseAuth, SupabaseUserMaterials
 
 
@@ -387,76 +387,139 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         return {"status": "success", "synced_units": count}
 
     @app.get("/api/v1/sources", tags=["Materials"])
-    def list_sources() -> list[dict[str, Any]]:
-        """List all indexed learning materials with SHA-256 provenance."""
-        return learning_service.list_sources()
+    def list_sources(
+        request: Request,
+        authorization: Optional[str] = Header(None, alias="Authorization"),
+    ) -> list[dict[str, Any]]:
+        """List baseline curriculum sources plus only the signed-in account's private uploads."""
+        public_sources = learning_service.list_sources()
+        if request.app.state.supabase_enabled:
+            token = _bearer_token(authorization)
+            owner_id = _resolve_owner(request, token)
+            private_sources = request.app.state.user_materials.list_sources(owner_id)
+            return public_sources + private_sources
+        return public_sources
 
     @app.get("/api/v1/sources/{source_id}", tags=["Materials"])
-    def get_source(source_id: str) -> dict[str, Any]:
-        """Get source metadata and evidence summary."""
+    def get_source(
+        source_id: str,
+        request: Request,
+        authorization: Optional[str] = Header(None, alias="Authorization"),
+    ) -> dict[str, Any]:
+        """Resolve a baseline source or the signed-in user's private source."""
+        if request.app.state.supabase_enabled:
+            owner_id = _resolve_owner(request, _bearer_token(authorization))
+            private = request.app.state.user_materials.get_source(owner_id, source_id)
+            if private:
+                return private
         src = learning_service.get_source_details(source_id)
         if not src:
             raise HTTPException(status_code=404, detail=f"Source '{source_id}' not found.")
         return src
 
     @app.get("/api/v1/sources/{source_id}/evidence", tags=["Materials"])
-    def get_source_evidence(source_id: str) -> list[dict[str, Any]]:
-        """List all extracted evidence units for a specific source."""
+    def get_source_evidence(
+        source_id: str,
+        request: Request,
+        authorization: Optional[str] = Header(None, alias="Authorization"),
+    ) -> list[dict[str, Any]]:
+        """Return evidence only for public baseline material or owner-matched private sources."""
+        if request.app.state.supabase_enabled:
+            owner_id = _resolve_owner(request, _bearer_token(authorization))
+            if request.app.state.user_materials.get_source(owner_id, source_id):
+                return request.app.state.user_materials.list_evidence(owner_id, source_id)
         return learning_service.get_source_evidence(source_id)
 
     @app.post("/api/v1/ingest/upload", tags=["Materials"])
     async def upload_material(
-        background_tasks: BackgroundTasks,
+        request: Request,
         file: UploadFile = File(...),
+        authorization: Optional[str] = Header(None, alias="Authorization"),
     ) -> dict[str, Any]:
-        """
-        Upload course material (PDF, PPTX, or TXT transcript).
-        Extracts evidence units with exact locators, computes SHA-256 hash,
-        and indexes into SQLite and ChromaDB.
-        """
+        """Persist a private upload in Supabase Storage and tenant-owned evidence rows."""
+        if not request.app.state.supabase_enabled:
+            raise HTTPException(status_code=503, detail="Configure Supabase to enable durable private uploads.")
+        owner_id = _resolve_owner(request, _bearer_token(authorization))
         safe_filename = Path(file.filename or "").name
         if not safe_filename:
             raise HTTPException(status_code=400, detail="Filename cannot be empty.")
-
         suffix = Path(safe_filename).suffix.lower()
         if suffix not in {".pdf", ".pptx", ".txt", ".vtt", ".srt"}:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported format '{suffix}'. Supported: .pdf, .pptx, .txt, .vtt, .srt",
-            )
+            raise HTTPException(status_code=400, detail=f"Unsupported format '{suffix}'.")
+        existing = request.app.state.user_materials.list_sources(owner_id)
+        if len(existing) >= 10:
+            raise HTTPException(status_code=413, detail="Account upload limit reached (10 files).")
+        used_bytes = sum(int(item.get("file_size_bytes", 0)) for item in existing)
+        account_quota = 100 * 1024 * 1024
+        if used_bytes >= account_quota:
+            raise HTTPException(status_code=413, detail="Account storage quota reached (100 MB).")
 
-        # Write to temporary file for safe ingestion with size enforcement
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as upload_tmp:
             bytes_read = 0
             while True:
                 chunk = await file.read(1024 * 1024)
                 if not chunk:
                     break
                 bytes_read += len(chunk)
-                if bytes_read > MAX_UPLOAD_SIZE:
-                    tmp.close()
-                    Path(tmp.name).unlink(missing_ok=True)
-                    raise HTTPException(
-                        status_code=413,
-                        detail=f"Payload too large. File exceeds {MAX_UPLOAD_SIZE // (1024 * 1024)}MB maximum limit.",
-                    )
-                tmp.write(chunk)
-            tmp_path = Path(tmp.name)
+                if bytes_read > MAX_UPLOAD_SIZE or used_bytes + bytes_read > account_quota:
+                    upload_tmp.close()
+                    Path(upload_tmp.name).unlink(missing_ok=True)
+                    raise HTTPException(status_code=413, detail="Upload exceeds the 25 MB per-file or 100 MB per-account limit.")
+                upload_tmp.write(chunk)
+            upload_path = Path(upload_tmp.name)
 
+        temp_db_path = None
+        storage_path = None
+        source_id = None
         try:
-            result = learning_service.ingest_document(
-                tmp_path,
-                title=Path(safe_filename).stem,
-                sync_embeddings=False,
-            )
-            background_tasks.add_task(learning_service.build_and_sync_embeddings)
-            return result
+            # Run the existing evidence extractor against a disposable DB; never mix tenant records into the shared corpus.
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".sqlite") as db_tmp:
+                temp_db_path = db_tmp.name
+            private_db = EvidenceDB(temp_db_path)
+            file_sha = hashlib.sha256(upload_path.read_bytes()).hexdigest()
+            source_id = "src_" + hashlib.sha256(f"{owner_id}:{file_sha}".encode()).hexdigest()[:28]
+            ingest_file(upload_path, private_db, source_id=source_id, title=Path(safe_filename).stem)
+            source = private_db.get_source(source_id)
+            evidence_units = [unit for unit in private_db.all_evidence() if unit.source_id == source_id]
+            storage_path = f"{owner_id}/{source_id}/{safe_filename}"
+            mime_type = file.content_type or "application/octet-stream"
+            request.app.state.supabase_store.upload_private(storage_path, upload_path.read_bytes(), mime_type)
+            request.app.state.user_materials.create_source({
+                "source_id": source_id, "owner_id": owner_id, "filename": safe_filename,
+                "title": source.title if source else Path(safe_filename).stem,
+                "modality": source.modality.value if source else suffix.lstrip("."),
+                "sha256": file_sha, "storage_path": storage_path,
+                "evidence_count": len(evidence_units), "file_size_bytes": bytes_read,
+            })
+            # Chunk REST inserts to bound request payload and prevent large bulk calls.
+            batch = []
+            for unit in evidence_units:
+                batch.append({
+                    "evidence_id": unit.evidence_id, "owner_id": owner_id, "source_id": source_id,
+                    "modality": unit.modality.value, "evidence_text": unit.text,
+                    "location": unit.location, "evidence_type": unit.evidence_type,
+                    "metadata": unit.metadata,
+                })
+                if len(batch) >= 100:
+                    request.app.state.user_materials.create_evidence_batch(batch)
+                    batch = []
+            if batch:
+                request.app.state.user_materials.create_evidence_batch(batch)
+            private_db.close()
+            return {"source_id": source_id, "title": source.title if source else Path(safe_filename).stem,
+                    "modality": source.modality.value if source else suffix.lstrip("."),
+                    "sha256": file_sha, "evidence_count": len(evidence_units), "status": "private_ingested"}
+        except Exception:
+            if source_id:
+                request.app.state.user_materials.delete_source(owner_id, source_id)
+            if storage_path:
+                request.app.state.supabase_store.remove_private([storage_path])
+            raise
         finally:
-            if tmp_path.exists():
-                try:
-                    tmp_path.unlink()
-                except Exception:
-                    pass
+            if upload_path.exists():
+                upload_path.unlink(missing_ok=True)
+            if temp_db_path and Path(temp_db_path).exists():
+                Path(temp_db_path).unlink(missing_ok=True)
 
     @app.post("/api/v1/corpus/seed", tags=["Ingestion"])
     def seed_corpus() -> dict[str, Any]:
