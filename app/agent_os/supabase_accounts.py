@@ -2,6 +2,7 @@
 from __future__ import annotations
 import hashlib
 import time
+import re
 from .supabase_store import SupabaseStore
 
 
@@ -127,11 +128,17 @@ class SupabaseUserMaterials:
             self.store.insert("user_evidence", records)
 
     def search_evidence(self, owner_id: str, query: str, limit: int = 5):
-        rows = self.store.select("user_evidence", params={
+        rows = _paged_select(self.store, "user_evidence", {
             "select": "evidence_id,source_id,modality,evidence_text,location,evidence_type,metadata",
-            "owner_id": _eq(owner_id), "limit": "5000",
-        }) or []
-        terms = {term.lower() for term in query.split() if len(term) > 2}
+            "owner_id": _eq(owner_id),
+        }, max_rows=5000)
+        stop_words = {
+            "what", "is", "the", "of", "in", "and", "to", "a", "an", "for", "are",
+            "by", "that", "with", "on", "at", "from", "as", "it", "be", "this",
+            "how", "explain", "tell", "me", "about", "does", "do", "can", "could",
+            "would", "which", "why", "when", "where", "who", "all", "any", "state",
+        }
+        terms = {term for term in re.findall(r"\\w+", query.lower()) if len(term) > 2} - stop_words
         scored = []
         for row in rows:
             content = (row.get("evidence_text") or "").lower()
@@ -139,7 +146,7 @@ class SupabaseUserMaterials:
             if score:
                 scored.append((score, row))
         scored.sort(key=lambda item: item[0], reverse=True)
-        return [row for _, row in scored[:max(1, min(limit, 10))]]
+        return [{**row, "score": score} for score, row in scored[:max(1, min(limit, 10))]]
 
     def get_progress_snapshot(self, owner_id: str):
         rows = self.store.select("learner_state_snapshots", params={
