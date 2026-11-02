@@ -775,14 +775,15 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
           4. Returns prerequisite-aware next recommendation.
         """
         verify_learner_boundary(req.learner_id, request, x_learner_id, authorization)
-        _restore_user_progress(request, req.learner_id)
         try:
-            result = learning_service.submit_assessment_answer(
-                learner_id=req.learner_id, question_id=req.question_id,
-                answer=req.answer, timestamp=req.timestamp,
-            )
-            _persist_user_progress(request, req.learner_id)
-            return result
+            with request.app.state.progress_lock:
+                _restore_user_progress(request, req.learner_id)
+                result = learning_service.submit_assessment_answer(
+                    learner_id=req.learner_id, question_id=req.question_id,
+                    answer=req.answer, timestamp=req.timestamp,
+                )
+                _persist_user_progress(request, req.learner_id)
+                return result
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))
 
@@ -813,8 +814,9 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
                 own_learner_id = row[0]
             finally:
                 conn.close()
-        _restore_user_progress(request, own_learner_id)
-        return [learner for learner in learning_service.list_learners() if learner.get("learner_id") == own_learner_id]
+        with request.app.state.progress_lock:
+            _restore_user_progress(request, own_learner_id)
+            return [learner for learner in learning_service.list_learners() if learner.get("learner_id") == own_learner_id]
 
     @app.get(
         "/api/v1/learner/{learner_id}/profile",
