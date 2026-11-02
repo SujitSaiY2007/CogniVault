@@ -520,6 +520,19 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
                 return request.app.state.user_materials.list_evidence(owner_id, source_id)
         return learning_service.get_source_evidence(source_id)
 
+    @app.delete("/api/v1/sources/{source_id}", tags=["Materials"])
+    def delete_private_source(
+        source_id: str, request: Request,
+        authorization: Optional[str] = Header(None, alias="Authorization"),
+    ) -> dict[str, Any]:
+        """Delete only a source owned by the authenticated account, including its private blob."""
+        if not request.app.state.supabase_enabled:
+            raise HTTPException(status_code=503, detail="Configure Supabase to manage private uploads.")
+        owner_id = _resolve_owner(request, _bearer_token(authorization))
+        if not request.app.state.user_materials.delete_source(owner_id, source_id):
+            raise HTTPException(status_code=404, detail="Private source not found.")
+        return {"status": "deleted", "source_id": source_id}
+
     @app.post("/api/v1/ingest/upload", tags=["Materials"])
     async def upload_material(
         request: Request,
