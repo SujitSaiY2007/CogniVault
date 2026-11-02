@@ -35,7 +35,8 @@ def test_private_evidence_search_is_owner_scoped():
     call = store.calls[0]
     assert call[1] == "user_evidence"
     assert call[2]["owner_id"] == "eq.user_alice"
-    assert call[2]["limit"] == "1000"\n    assert call[2]["offset"] == "0"
+    assert call[2]["limit"] == "1000"
+    assert call[2]["offset"] == "0"
 
 
 def test_source_delete_requires_owner_match():
