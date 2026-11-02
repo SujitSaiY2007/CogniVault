@@ -18,6 +18,7 @@ import secrets
 import hashlib
 import hmac
 import time
+import threading
 from pathlib import Path
 from typing import Any, Optional
 
@@ -310,6 +311,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
     auth_conn.close()
     app.state.service = learning_service
     app.state.tutor_service = learning_service
+    app.state.progress_lock = threading.RLock()
 
     # Auto-seed default course corpus if database is empty on fresh container
     try:
