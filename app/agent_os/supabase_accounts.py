@@ -138,7 +138,7 @@ class SupabaseUserMaterials:
             "how", "explain", "tell", "me", "about", "does", "do", "can", "could",
             "would", "which", "why", "when", "where", "who", "all", "any", "state",
         }
-        terms = {term for term in re.findall(r"\\w+", query.lower()) if len(term) > 2} - stop_words
+        terms = {term for term in re.findall(r"\w+", query.lower()) if len(term) > 2} - stop_words
         scored = []
         for row in rows:
             content = (row.get("evidence_text") or "").lower()
