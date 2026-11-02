@@ -1,28 +1,36 @@
 # Documentation Index
 
-This folder contains the project’s technical documentation, evaluation and demo materials, submission references, visual evidence, and historical phase records.
+Documentation is organized by purpose so the repository root remains focused on application entry points and configuration.
 
-## Core reference documents
+## Architecture and project records
+- [Architecture](architecture/ARCHITECTURE.md)
+- [Project state](project/PROJECT_STATE.md)
+- [Project overview and plan](project/PROJECT_MASTER_PLAN.md)
+- [Decision log](project/DECISION_LOG.md)
+- [Requirements traceability](project/REQUIREMENTS_TRACEABILITY.md)
+- [Repository branch map](REPOSITORY_BRANCH_MAP.md)
 
-- [Final verification and submission report](FINAL_VERIFICATION_AND_SUBMISSION_REPORT.md) — recorded integration verification; inspect the report's commit/environment and distinguish its results from fresh runs.
-- [Demo script and checklist](DEMO_SCRIPT_AND_CHECKLIST.md) — walkthrough sequence and operator checklist.
-- [Judge technical defense Q&A](JUDGE_TECHNICAL_DEFENSE_QA.md) — prepared explanations of system choices.
-- [Prior art and positioning](PRIOR_ART_AND_POSITIONING.md) — novelty and claim guardrails.
-- [Repository branch map](REPOSITORY_BRANCH_MAP.md) — dated branch observations and preservation guidance.
+## Evaluation and testing
+- [Evaluation protocol](evaluation/EVALUATION_PROTOCOL.md)
+- [Test specification](testing/TEST_SPECIFICATION.md)
+- [Final verification and submission report](FINAL_VERIFICATION_AND_SUBMISSION_REPORT.md)
 
-## Evidence
-
-- `evidence/chat03_walkthrough/` — screenshot artifacts recorded for the Chat 03 browser walkthrough.
-- Evaluation datasets and result artifacts are kept in the root `evaluation/` directory.
-
-## Historical archive
-
-- `archive/` — phase reports and implementation notes retained for project continuity. Archived documents may describe old plans or checkpoints; do not interpret them as current instructions without cross-checking [PROJECT_STATE.md](../PROJECT_STATE.md).
-
-## Other records
-
+## Demo and hackathon
+- [Demo plan](demo/DEMO_PLAN.md)
+- [Demo script and checklist](DEMO_SCRIPT_AND_CHECKLIST.md)
+- [Hackathon submission plan](hackathon/SUBMISSION_PLAN.md)
 - [Devpost submission guide](DEVPOST_SUBMISSION_GUIDE.md)
-- [Hackathon demo video plan](HACKATHON_DEMO_VIDEO_SCRIPT_AND_PLAN.md)
-- [Final verification report](FINAL_VERIFICATION_AND_SUBMISSION_REPORT.md)
+- [Hackathon demo video script and plan](HACKATHON_DEMO_VIDEO_SCRIPT_AND_PLAN.md)
+- [Judge technical defense Q&A](JUDGE_TECHNICAL_DEFENSE_QA.md)
 
-User-uploaded PDF references at the repository root are preserved as historical/source materials.
+## Policies and positioning
+- [Hallucination control](policies/HALLUCINATION_CONTROL.md)
+- [Security and usage policy](policies/SECURITY_AND_USAGE_POLICY.md)
+- [Prior art and positioning](PRIOR_ART_AND_POSITIONING.md)
+
+## Evidence and history
+- `evidence/chat03_walkthrough/` — preserved screenshots
+- `archive/` — older phase reports and continuity notes; historical docs are not automatically current instructions
+- Evaluation datasets and recorded result artifacts remain in the root `evaluation/` directory
+
+The uploaded hackathon/reference PDFs remain unchanged at repository root in this cleanup branch.
