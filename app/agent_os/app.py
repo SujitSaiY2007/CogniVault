@@ -419,6 +419,16 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         if request.app.state.supabase_enabled:
             owner_id = _resolve_owner(request, _bearer_token(authorization))
             matches = request.app.state.user_materials.search_evidence(owner_id, req.query, limit=3)
+            if not matches and request.app.state.user_materials.list_sources(owner_id):
+                return TutorResponse(
+                    query=req.query.strip(),
+                    answer="I could not locate relevant evidence in your uploaded course materials, so I am abstaining rather than answering from unrelated material.",
+                    citations=[], is_grounded=False, confidence=0.0,
+                    support_status="unsupported",
+                    unsupported_reason="No matching evidence was retrieved from this account's private uploads.",
+                    reasoning_steps=["Searched only this account's private indexed evidence.", "No sufficiently relevant excerpt was located."],
+                    metadata={"scope": "private_account_materials"},
+                ).model_dump()
             if matches:
                 citations = []
                 for item in matches:
