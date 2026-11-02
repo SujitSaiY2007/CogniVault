@@ -142,3 +142,49 @@ def test_smoke_ollama_connectivity_probe():
     models = get_available_ollama_models(DEFAULT_OLLAMA_HOST, timeout=0.5)
     assert isinstance(is_up, bool)
     assert isinstance(models, list)
+
+
+
+def test_username_password_authentication_and_learner_isolation(smoke_app):
+    app, service = smoke_app
+    client = TestClient(app)
+    payload = {"username": "study_user_01", "password": "correct-horse-42"}
+
+    signup = client.post("/api/v1/auth/signup", json=payload)
+    assert signup.status_code == 200
+    session = signup.json()
+    assert session["username"] == payload["username"]
+    assert session["learner_id"] == "user_study_user_01"
+    assert session["access_token"]
+
+    duplicate = client.post("/api/v1/auth/signup", json=payload)
+    assert duplicate.status_code == 409
+
+    bad_login = client.post("/api/v1/auth/login", json={"username": payload["username"], "password": "wrong-password"})
+    assert bad_login.status_code == 401
+
+    login = client.post("/api/v1/auth/login", json=payload)
+    assert login.status_code == 200
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}", "X-Learner-Id": "user_study_user_01"}
+
+    me = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert me.status_code == 200
+    assert me.json()["learner_id"] == "user_study_user_01"
+
+    own_profile = client.get("/api/v1/learner/user_study_user_01/profile", headers=headers)
+    assert own_profile.status_code == 200
+    other_profile = client.get("/api/v1/learner/learner_demo/profile", headers=headers)
+    assert other_profile.status_code == 403
+
+    logout = client.post("/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"})
+    assert logout.status_code == 200
+    expired = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert expired.status_code == 401
+
+
+def test_signup_validates_username_and_password(smoke_app):
+    app, service = smoke_app
+    client = TestClient(app)
+    assert client.post("/api/v1/auth/signup", json={"username": "ab", "password": "12345678"}).status_code == 400
+    assert client.post("/api/v1/auth/signup", json={"username": "valid_user", "password": "short"}).status_code == 422
