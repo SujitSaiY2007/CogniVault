@@ -185,14 +185,20 @@ def verify_learner_boundary(learner_id: str, request: Request, x_learner_id: Opt
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Sign in to access this learner profile.")
     token = authorization.split(" ", 1)[1].strip()
-    conn = _auth_connection(request.app.state.auth_db_path)
-    try:
-        row = conn.execute("SELECT u.learner_id FROM auth_sessions s JOIN auth_users u ON u.username=s.username WHERE s.token_hash=? AND s.expires_at>?", (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
-    finally:
-        conn.close()
-    if not row:
-        raise HTTPException(status_code=401, detail="Your session expired. Please sign in again.")
-    authenticated_learner_id = row[0]
+    if request.app.state.supabase_enabled:
+        row = request.app.state.supabase_auth.resolve_token(token)
+        if not row:
+            raise HTTPException(status_code=401, detail="Your session expired. Please sign in again.")
+        authenticated_learner_id = row[1]
+    else:
+        conn = _auth_connection(request.app.state.auth_db_path)
+        try:
+            row = conn.execute("SELECT u.learner_id FROM auth_sessions s JOIN auth_users u ON u.username=s.username WHERE s.token_hash=? AND s.expires_at>?", (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
+        finally:
+            conn.close()
+        if not row:
+            raise HTTPException(status_code=401, detail="Your session expired. Please sign in again.")
+        authenticated_learner_id = row[0]
     if authenticated_learner_id != learner_id.strip() or (x_learner_id and x_learner_id.strip() != authenticated_learner_id):
         raise HTTPException(status_code=403, detail="You cannot access another user's learner profile.")
 
@@ -590,14 +596,20 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         if not authorization or not authorization.lower().startswith("bearer "):
             raise HTTPException(status_code=401, detail="Sign in required.")
         token = authorization.split(" ", 1)[1].strip()
-        conn = _auth_connection(app.state.auth_db_path)
-        try:
-            row = conn.execute("SELECT u.learner_id FROM auth_sessions s JOIN auth_users u ON u.username=s.username WHERE s.token_hash=? AND s.expires_at>?", (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
+        if app.state.supabase_enabled:
+            row = app.state.supabase_auth.resolve_token(token)
             if not row:
                 raise HTTPException(status_code=401, detail="Session expired. Sign in again.")
-            own_learner_id = row[0]
-        finally:
-            conn.close()
+            own_learner_id = row[1]
+        else:
+            conn = _auth_connection(app.state.auth_db_path)
+            try:
+                row = conn.execute("SELECT u.learner_id FROM auth_sessions s JOIN auth_users u ON u.username=s.username WHERE s.token_hash=? AND s.expires_at>?", (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
+                if not row:
+                    raise HTTPException(status_code=401, detail="Session expired. Sign in again.")
+                own_learner_id = row[0]
+            finally:
+                conn.close()
         return [learner for learner in learning_service.list_learners() if learner.get("learner_id") == own_learner_id]
 
     @app.get(
