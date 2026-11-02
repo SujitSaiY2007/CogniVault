@@ -56,6 +56,20 @@ class SupabaseAuth:
         })
 
 
+def _paged_select(store: SupabaseStore, table: str, params: dict, page_size: int = 1000, max_rows: int = 5000):
+    rows = []
+    offset = 0
+    while offset < max_rows:
+        page = store.select(table, params={**params, "limit": str(page_size), "offset": str(offset)})
+        if not page:
+            break
+        rows.extend(page)
+        offset += len(page)
+        if len(page) < page_size:
+            break
+    return rows[:max_rows]
+
+
 class SupabaseUserMaterials:
     """Private source/evidence storage. Every method is scoped by validated owner_id."""
     def __init__(self, store: SupabaseStore):
