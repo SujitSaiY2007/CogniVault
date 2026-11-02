@@ -541,8 +541,12 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
             raise HTTPException(status_code=413, detail="Account upload limit reached (10 files).")
         used_bytes = sum(int(item.get("file_size_bytes", 0)) for item in existing)
         account_quota = 100 * 1024 * 1024
+        global_used_bytes = request.app.state.user_materials.get_global_storage_usage()
+        global_quota = 800 * 1024 * 1024  # leave headroom under Supabase Free 1 GB object-storage limit
+        if global_used_bytes >= global_quota:
+            raise HTTPException(status_code=413, detail="Shared project upload capacity reached. Try again after storage cleanup.")
         if used_bytes >= account_quota:
-            raise HTTPException(status_code=413, detail="Account storage quota reached (100 MB).")
+            raise HTTPException(status_code=413, detail="Account storage quota reached (100 MB)."
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as upload_tmp:
             bytes_read = 0
@@ -567,6 +571,8 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
                 temp_db_path = db_tmp.name
             private_db = EvidenceDB(temp_db_path)
             file_sha = hashlib.sha256(upload_path.read_bytes()).hexdigest()
+            if any(item.get("sha256") == file_sha for item in existing):
+                raise HTTPException(status_code=409, detail="This file is already uploaded to your account.")
             source_id = "src_" + hashlib.sha256(f"{owner_id}:{file_sha}".encode()).hexdigest()[:28]
             ingest_file(upload_path, private_db, source_id=source_id, title=Path(safe_filename).stem)
             source = private_db.get_source(source_id)
