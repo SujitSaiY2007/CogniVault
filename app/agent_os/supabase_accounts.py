@@ -111,3 +111,14 @@ class SupabaseUserMaterials:
                 scored.append((score, row))
         scored.sort(key=lambda item: item[0], reverse=True)
         return [row for _, row in scored[:max(1, min(limit, 10))]
+
+    def get_progress_snapshot(self, owner_id: str):
+        rows = self.store.select("learner_state_snapshots", params={
+            "select": "snapshot_json", "owner_id": _eq(owner_id), "limit": "1",
+        })
+        return rows[0].get("snapshot_json") if rows else {}
+
+    def save_progress_snapshot(self, owner_id: str, snapshot: dict):
+        self.store.insert("learner_state_snapshots", [{
+            "owner_id": owner_id, "snapshot_json": snapshot,
+        }], upsert=True)
