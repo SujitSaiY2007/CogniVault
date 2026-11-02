@@ -17,9 +17,9 @@ This PR introduces durable username/password accounts, private uploaded material
 
 - 25 MB maximum upload per file (API enforced).
 - 10 uploaded files per username.
-- 100 MB private file storage quota per username.
+- 100 MB private file storage quota per username.\n- 2,000 evidence chunks per uploaded file and 10,000 chunks per username.\n- 800 MB project-wide object-storage soft ceiling (leaves headroom under Supabase Free 1 GB).
 - Evidence insertion uses batches of 100 records.
-- Search results are capped at 10 and simple lexical retrieval is bounded to 5,000 stored chunks per user per search.
+- Search results are capped at 10 and simple lexical retrieval is bounded to 5,000 stored chunks per user per search. Source evidence listing uses bounded 1,000-row pages.
 - The Free plan is a finite quota, not a guarantee of unlimited usage or continuous uptime. Supabase may pause projects for inactivity; Render Free may sleep. AI provider usage also has its own quota.
 
 These limits are deliberately conservative. They are app-side ceilings; overall project quotas remain shared by all accounts and must be monitored.
