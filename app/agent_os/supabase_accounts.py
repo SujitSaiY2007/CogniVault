@@ -89,3 +89,25 @@ class SupabaseUserMaterials:
         })
         self.store.remove_private([source["storage_path"]])
         return True
+
+    def create_source(self, record: dict):
+        self.store.insert("user_sources", [record])
+
+    def create_evidence_batch(self, records: list[dict]):
+        if records:
+            self.store.insert("user_evidence", records)
+
+    def search_evidence(self, owner_id: str, query: str, limit: int = 5):
+        rows = self.store.select("user_evidence", params={
+            "select": "evidence_id,source_id,modality,evidence_text,location,evidence_type,metadata",
+            "owner_id": _eq(owner_id), "limit": "5000",
+        }) or []
+        terms = {term.lower() for term in query.split() if len(term) > 2}
+        scored = []
+        for row in rows:
+            content = (row.get("evidence_text") or "").lower()
+            score = sum(content.count(term) for term in terms)
+            if score:
+                scored.append((score, row))
+        scored.sort(key=lambda item: item[0], reverse=True)
+        return [row for _, row in scored[:max(1, min(limit, 10))]
