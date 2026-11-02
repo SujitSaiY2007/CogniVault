@@ -20,6 +20,10 @@ class FakeStore:
     def remove_private(self, paths):
         self.calls.append(("remove_private", paths))
 
+    def rpc(self, function_name, params):
+        self.calls.append(("rpc", function_name, params))
+        return 42
+
 
 def test_private_evidence_search_is_owner_scoped():
     store = FakeStore()
@@ -82,3 +86,13 @@ def test_progress_snapshot_reads_and_writes_by_account_owner():
     assert write[1] == "learner_state_snapshots"
     assert write[2][0]["owner_id"] == "user_alice"
     assert write[3] is True
+
+def test_project_quota_counts_use_server_side_aggregate_functions():
+    store = FakeStore()
+    materials = SupabaseUserMaterials(store)
+    assert materials.get_global_storage_usage() == 42
+    assert materials.get_global_evidence_count() == 42
+    assert store.calls == [
+        ("rpc", "cognivault_global_storage_usage_bytes", {}),
+        ("rpc", "cognivault_global_evidence_count", {}),
+    ]
