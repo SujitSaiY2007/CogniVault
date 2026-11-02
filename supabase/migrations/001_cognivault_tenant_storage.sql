@@ -61,7 +61,7 @@ revoke all on public.cognivault_users, public.cognivault_sessions, public.user_s
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('user-materials', 'user-materials', false, 26214400,
   array['application/pdf','application/vnd.openxmlformats-officedocument.presentationml.presentation','text/plain','text/vtt','application/x-subrip'])
-on conflict (id) do update set public=false, file_size_limit=26214400;
+on conflict (id) do update set public=false, file_size_limit=26214400, allowed_mime_types=EXCLUDED.allowed_mime_types;
 
 create table if not exists public.learner_state_snapshots (
   owner_id text primary key references public.cognivault_users(learner_id) on delete cascade,
