@@ -1,37 +1,37 @@
-﻿# CogniVault — Project State (Final Integration & Deployment Phase)
+# CogniVault — Project State
 
-**Date:** 2026-10-14  
-**Canonical Roadmap:** [docs/FINAL_OVERHAUL_PLAN.md](docs/FINAL_OVERHAUL_PLAN.md)  
-**Dedicated Integration Branch:** `integration/final-safe-integration`  
-**Implementation Source Base:** `overhaul/chat-03-evaluation-submission` (`0e1b0552da1676ff4f77d1108966a05b3fd2efbe`)  
-**Canonical Governance Branch:** `main` (`8a852cabf605235a0759c84195277d3ddb2cb765`)  
+**Status date:** 2026-11-02  
+**Repository:** [SujitSaiY2007/CogniVault](https://github.com/SujitSaiY2007/CogniVault)  
+**Default branch:** `main`
 
----
+## Current repository snapshot
 
-## Complete Overhaul Status Summary
+The `main` tree contains the Python application, FastAPI/Agno API layer, Next.js frontend, preserved Streamlit UI, course fixtures, evaluation assets, tests, and project documentation. The repository is not just the early scaffold described in some older planning notes.
 
-- **Chat 01 (Agno Foundation):** COMPLETE & VERIFIED.
-  - Agno AgentOS foundation, local Ollama provider with deterministic offline fallback, ChromaDB persistent store, hybrid retrieval (BM25 + cosine), evidence sufficiency checks, and baseline FastAPI routes.
-- **Chat 02 (Product Loop):** COMPLETE & VERIFIED.
-  - Multi-role Agno workflow (Evidence Tutor, Assessment, Learning Coach) with deterministic tools.
-  - Typed REST API covering assessment lifecycle, BKT topic mastery, misconception diagnostics, prerequisite recommendations, cold-start intake, multipart ingestion, and learner authorization boundaries.
-  - Real, responsive Next.js 14 frontend (`frontend/`) with 8 integrated interactive views, clickable citation drawer, and zero-error production build.
-- **Chat 03 (Evaluation, Hardening & Submission Package):** COMPLETE & VERIFIED.
-  - Extended grounding & fail-closed abstention benchmark (Precision=1.0, Recall=1.0, F1=1.0, Faithfulness=0.9688, 100% citation addressability).
-  - Multi-session learner cohort simulations across 6 profiles (BKT convergence, prerequisite gating, 0% duplicate questions, SQLite persistence).
-  - Security hardening (Learner ID regex validation, 25MB upload limits, path traversal sanitization, cross-learner tamper protection).
-  - Automated Playwright browser walkthrough (13 desktop and mobile screenshot artifacts in `docs/evidence/chat03_walkthrough/`).
-  - Full regression pass: 138 automated Python tests.
-  - Documentation & submission assets: `docs/CHAT03_EVALUATION_REPORT.md`, `docs/CHAT03_HARDENING_REPORT.md`, `docs/DEMO_SCRIPT_AND_CHECKLIST.md`.
-- **Final Integration & Free Cloud Deployment:** IN PROGRESS.
-  - Safe integration into `integration/final-safe-integration` reconciling all project documents.
-  - Implementation of dual model provider (local Ollama default, Google Gemini free tier for cloud).
-  - Frontend deployment on Vercel; Backend deployment on Render (strictly free tier).
-  - End-to-end live browser verification across all core product flows.
+## Implemented areas represented in the source tree
 
----
+- Source ingestion and provenance records for supported PDF, PPTX, and text inputs.
+- Hybrid retrieval and evidence sufficiency checks.
+- Source-grounded tutor path with citation resolution and abstention behavior.
+- Assessment generation/selection and deterministic answer structure/numeric checks.
+- Topic-level Bayesian Knowledge Tracing, misconception diagnostics, and recommendations.
+- API and frontend workflows; legacy Streamlit interface retained.
+- Evaluation runners, result artifacts, and test suites.
 
-## Repository Invariants & Preservation
-1. All historical code, data fixtures, reference corpus files, PR #1, and commit history are strictly preserved.
-2. The Streamlit legacy interface (`app/ui/main.py`) remains fully functional and accessible.
-3. No force-push, reset, published-history rewrite, or unapproved repository visibility changes.
+This inventory is a source-tree summary, not a fresh runtime acceptance test.
+
+## Verification record
+
+`docs/FINAL_VERIFICATION_AND_SUBMISSION_REPORT.md` records a 143-test pass (355.20 seconds in its shown Windows/Python 3.12 environment) and a successful frontend production build. README and submission documents contain other test counts and timings from different project checkpoints. **Do not treat those as interchangeable or as freshly rerun results.** For a new release or resume claim, rerun the suite and build on the exact commit being presented and update the report with commit and environment details.
+
+Live deployment status and hosted persistence are not confirmed by this state file. Verify the endpoints and host storage behavior before describing production availability.
+
+## Documentation cleanup status
+
+A review-only portfolio cleanup is being prepared on `portfolio/readme-docs-cleanup-2026-11-02`. It does not change `main`, implementation code, evaluation data, historical branches, pull requests, or repository visibility. The user will decide what to do with the proposed changes.
+
+## Preservation rules
+
+- Keep historical evidence, source fixtures, tests, and decision records.
+- Do not force-push, reset, delete/rename branches, change visibility, or merge without explicit approval.
+- Treat phase plans and handoffs as historical context unless their status is explicitly current.
