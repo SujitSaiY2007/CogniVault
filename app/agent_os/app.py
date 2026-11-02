@@ -13,10 +13,15 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
+import sqlite3
+import secrets
+import hashlib
+import hmac
+import time
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import BackgroundTasks, Depends, FastAPI, File, Header, HTTPException, Query, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Header, HTTPException, Query, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -96,6 +101,20 @@ class LearnerCreateRequest(BaseModel):
     name: Optional[str] = None
 
 
+
+
+class CredentialsRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=32)
+    password: str = Field(min_length=8, max_length=128)
+
+
+class AuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    username: str
+    learner_id: str
+
+
 class ColdStartIntakeRequest(BaseModel):
     initial_topic_masteries: Optional[dict[str, float]] = None
     diagnostic_responses: Optional[list[dict[str, Any]]] = None
@@ -120,23 +139,62 @@ def validate_learner_id_format(learner_id: str) -> None:
         )
 
 
-def verify_learner_boundary(
-    learner_id: str,
-    x_learner_id: Optional[str] = Header(None, alias="X-Learner-Id"),
-) -> None:
-    """
-    Enforces authorization boundary:
-    If client presents an X-Learner-Id header, it must match the path's learner_id.
-    Prevents learner A from reading or mutating learner B's state.
-    """
+
+
+def _auth_connection(path: str) -> sqlite3.Connection:
+    conn = sqlite3.connect(path, timeout=10)
+    conn.execute("""CREATE TABLE IF NOT EXISTS auth_users (username TEXT PRIMARY KEY, password_hash TEXT NOT NULL, learner_id TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL)""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS auth_sessions (token_hash TEXT PRIMARY KEY, username TEXT NOT NULL, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL, FOREIGN KEY(username) REFERENCES auth_users(username) ON DELETE CASCADE)""")
+    conn.commit()
+    return conn
+
+
+def _normalize_username(value: str) -> str:
+    username = value.strip().lower()
+    if not re.fullmatch(r"[a-zA-Z0-9_.-]{3,32}", username):
+        raise HTTPException(status_code=400, detail="Username must be 3–32 characters using letters, numbers, dot, dash, or underscore.")
+    return username
+
+
+def _password_hash(password: str, salt: bytes | None = None) -> str:
+    salt = salt or secrets.token_bytes(16)
+    derived = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 310000)
+    return salt.hex() + ":" + derived.hex()
+
+
+def _password_matches(password: str, stored: str) -> bool:
+    try:
+        salt_hex, digest_hex = stored.split(":", 1)
+        candidate = _password_hash(password, bytes.fromhex(salt_hex)).split(":", 1)[1]
+        return hmac.compare_digest(candidate, digest_hex)
+    except (ValueError, TypeError):
+        return False
+
+
+def _issue_session(conn: sqlite3.Connection, username: str, learner_id: str) -> AuthResponse:
+    token = secrets.token_urlsafe(36)
+    now = int(time.time())
+    conn.execute("DELETE FROM auth_sessions WHERE expires_at < ?", (now,))
+    conn.execute("INSERT INTO auth_sessions(token_hash,username,expires_at,created_at) VALUES(?,?,?,?)", (hashlib.sha256(token.encode()).hexdigest(), username, now + 60 * 60 * 24 * 30, now))
+    conn.commit()
+    return AuthResponse(access_token=token, username=username, learner_id=learner_id)
+
+
+def verify_learner_boundary(learner_id: str, request: Request, x_learner_id: Optional[str] = Header(None, alias="X-Learner-Id"), authorization: Optional[str] = Header(None, alias="Authorization")) -> None:
     validate_learner_id_format(learner_id)
-    if x_learner_id:
-        validate_learner_id_format(x_learner_id)
-        if x_learner_id.strip() != learner_id.strip():
-            raise HTTPException(
-                status_code=403,
-                detail=f"Forbidden: Learner boundary mismatch. Header '{x_learner_id}' cannot mutate or read learner '{learner_id}'.",
-            )
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(status_code=401, detail="Sign in to access this learner profile.")
+    token = authorization.split(" ", 1)[1].strip()
+    conn = _auth_connection(request.app.state.auth_db_path)
+    try:
+        row = conn.execute("SELECT u.learner_id FROM auth_sessions s JOIN auth_users u ON u.username=s.username WHERE s.token_hash=? AND s.expires_at>?", (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
+    finally:
+        conn.close()
+    if not row:
+        raise HTTPException(status_code=401, detail="Your session expired. Please sign in again.")
+    authenticated_learner_id = row[0]
+    if authenticated_learner_id != learner_id.strip() or (x_learner_id and x_learner_id.strip() != authenticated_learner_id):
+        raise HTTPException(status_code=403, detail="You cannot access another user's learner profile.")
 
 
 # -----------------------------------------------------------------------------
@@ -181,6 +239,9 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
     )
 
     # Attach service to app state for lifecycle access
+    app.state.auth_db_path = learning_service.db_path
+    auth_conn = _auth_connection(app.state.auth_db_path)
+    auth_conn.close()
     app.state.service = learning_service
     app.state.tutor_service = learning_service
 
@@ -200,6 +261,63 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
     def get_health() -> dict[str, Any]:
         """Health check probe verifying SQLite, ChromaDB, and local Ollama status."""
         return learning_service.health_check()
+
+
+    # Username/password authentication (no email required)
+    @app.post("/api/v1/auth/signup", response_model=AuthResponse, tags=["Authentication"])
+    def signup(req: CredentialsRequest) -> AuthResponse:
+        username = _normalize_username(req.username)
+        if len(req.password) < 8:
+            raise HTTPException(status_code=400, detail="Password must be at least 8 characters.")
+        conn = _auth_connection(app.state.auth_db_path)
+        try:
+            learner_id = "user_" + username
+            try:
+                conn.execute("INSERT INTO auth_users(username,password_hash,learner_id,created_at) VALUES(?,?,?,?)", (username, _password_hash(req.password), learner_id, int(time.time())))
+                conn.commit()
+            except sqlite3.IntegrityError:
+                raise HTTPException(status_code=409, detail="That username is already taken. Try signing in or choose another.")
+            return _issue_session(conn, username, learner_id)
+        finally:
+            conn.close()
+
+    @app.post("/api/v1/auth/login", response_model=AuthResponse, tags=["Authentication"])
+    def login(req: CredentialsRequest) -> AuthResponse:
+        username = _normalize_username(req.username)
+        conn = _auth_connection(app.state.auth_db_path)
+        try:
+            row = conn.execute("SELECT password_hash, learner_id FROM auth_users WHERE username=?", (username,)).fetchone()
+            if not row or not _password_matches(req.password, row[0]):
+                raise HTTPException(status_code=401, detail="Username or password is incorrect.")
+            return _issue_session(conn, username, row[1])
+        finally:
+            conn.close()
+
+    @app.get("/api/v1/auth/me", tags=["Authentication"])
+    def auth_me(authorization: Optional[str] = Header(None, alias="Authorization")) -> dict[str, str]:
+        if not authorization or not authorization.lower().startswith("bearer "):
+            raise HTTPException(status_code=401, detail="Sign in required.")
+        token = authorization.split(" ", 1)[1].strip()
+        conn = _auth_connection(app.state.auth_db_path)
+        try:
+            row = conn.execute("SELECT u.username,u.learner_id FROM auth_sessions s JOIN auth_users u ON u.username=s.username WHERE s.token_hash=? AND s.expires_at>?", (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
+            if not row:
+                raise HTTPException(status_code=401, detail="Session expired. Sign in again.")
+            return {"username": row[0], "learner_id": row[1]}
+        finally:
+            conn.close()
+
+    @app.post("/api/v1/auth/logout", tags=["Authentication"])
+    def auth_logout(authorization: Optional[str] = Header(None, alias="Authorization")) -> dict[str, str]:
+        if authorization and authorization.lower().startswith("bearer "):
+            token = authorization.split(" ", 1)[1].strip()
+            conn = _auth_connection(app.state.auth_db_path)
+            try:
+                conn.execute("DELETE FROM auth_sessions WHERE token_hash=?", (hashlib.sha256(token.encode()).hexdigest(),))
+                conn.commit()
+            finally:
+                conn.close()
+        return {"status": "signed_out"}
 
     # =========================================================================
     # Tutoring Endpoints (Role 1: Evidence Tutor)
