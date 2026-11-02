@@ -59,7 +59,7 @@ flowchart LR
 | `data/corpus/` | Small reproducible course-material fixtures and manifest |
 | `evaluation/` | Evaluation runners, datasets, and recorded results |
 | `tests/` | Unit, acceptance, integration, and browser-walkthrough tests |
-| `docs/` | Architecture, demo and evaluation reports, submission material, evidence, and archive |
+| `docs/architecture/` | Technical architecture reference |\n| `docs/project/` | Project state, master plan, decision log, requirements traceability |\n| `docs/demo/` | Demo plan and walkthroughs |\n| `docs/evaluation/` | Evaluation protocol and reports |\n| `docs/policies/` | Grounding, security, and usage policies |\n| `docs/testing/` | Test specification |\n| `docs/hackathon/` | Hackathon submission planning |\n| `docs/evidence/` and `docs/archive/` | Preserved screenshots and historical phase records |
 | `ARCHITECTURE.md` | System design and component responsibilities |
 | `DECISION_LOG.md` | Decision history and implementation records |
 | `PROJECT_STATE.md` | Concise current repository status |
@@ -122,14 +122,14 @@ The repository's [Final Verification & Submission Report](docs/FINAL_VERIFICATIO
 
 ## Documentation
 
-- [Architecture](ARCHITECTURE.md)
-- [Evaluation protocol](EVALUATION_PROTOCOL.md)
+- [Architecture](docs/architecture/ARCHITECTURE.md)
+- [Evaluation protocol](docs/evaluation/EVALUATION_PROTOCOL.md)
 - [Final verification report](docs/FINAL_VERIFICATION_AND_SUBMISSION_REPORT.md)
-- [Demo script and checklist](docs/DEMO_SCRIPT_AND_CHECKLIST.md)
+- [Demo plan](docs/demo/DEMO_PLAN.md) · [Demo script and checklist](docs/DEMO_SCRIPT_AND_CHECKLIST.md)
 - [Judge technical defense Q&A](docs/JUDGE_TECHNICAL_DEFENSE_QA.md)
 - [Documentation index](docs/README.md)
-- [Decision log](DECISION_LOG.md)
-- [Project state](PROJECT_STATE.md)
+- [Decision log](docs/project/DECISION_LOG.md)
+- [Project state](docs/project/PROJECT_STATE.md)
 
 ## Deployment
 
