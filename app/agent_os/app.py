@@ -546,7 +546,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         if global_used_bytes >= global_quota:
             raise HTTPException(status_code=413, detail="Shared project upload capacity reached. Try again after storage cleanup.")
         if used_bytes >= account_quota:
-            raise HTTPException(status_code=413, detail="Account storage quota reached (100 MB)."
+            raise HTTPException(status_code=413, detail="Account storage quota reached (100 MB).")
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as upload_tmp:
             bytes_read = 0
