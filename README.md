@@ -7,7 +7,6 @@
 [![Python](https://img.shields.io/badge/Python-3.12-blue)](https://python.org)
 [![Backend](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Agno-009688)](https://fastapi.tiangolo.com/)
 [![Frontend](https://img.shields.io/badge/Frontend-Next.js%20%7C%20TypeScript-black)](https://nextjs.org/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 ## Overview
 
@@ -142,4 +141,4 @@ This project was developed with AI-assisted coding tools and frameworks, alongsi
 
 ## License
 
-MIT — see [LICENSE](LICENSE) if present in this repository.
+A license file is not present on the reviewed `main` branch. Add the intended license before describing this repository as MIT-licensed.
