@@ -12,6 +12,7 @@ import {
   User,
   PlusCircle,
   Activity,
+  LogOut,
 } from "lucide-react";
 import { SystemHealth } from "@/lib/types";
 
@@ -23,6 +24,8 @@ interface NavbarProps {
   learners: string[];
   health: SystemHealth | null;
   onOpenColdStart: () => void;
+  accountUsername: string;
+  onLogout: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -33,6 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   learners,
   health,
   onOpenColdStart,
+  accountUsername,
+  onLogout,
 }) => {
   const tabs = [
     { id: "tutor", label: "Evidence Tutor", icon: Bot },
@@ -105,6 +110,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <PlusCircle className="h-4 w-4 text-indigo-100" />
             <span className="font-bold tracking-wide">New Learner Intake</span>
+          </button>
+
+          <div className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200">
+            <User className="h-4 w-4 text-indigo-400" /> <span className="max-w-[110px] truncate">{accountUsername}</span>
+          </div>
+          <button type="button" onClick={onLogout} title="Sign out" className="flex items-center gap-1.5 rounded-xl border border-slate-700 px-3 py-2 text-xs font-bold text-slate-300 transition hover:border-rose-400 hover:text-rose-300">
+            <LogOut className="h-4 w-4" /><span className="hidden sm:inline">Sign out</span>
           </button>
 
           {/* Health Badge */}
