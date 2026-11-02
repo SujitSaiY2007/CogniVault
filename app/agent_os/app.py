@@ -305,10 +305,20 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         allow_headers=["*"],
     )
 
-    # Attach service to app state for lifecycle access
+    # Attach service and persistence providers to app state.
     app.state.auth_db_path = learning_service.db_path
-    auth_conn = _auth_connection(app.state.auth_db_path)
-    auth_conn.close()
+    app.state.supabase_enabled = bool(os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
+    app.state.supabase_store = None
+    app.state.supabase_auth = None
+    app.state.user_materials = None
+    if app.state.supabase_enabled:
+        app.state.supabase_store = SupabaseStore()
+        app.state.supabase_auth = SupabaseAuth(app.state.supabase_store)
+        app.state.user_materials = SupabaseUserMaterials(app.state.supabase_store)
+    else:
+        # Local development/test fallback only. Production should set both Supabase env vars.
+        auth_conn = _auth_connection(app.state.auth_db_path)
+        auth_conn.close()
     app.state.service = learning_service
     app.state.tutor_service = learning_service
     app.state.progress_lock = threading.RLock()
