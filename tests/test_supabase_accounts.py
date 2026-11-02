@@ -65,3 +65,19 @@ def test_session_token_storage_uses_digest_and_expiry():
     assert "opaque-secret-token" not in row["token_hash"]
     assert row["username"] == "alice"
     assert row["expires_at"]
+
+def test_progress_snapshot_reads_and_writes_by_account_owner():
+    store = FakeStore()
+    store.rows = [{"snapshot_json": {"learner_states": [{"topic_id": "physics"}]}}]
+    materials = SupabaseUserMaterials(store)
+    snapshot = materials.get_progress_snapshot("user_alice")
+    assert snapshot["learner_states"][0]["topic_id"] == "physics"
+    read = store.calls[0]
+    assert read[1] == "learner_state_snapshots"
+    assert read[2]["owner_id"] == "eq.user_alice"
+
+    materials.save_progress_snapshot("user_alice", {"learner_states": []})
+    write = store.calls[-1]
+    assert write[1] == "learner_state_snapshots"
+    assert write[2][0]["owner_id"] == "user_alice"
+    assert write[3] is True
