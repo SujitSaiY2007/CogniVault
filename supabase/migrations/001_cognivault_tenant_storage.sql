@@ -28,7 +28,8 @@ create table if not exists public.user_sources (
   storage_path text not null unique,
   evidence_count integer not null default 0 check (evidence_count >= 0),
   file_size_bytes bigint not null default 0 check (file_size_bytes >= 0),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  unique (source_id, owner_id)
 );
 alter table public.user_sources add column if not exists file_size_bytes bigint not null default 0 check (file_size_bytes >= 0);
 
@@ -37,13 +38,14 @@ create index if not exists user_sources_owner_idx on public.user_sources(owner_i
 create table if not exists public.user_evidence (
   evidence_id text primary key,
   owner_id text not null references public.cognivault_users(learner_id) on delete cascade,
-  source_id text not null references public.user_sources(source_id) on delete cascade,
+  source_id text not null,
   modality text not null,
   evidence_text text not null,
   location jsonb not null default '{}'::jsonb,
   evidence_type text not null default 'text',
   metadata jsonb not null default '{}'::jsonb,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  foreign key (source_id, owner_id) references public.user_sources(source_id, owner_id) on delete cascade
 );
 create index if not exists user_evidence_owner_source_idx on public.user_evidence(owner_id, source_id);
 create index if not exists user_evidence_owner_created_idx on public.user_evidence(owner_id, created_at desc);
