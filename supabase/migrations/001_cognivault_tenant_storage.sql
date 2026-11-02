@@ -68,3 +68,8 @@ create table if not exists public.learner_state_snapshots (
 );
 alter table public.learner_state_snapshots enable row level security;
 revoke all on public.learner_state_snapshots from anon, authenticated;
+
+-- The backend service role is the only runtime database principal used by the API.
+grant usage on schema public to service_role;
+grant all privileges on table public.cognivault_users, public.cognivault_sessions,
+  public.user_sources, public.user_evidence, public.learner_state_snapshots to service_role;
