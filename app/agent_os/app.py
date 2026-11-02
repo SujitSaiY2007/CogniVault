@@ -809,10 +809,10 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         tags=["Learner"],
         dependencies=[Depends(verify_learner_boundary)],
     )
-    def get_learner_profile(learner_id: str) -> dict[str, Any]:
+    def get_learner_profile(learner_id: str, request: Request) -> dict[str, Any]:
         """Get complete learner profile, mastery map, and interaction history."""
+        _restore_user_progress(request, learner_id)
         profile = learning_service.get_learner_profile(learner_id)
-        # Convert records to JSON serializable dictionaries
         profile_json = dict(profile)
         if "records" in profile_json:
             profile_json["records"] = [
@@ -826,8 +826,9 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         tags=["Learner"],
         dependencies=[Depends(verify_learner_boundary)],
     )
-    def get_learner_mastery(learner_id: str) -> list[dict[str, Any]]:
-        """Get BKT topic mastery records for learner."""
+    def get_learner_mastery(learner_id: str, request: Request) -> list[dict[str, Any]]:
+        """Get durable BKT topic mastery records for the authenticated learner."""
+        _restore_user_progress(request, learner_id)
         return learning_service.get_learner_topic_mastery(learner_id)
 
     @app.post(
@@ -836,19 +837,16 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         dependencies=[Depends(verify_learner_boundary)],
     )
     def record_learner_observation(
-        learner_id: str,
-        req: ObservationRequest,
+        learner_id: str, req: ObservationRequest, request: Request,
     ) -> dict[str, Any]:
-        """
-        Record a verified learning observation (from assessment or defined tutor exchange).
-        Updates BKT mastery P(L_t) and persists to SQLite.
-        """
-        return learning_service.record_learning_observation(
-            learner_id=learner_id,
-            topic_id=req.topic_id,
-            is_correct=req.is_correct,
-            timestamp=req.timestamp,
+        """Record an observation and persist the resulting BKT learner snapshot."""
+        _restore_user_progress(request, learner_id)
+        result = learning_service.record_learning_observation(
+            learner_id=learner_id, topic_id=req.topic_id,
+            is_correct=req.is_correct, timestamp=req.timestamp,
         )
+        _persist_user_progress(request, learner_id)
+        return result
 
     @app.get(
         "/api/v1/learner/{learner_id}/misconceptions",
@@ -856,10 +854,11 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         dependencies=[Depends(verify_learner_boundary)],
     )
     def get_misconceptions(
-        learner_id: str,
+        learner_id: str, request: Request,
         topic_id: Optional[str] = Query(None, description="Optional topic filter"),
     ) -> list[dict[str, Any]]:
-        """List active diagnosed student misconceptions and remediation recommendations."""
+        """List active diagnosed misconceptions for the authenticated learner."""
+        _restore_user_progress(request, learner_id)
         return learning_service.get_active_misconceptions(learner_id, topic_id=topic_id)
 
     @app.post(
@@ -867,8 +866,9 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         tags=["Learner"],
         dependencies=[Depends(verify_learner_boundary)],
     )
-    def resolve_misconception(learner_id: str, signal_id: str) -> dict[str, Any]:
-        """Mark misconception resolved after successful foundational remediation."""
+    def resolve_misconception(learner_id: str, signal_id: str, request: Request) -> dict[str, Any]:
+        """Resolve a misconception and persist the updated learner snapshot."""
+        _restore_user_progress(request, learner_id)
         misc = learning_service.db.get_misconception(signal_id)
         if misc:
             if misc.learner_id != learner_id:
@@ -878,11 +878,11 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         else:
             topic_id = signal_id.replace(f"misc_{learner_id}_", "")
             concept_id = None
-        return learning_service.resolve_misconception(
-            learner_id=learner_id,
-            topic_id=topic_id,
-            concept_id=concept_id,
+        result = learning_service.resolve_misconception(
+            learner_id=learner_id, topic_id=topic_id, concept_id=concept_id,
         )
+        _persist_user_progress(request, learner_id)
+        return result
 
     @app.get(
         "/api/v1/learner/{learner_id}/recommendations",
@@ -890,10 +890,11 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         dependencies=[Depends(verify_learner_boundary)],
     )
     def get_recommendations(
-        learner_id: str,
+        learner_id: str, request: Request,
         active_topic_id: Optional[str] = Query(None, description="Optional active topic context"),
     ) -> dict[str, Any]:
-        """Get prerequisite-aware next learning action recommendation."""
+        """Get prerequisite-aware recommendation from durable learner state."""
+        _restore_user_progress(request, learner_id)
         return learning_service.get_recommendation(learner_id, active_topic_id=active_topic_id)
 
     @app.post(
@@ -902,18 +903,16 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         dependencies=[Depends(verify_learner_boundary)],
     )
     def cold_start_intake(
-        learner_id: str,
-        req: ColdStartIntakeRequest,
+        learner_id: str, req: ColdStartIntakeRequest, request: Request,
     ) -> dict[str, Any]:
-        """
-        Perform cold-start diagnostic intake for fresh learner.
-        Initializes baseline topic masteries in SQLite without fabricating numbers.
-        """
-        return learning_service.cold_start_intake(
-            learner_id=learner_id,
-            initial_topic_masteries=req.initial_topic_masteries,
+        """Initialize the learner intake and persist the resulting mastery snapshot."""
+        _restore_user_progress(request, learner_id)
+        result = learning_service.cold_start_intake(
+            learner_id=learner_id, initial_topic_masteries=req.initial_topic_masteries,
             diagnostic_responses=req.diagnostic_responses,
         )
+        _persist_user_progress(request, learner_id)
+        return result
 
     return app
 
