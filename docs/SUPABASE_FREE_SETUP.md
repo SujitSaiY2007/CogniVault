@@ -18,7 +18,7 @@ This PR introduces durable username/password accounts, private uploaded material
 - 25 MB maximum upload per file (API enforced).
 - 10 uploaded files per username.
 - 100 MB private file storage quota per username.
-- 2,000 evidence chunks per uploaded file and 10,000 chunks per username.
+- 2,000 evidence chunks per uploaded file, 10,000 chunks per username, and 50,000 chunks project-wide.
 - 800 MB project-wide object-storage soft ceiling (leaves headroom under Supabase Free 1 GB).
 - Evidence insertion uses batches of 100 records.
 - Search results are capped at 10 and simple lexical retrieval is bounded to 5,000 stored chunks per user per search. Source evidence listing uses bounded 1,000-row pages.
