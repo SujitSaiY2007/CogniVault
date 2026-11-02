@@ -26,10 +26,10 @@ create table if not exists public.user_sources (
   modality text not null,
   sha256 text not null,
   storage_path text not null unique,
-  evidence_count integer not null default 0 check (evidence_count >= 0),
+  evidence_count integer not null default 0 check (evidence_count >= 0),\n  file_size_bytes bigint not null default 0 check (file_size_bytes >= 0),
   created_at timestamptz not null default now()
 );
-create index if not exists user_sources_owner_idx on public.user_sources(owner_id, created_at desc);
+alter table public.user_sources add column if not exists file_size_bytes bigint not null default 0 check (file_size_bytes >= 0);\n\ncreate index if not exists user_sources_owner_idx on public.user_sources(owner_id, created_at desc);
 
 create table if not exists public.user_evidence (
   evidence_id text primary key,
