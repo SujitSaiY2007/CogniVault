@@ -110,10 +110,11 @@ class SupabaseUserMaterials:
         source = self.get_source(owner_id, source_id)
         if not source:
             return False
+        # Remove the blob first; if Storage is unavailable, keep the source metadata for retry.
+        self.store.remove_private([source["storage_path"]])
         self.store.delete("user_sources", params={
             "owner_id": _eq(owner_id), "source_id": _eq(source_id),
         })
-        self.store.remove_private([source["storage_path"]])
         return True
 
     def get_global_storage_usage(self) -> int:
