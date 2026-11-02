@@ -530,7 +530,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         if not request.app.state.supabase_enabled:
             raise HTTPException(status_code=503, detail="Configure Supabase to enable durable private uploads.")
         owner_id = _resolve_owner(request, _bearer_token(authorization))
-        safe_filename = Path(file.filename or "").name
+        safe_filename = Path((file.filename or "").replace("\\", "/")).name
         if not safe_filename:
             raise HTTPException(status_code=400, detail="Filename cannot be empty.")
         suffix = Path(safe_filename).suffix.lower()
@@ -551,7 +551,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
                 if not chunk:
                     break
                 bytes_read += len(chunk)
-                if bytes_read > MAX_UPLOAD_SIZE or used_bytes + bytes_read > account_quota:
+                if bytes_read > MAX_UPLOAD_SIZE or used_bytes + bytes_read > account_quota or global_used_bytes + bytes_read > global_quota:
                     upload_tmp.close()
                     Path(upload_tmp.name).unlink(missing_ok=True)
                     raise HTTPException(status_code=413, detail="Upload exceeds the 25 MB per-file or 100 MB per-account limit.")
@@ -572,7 +572,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
             source = private_db.get_source(source_id)
             evidence_units = [unit for unit in private_db.all_evidence() if unit.source_id == source_id]
             storage_path = f"{owner_id}/{source_id}/{safe_filename}"
-            mime_type = file.content_type or "application/octet-stream"
+            mime_type = {".pdf": "application/pdf", ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation", ".txt": "text/plain", ".vtt": "text/vtt", ".srt": "application/x-subrip"}[suffix]
             request.app.state.supabase_store.upload_private(storage_path, upload_path.read_bytes(), mime_type)
             request.app.state.user_materials.create_source({
                 "source_id": source_id, "owner_id": owner_id, "filename": safe_filename,
