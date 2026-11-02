@@ -1,4 +1,4 @@
-""""Server-only Supabase REST/Storage adapter for durable CogniVault accounts and materials.
+"""Server-only Supabase REST/Storage adapter for durable CogniVault accounts and materials.
 
 The service-role key must never be sent to the browser. Data access helpers require
 an owner_id obtained from a validated CogniVault bearer session.
