@@ -2,13 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Brain, Eye, EyeOff, ArrowRight, ShieldCheck } from "lucide-react";
 import { authApi } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const search = useSearchParams();
+  const [search] = useState(() => new URLSearchParams(typeof window !== "undefined" ? window.location.search : ""));
   const [mode, setMode] = useState(search.get("mode") === "signup" ? "signup" : "login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
