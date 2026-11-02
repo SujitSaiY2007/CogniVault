@@ -27,7 +27,7 @@ class SupabaseAuth:
 
     def issue_session(self, token: str, username: str, learner_id: str, ttl_seconds: int = 30 * 86400):
         now = int(time.time())
-        self.store.delete("cognivault_sessions", params={"expires_at": f"lt.{now}"})
+        self.store.delete("cognivault_sessions", params={"expires_at": f"lt.{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(now))}"})
         self.store.insert("cognivault_sessions", [{
             "token_hash": hashlib.sha256(token.encode()).hexdigest(),
             "username": username, "expires_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now + ttl_seconds)),
@@ -37,7 +37,7 @@ class SupabaseAuth:
         digest = hashlib.sha256(token.encode()).hexdigest()
         rows = self.store.select("cognivault_sessions", params={
             "select": "username,expires_at,cognivault_users(learner_id)",
-            "token_hash": _eq(digest), "limit": "1",
+            "token_hash": _eq(digest), "expires_at": f"gt.{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}", "limit": "1",
         })
         if not rows:
             return None
