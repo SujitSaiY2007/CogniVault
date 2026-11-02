@@ -164,7 +164,7 @@ class AgentOSLearningService:
         has_topics = bool(self.db.all_topics())
         has_questions = bool(self.db.all_questions())
 
-        if not has_sources or not has_topics or not has_questions:
+        if not has_sources:
             try:
                 import logging
                 logging.getLogger("cognivault.service").info(

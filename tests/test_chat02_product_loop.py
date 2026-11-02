@@ -49,6 +49,31 @@ def product_loop_env(tmp_path_factory):
     service.close()
 
 
+def _auth_learner(client: TestClient, username: str) -> tuple[str, dict[str, str]]:
+    """Helper to register/login a test learner and return (learner_id, auth_headers)."""
+    r = client.post(
+        "/api/v1/auth/signup",
+        json={"username": username, "password": "Password123!"},
+    )
+    if r.status_code == 200:
+        data = r.json()
+        token = data["access_token"]
+        learner_id = data["learner_id"]
+    else:
+        r_login = client.post(
+            "/api/v1/auth/login",
+            json={"username": username, "password": "Password123!"},
+        )
+        data = r_login.json()
+        token = data["access_token"]
+        learner_id = data["learner_id"]
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "X-Learner-Id": learner_id,
+    }
+    return learner_id, headers
+
+
 def test_assessment_selection_and_duplicate_suppression(product_loop_env):
     client = TestClient(product_loop_env["app"])
 
@@ -133,7 +158,7 @@ def test_question_verification_rejection_rules(product_loop_env):
 
 def test_answer_submission_bkt_mastery_and_interaction(product_loop_env):
     client = TestClient(product_loop_env["app"])
-    learner_id = "test_learner_bkt_loop"
+    learner_id, headers = _auth_learner(client, "bkt_loop")
 
     # Get a verified question for Classical Mechanics
     qs = client.get("/api/v1/assessment/questions?topic_id=Newtonian+Mechanics").json()
@@ -143,7 +168,7 @@ def test_answer_submission_bkt_mastery_and_interaction(product_loop_env):
     # Initial mastery should be unrecorded or 0.10
     m_init = client.get(
         f"/api/v1/learner/{learner_id}/mastery",
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     ).json()
     assert len(m_init) == 0
 
@@ -156,7 +181,7 @@ def test_answer_submission_bkt_mastery_and_interaction(product_loop_env):
     r_sub = client.post(
         "/api/v1/assessment/submit",
         json=sub_payload,
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     )
     assert r_sub.status_code == 200
     data = r_sub.json()
@@ -177,7 +202,7 @@ def test_answer_submission_bkt_mastery_and_interaction(product_loop_env):
     # Verify persistent state in DB
     prof = client.get(
         f"/api/v1/learner/{learner_id}/profile",
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     ).json()
     assert prof["total_attempts"] == 1
     assert prof["total_correct"] == 1
@@ -186,7 +211,7 @@ def test_answer_submission_bkt_mastery_and_interaction(product_loop_env):
 
 def test_misconception_detection_two_error_threshold_and_remediation(product_loop_env):
     client = TestClient(product_loop_env["app"])
-    learner_id = "test_learner_misc_detection"
+    learner_id, headers = _auth_learner(client, "misc_detection")
 
     qs = client.get("/api/v1/assessment/questions?topic_id=Newtonian+Mechanics").json()
     assert len(qs) >= 1
@@ -200,7 +225,7 @@ def test_misconception_detection_two_error_threshold_and_remediation(product_loo
             "question_id": target_q["question_id"],
             "answer": "CompletelyWrongAnswer1",
         },
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     )
     assert r1.status_code == 200
     d1 = r1.json()
@@ -210,7 +235,7 @@ def test_misconception_detection_two_error_threshold_and_remediation(product_loo
     # Check active misconceptions list is still empty
     misc_before = client.get(
         f"/api/v1/learner/{learner_id}/misconceptions",
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     ).json()
     assert len(misc_before) == 0
 
@@ -222,7 +247,7 @@ def test_misconception_detection_two_error_threshold_and_remediation(product_loo
             "question_id": target_q["question_id"],
             "answer": "CompletelyWrongAnswer2",
         },
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     )
     assert r2.status_code == 200
     d2 = r2.json()
@@ -234,7 +259,7 @@ def test_misconception_detection_two_error_threshold_and_remediation(product_loo
     # Verify active misconceptions endpoint returns remediation package with evidence items
     misc_list = client.get(
         f"/api/v1/learner/{learner_id}/misconceptions",
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     ).json()
     assert len(misc_list) >= 1
     pkg = misc_list[0]
@@ -245,7 +270,7 @@ def test_misconception_detection_two_error_threshold_and_remediation(product_loo
     sig_id = d2["misconception"]["signal_id"]
     r_res = client.post(
         f"/api/v1/learner/{learner_id}/misconceptions/{sig_id}/resolve",
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     )
     assert r_res.status_code == 200
     assert r_res.json()["status"] == "resolved"
@@ -253,20 +278,20 @@ def test_misconception_detection_two_error_threshold_and_remediation(product_loo
     # Verify cleared
     misc_after = client.get(
         f"/api/v1/learner/{learner_id}/misconceptions",
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     ).json()
     assert len(misc_after) == 0
 
 
 def test_prerequisite_gating_and_recommendations(product_loop_env):
     client = TestClient(product_loop_env["app"])
-    learner_id = "test_learner_prereq_gating"
+    learner_id, headers = _auth_learner(client, "prereq_gating")
 
     # Query recommendation for target topic that has prerequisites
     # For a topic with prerequisite mastery < 0.70, recommendation MUST demand foundational review
     r_rec = client.get(
         f"/api/v1/learner/{learner_id}/recommendations",
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     )
     assert r_rec.status_code == 200
     rec = r_rec.json()
@@ -277,7 +302,7 @@ def test_prerequisite_gating_and_recommendations(product_loop_env):
 
 def test_cold_start_intake_flow(product_loop_env):
     client = TestClient(product_loop_env["app"])
-    learner_id = "fresh_learner_cold_start"
+    learner_id, headers = _auth_learner(client, "cold_start")
 
     # Submit intake with initial baseline profile
     intake_payload = {
@@ -290,7 +315,7 @@ def test_cold_start_intake_flow(product_loop_env):
     r = client.post(
         f"/api/v1/learner/{learner_id}/intake",
         json=intake_payload,
-        headers={"X-Learner-Id": learner_id},
+        headers=headers,
     )
     assert r.status_code == 200
     data = r.json()
@@ -302,31 +327,37 @@ def test_cold_start_intake_flow(product_loop_env):
 
 def test_learner_isolation_boundary_enforcement(product_loop_env):
     client = TestClient(product_loop_env["app"])
+    alice_id, alice_headers = _auth_learner(client, "alice_boundary")
+    bob_id, bob_headers = _auth_learner(client, "bob_boundary")
 
-    # Alice cannot read Bob's profile
+    # 1. Unauthenticated request rejected with 401
+    r_unauth = client.get(f"/api/v1/learner/{bob_id}/profile")
+    assert r_unauth.status_code == 401
+
+    # 2. Alice cannot read Bob's profile (403 Forbidden)
     r_forbid = client.get(
-        "/api/v1/learner/bob/profile",
-        headers={"X-Learner-Id": "alice"},
+        f"/api/v1/learner/{bob_id}/profile",
+        headers=alice_headers,
     )
     assert r_forbid.status_code == 403
-    assert "Forbidden" in r_forbid.json()["detail"]
+    assert "cannot access another user" in r_forbid.json()["detail"].lower()
 
-    # Alice cannot submit an assessment on behalf of Bob
+    # 3. Alice cannot submit an assessment on behalf of Bob (403 Forbidden)
     r_sub_forbid = client.post(
         "/api/v1/assessment/submit",
         json={
-            "learner_id": "bob",
+            "learner_id": bob_id,
             "question_id": "q1",
             "answer": "A",
         },
-        headers={"X-Learner-Id": "alice"},
+        headers=alice_headers,
     )
     assert r_sub_forbid.status_code == 403
 
-    # Alice CAN access Alice's own profile
+    # 4. Alice CAN access Alice's own profile (200 OK)
     r_ok = client.get(
-        "/api/v1/learner/alice/profile",
-        headers={"X-Learner-Id": "alice"},
+        f"/api/v1/learner/{alice_id}/profile",
+        headers=alice_headers,
     )
     assert r_ok.status_code == 200
 
@@ -334,23 +365,94 @@ def test_learner_isolation_boundary_enforcement(product_loop_env):
 def test_ingest_upload_endpoint(product_loop_env):
     client = TestClient(product_loop_env["app"])
 
-    # Upload sample lecture transcript
+    # 1. Unconfigured Supabase -> 503 fail-closed durable storage guard
     content = "[00:02:15] Thermodynamics: Heat engines convert thermal energy into mechanical work.\n"
     content_bytes = content.encode("utf-8")
     files = {"file": ("thermodynamics_lecture.txt", io.BytesIO(content_bytes), "text/plain")}
+    r_unconf = client.post("/api/v1/ingest/upload", files=files)
+    assert r_unconf.status_code == 503
+    assert "Configure Supabase" in r_unconf.json()["detail"]
 
-    r = client.post("/api/v1/ingest/upload", files=files)
-    assert r.status_code == 200
-    data = r.json()
-    assert data["status"] == "ingested_and_indexed"
-    assert data["evidence_count"] >= 1
-    assert data["sha256"] != ""
+    # 2. Configured store with authenticated owner -> 200 persisted_private and searchable
+    from app.agent_os.supabase_accounts import SupabaseAuth, SupabaseUserMaterials
+    class IngestionTestStore:
+        def __init__(self):
+            self.users = []
+            self.sessions = []
+            self.sources = []
+            self.evidence = []
+            self.files = {}
+        def select(self, table, *, params):
+            if table == "cognivault_sessions":
+                th = params.get("token_hash", "").replace("eq.", "")
+                matched = [s for s in self.sessions if s["token_hash"] == th]
+                if matched:
+                    sess = matched[0]
+                    u = next((usr for usr in self.users if usr["username"] == sess["username"]), None)
+                    return [{
+                        "username": sess["username"],
+                        "expires_at": sess["expires_at"],
+                        "cognivault_users": {"learner_id": u["learner_id"]} if u else None,
+                    }]
+                return []
+            if table == "cognivault_users":
+                u = params.get("username", "").replace("eq.", "")
+                return [usr for usr in self.users if usr["username"] == u]
+            if table == "user_sources":
+                return self.sources
+            if table == "user_evidence":
+                owner = params.get("owner_id", "").replace("eq.", "")
+                return [e for e in self.evidence if e.get("owner_id") == owner]
+            return []
+        def insert(self, table, rows, *, upsert=False):
+            if table == "cognivault_users":
+                self.users.extend(rows)
+            elif table == "cognivault_sessions":
+                self.sessions.extend(rows)
+            elif table == "user_sources":
+                self.sources.extend(rows)
+            elif table == "user_evidence":
+                self.evidence.extend(rows)
+            return rows
+        def delete(self, table, *, params):
+            pass
+        def upload_private(self, path, data, mime):
+            self.files[path] = data
+        def rpc(self, name, params):
+            return 0
 
-    # Verify indexed unit is immediately searchable via hybrid search
-    r_search = client.get("/api/v1/evidence/search?q=heat+engines+thermal+energy")
-    assert r_search.status_code == 200
-    search_data = r_search.json()
-    assert search_data["result_count"] >= 1
+    store = IngestionTestStore()
+    app = product_loop_env["app"]
+    orig_supabase = app.state.supabase_enabled
+    orig_store = getattr(app.state, "supabase_store", None)
+    orig_auth = getattr(app.state, "supabase_auth", None)
+    orig_materials = getattr(app.state, "user_materials", None)
+
+    try:
+        app.state.supabase_enabled = True
+        app.state.supabase_store = store
+        app.state.supabase_auth = SupabaseAuth(store)
+        app.state.user_materials = SupabaseUserMaterials(store)
+
+        learner_id, headers = _auth_learner(client, "ingest_user")
+        files = {"file": ("thermodynamics_lecture.txt", io.BytesIO(content_bytes), "text/plain")}
+        r_auth = client.post("/api/v1/ingest/upload", files=files, headers=headers)
+        assert r_auth.status_code == 200
+        data = r_auth.json()
+        assert data["status"] == "private_ingested"
+        assert data["evidence_count"] >= 1
+        assert data["sha256"] != ""
+
+        # Verify indexed unit is immediately searchable via owner-scoped search
+        r_search = client.get("/api/v1/evidence/search?q=heat+engines+thermal+energy", headers=headers)
+        assert r_search.status_code == 200
+        search_data = r_search.json()
+        assert search_data["result_count"] >= 1
+    finally:
+        app.state.supabase_enabled = orig_supabase
+        app.state.supabase_store = orig_store
+        app.state.supabase_auth = orig_auth
+        app.state.user_materials = orig_materials
 
 
 def test_topics_and_curriculum_endpoint(product_loop_env):

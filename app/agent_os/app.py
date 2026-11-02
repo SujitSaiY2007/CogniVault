@@ -576,15 +576,19 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         authorization: Optional[str] = Header(None, alias="Authorization"),
     ) -> dict[str, Any]:
         """Persist a private upload in Supabase Storage and tenant-owned evidence rows."""
-        if not request.app.state.supabase_enabled:
-            raise HTTPException(status_code=503, detail="Configure Supabase to enable durable private uploads.")
-        owner_id = _resolve_owner(request, _bearer_token(authorization))
         safe_filename = Path((file.filename or "").replace("\\", "/")).name
         if not safe_filename:
             raise HTTPException(status_code=400, detail="Filename cannot be empty.")
         suffix = Path(safe_filename).suffix.lower()
         if suffix not in {".pdf", ".pptx", ".txt", ".vtt", ".srt"}:
             raise HTTPException(status_code=400, detail=f"Unsupported format '{suffix}'.")
+        first_chunk = await file.read(MAX_UPLOAD_SIZE + 1)
+        if len(first_chunk) > MAX_UPLOAD_SIZE:
+            raise HTTPException(status_code=413, detail="Payload too large: Upload exceeds the 25 MB per-file or 100 MB per-account limit.")
+        await file.seek(0)
+        if not request.app.state.supabase_enabled:
+            raise HTTPException(status_code=503, detail="Configure Supabase to enable durable private uploads.")
+        owner_id = _resolve_owner(request, _bearer_token(authorization))
         existing = request.app.state.user_materials.list_sources(owner_id)
         if len(existing) >= 10:
             raise HTTPException(status_code=413, detail="Account upload limit reached (10 files).")
@@ -607,7 +611,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
                 if bytes_read > MAX_UPLOAD_SIZE or used_bytes + bytes_read > account_quota or global_used_bytes + bytes_read > global_quota:
                     upload_tmp.close()
                     Path(upload_tmp.name).unlink(missing_ok=True)
-                    raise HTTPException(status_code=413, detail="Upload exceeds the 25 MB per-file or 100 MB per-account limit.")
+                    raise HTTPException(status_code=413, detail="Payload too large: Upload exceeds the 25 MB per-file or 100 MB per-account limit.")
                 upload_tmp.write(chunk)
             upload_path = Path(upload_tmp.name)
 

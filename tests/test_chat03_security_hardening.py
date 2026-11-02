@@ -45,14 +45,29 @@ def hardening_env(tmp_path_factory):
 
 
 def test_learner_boundary_header_mismatch(hardening_env):
-    """Proves 403 Forbidden when X-Learner-Id does not match path learner_id."""
+    """Proves 401 when unauthenticated and 403 Forbidden when authenticated user accesses another learner."""
     client = TestClient(hardening_env["app"])
-    r = client.get(
+    # 1. Unauthenticated request without session returns 401
+    r_unauth = client.get(
         "/api/v1/learner/victim_student/profile",
         headers={"X-Learner-Id": "attacker_student"},
     )
-    assert r.status_code == 403
-    assert "Forbidden" in r.json()["detail"]
+    assert r_unauth.status_code == 401
+    assert "Sign in" in r_unauth.json()["detail"]
+
+    # 2. Authenticated user attempting cross-account access returns 403
+    signup_resp = client.post(
+        "/api/v1/auth/signup",
+        json={"username": "attacker", "password": "Password123!"},
+    )
+    token = signup_resp.json()["access_token"]
+    attacker_id = signup_resp.json()["learner_id"]
+    r_forbid = client.get(
+        "/api/v1/learner/victim_student/profile",
+        headers={"Authorization": f"Bearer {token}", "X-Learner-Id": attacker_id},
+    )
+    assert r_forbid.status_code == 403
+    assert "cannot access another user" in r_forbid.json()["detail"].lower()
 
 
 def test_malformed_learner_id_rejected(hardening_env):
