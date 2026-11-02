@@ -75,3 +75,23 @@ revoke all on public.learner_state_snapshots from anon, authenticated;
 grant usage on schema public to service_role;
 grant all privileges on table public.cognivault_users, public.cognivault_sessions,
   public.user_sources, public.user_evidence, public.learner_state_snapshots to service_role;
+
+-- Aggregate quota checks run as one database query (not repeated row pagination).
+create or replace function public.cognivault_global_storage_usage_bytes()
+returns bigint
+language sql
+security definer
+set search_path = public
+as $$ select coalesce(sum(file_size_bytes), 0)::bigint from public.user_sources; $$;
+
+create or replace function public.cognivault_global_evidence_count()
+returns bigint
+language sql
+security definer
+set search_path = public
+as $$ select count(*)::bigint from public.user_evidence; $$;
+
+revoke all on function public.cognivault_global_storage_usage_bytes() from public, anon, authenticated;
+revoke all on function public.cognivault_global_evidence_count() from public, anon, authenticated;
+grant execute on function public.cognivault_global_storage_usage_bytes() to service_role;
+grant execute on function public.cognivault_global_evidence_count() to service_role;
