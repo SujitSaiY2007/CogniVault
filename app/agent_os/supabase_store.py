@@ -53,6 +53,9 @@ class SupabaseStore:
             prefer += ",resolution=merge-duplicates"
         return self._request("POST", f"/rest/v1/{table}", json=rows, headers={"Prefer": prefer})
 
+    def rpc(self, function_name: str, params: dict):
+        return self._request("POST", f"/rest/v1/rpc/{function_name}", json=params)
+
     def delete(self, table: str, *, params: dict):
         return self._request("DELETE", f"/rest/v1/{table}", params=params, headers={"Prefer": "return=minimal"})
 
