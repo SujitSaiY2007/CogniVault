@@ -130,6 +130,7 @@ The repository's [Final Verification & Submission Report](docs/FINAL_VERIFICATIO
 - [Documentation index](docs/README.md)
 - [Decision log](docs/project/DECISION_LOG.md)
 - [Project state](docs/project/PROJECT_STATE.md)
+- [Hackathon reference PDFs](docs/README.md#evidence-and-history)
 
 ## Deployment
 
