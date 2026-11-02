@@ -63,7 +63,7 @@ class SupabaseUserMaterials:
 
     def list_sources(self, owner_id: str):
         return self.store.select("user_sources", params={
-            "select": "source_id,filename,title,modality,sha256,evidence_count,created_at",
+            "select": "source_id,filename,title,modality,sha256,evidence_count,file_size_bytes,created_at",
             "owner_id": _eq(owner_id), "order": "created_at.desc",
         }) or []
 
