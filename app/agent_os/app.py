@@ -565,6 +565,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
         temp_db_path = None
         storage_path = None
         source_id = None
+        private_db = None
         try:
             # Run the existing evidence extractor against a disposable DB; never mix tenant records into the shared corpus.
             with tempfile.NamedTemporaryFile(delete=False, suffix=".sqlite") as db_tmp:
@@ -577,6 +578,8 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
             ingest_file(upload_path, private_db, source_id=source_id, title=Path(safe_filename).stem)
             source = private_db.get_source(source_id)
             evidence_units = [unit for unit in private_db.all_evidence() if unit.source_id == source_id]
+            if len(evidence_units) > 2000 or sum(int(item.get("evidence_count", 0)) for item in existing) + len(evidence_units) > 10000:
+                raise HTTPException(status_code=413, detail="Evidence indexing quota reached (2,000 chunks/file; 10,000/account).")
             storage_path = f"{owner_id}/{source_id}/{safe_filename}"
             mime_type = {".pdf": "application/pdf", ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation", ".txt": "text/plain", ".vtt": "text/vtt", ".srt": "application/x-subrip"}[suffix]
             request.app.state.supabase_store.upload_private(storage_path, upload_path.read_bytes(), mime_type)
@@ -601,7 +604,6 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
                     batch = []
             if batch:
                 request.app.state.user_materials.create_evidence_batch(batch)
-            private_db.close()
             return {"source_id": source_id, "title": source.title if source else Path(safe_filename).stem,
                     "modality": source.modality.value if source else suffix.lstrip("."),
                     "sha256": file_sha, "evidence_count": len(evidence_units), "status": "private_ingested"}
@@ -612,6 +614,8 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
                 request.app.state.supabase_store.remove_private([storage_path])
             raise
         finally:
+            if private_db is not None:
+                private_db.close()
             if upload_path.exists():
                 upload_path.unlink(missing_ok=True)
             if temp_db_path and Path(temp_db_path).exists():
