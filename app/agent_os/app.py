@@ -627,8 +627,11 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
             ingest_file(upload_path, private_db, source_id=source_id, title=Path(safe_filename).stem)
             source = private_db.get_source(source_id)
             evidence_units = [unit for unit in private_db.all_evidence() if unit.source_id == source_id]
-            if len(evidence_units) > 2000 or sum(int(item.get("evidence_count", 0)) for item in existing) + len(evidence_units) > 10000:
-                raise HTTPException(status_code=413, detail="Evidence indexing quota reached (2,000 chunks/file; 10,000/account).")
+            global_evidence_count = request.app.state.user_materials.get_global_evidence_count()
+            if (len(evidence_units) > 2000
+                    or sum(int(item.get("evidence_count", 0)) for item in existing) + len(evidence_units) > 10000
+                    or global_evidence_count + len(evidence_units) > 50000):
+                raise HTTPException(status_code=413, detail="Evidence indexing quota reached (2,000 chunks/file; 10,000/account; 50,000/project).")
             storage_path = f"{owner_id}/{source_id}/{safe_filename}"
             mime_type = {".pdf": "application/pdf", ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation", ".txt": "text/plain", ".vtt": "text/vtt", ".srt": "application/x-subrip"}[suffix]
             request.app.state.supabase_store.upload_private(storage_path, upload_path.read_bytes(), mime_type)
