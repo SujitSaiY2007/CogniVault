@@ -563,9 +563,23 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
     # =========================================================================
 
     @app.get("/api/v1/learners", tags=["Learner"])
-    def list_learners() -> list[dict[str, Any]]:
-        """List distinct active learners with summary metrics."""
-        return learning_service.list_learners()
+    def list_learners(
+        request: Request,
+        authorization: Optional[str] = Header(None, alias="Authorization"),
+    ) -> list[dict[str, Any]]:
+        """Return only the authenticated account's learner summary."""
+        if not authorization or not authorization.lower().startswith("bearer "):
+            raise HTTPException(status_code=401, detail="Sign in required.")
+        token = authorization.split(" ", 1)[1].strip()
+        conn = _auth_connection(app.state.auth_db_path)
+        try:
+            row = conn.execute("SELECT u.learner_id FROM auth_sessions s JOIN auth_users u ON u.username=s.username WHERE s.token_hash=? AND s.expires_at>?", (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
+            if not row:
+                raise HTTPException(status_code=401, detail="Session expired. Sign in again.")
+            own_learner_id = row[0]
+        finally:
+            conn.close()
+        return [learner for learner in learning_service.list_learners() if learner.get("learner_id") == own_learner_id]
 
     @app.get(
         "/api/v1/learner/{learner_id}/profile",
