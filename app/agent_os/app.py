@@ -30,8 +30,12 @@ try:
 except ImportError:
     AgentOS = None
 
-from ..models import Citation, Difficulty, Modality, Question, QuestionOption, QuestionType, TutorResponse\nfrom ..db import EvidenceDB\nfrom ..ingest import ingest_file
-from .service import AgentOSLearningService, AgentOSTutorService\nfrom .supabase_store import SupabaseStore\nfrom .supabase_accounts import SupabaseAuth, SupabaseUserMaterials
+from ..models import Citation, Difficulty, Modality, Question, QuestionOption, QuestionType, TutorResponse
+from ..db import EvidenceDB
+from ..ingest import ingest_file
+from .service import AgentOSLearningService, AgentOSTutorService
+from .supabase_store import SupabaseStore
+from .supabase_accounts import SupabaseAuth, SupabaseUserMaterials
 
 
 # -----------------------------------------------------------------------------
@@ -797,7 +801,8 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
                 own_learner_id = row[0]
             finally:
                 conn.close()
-        _restore_user_progress(request, own_learner_id)\n        return [learner for learner in learning_service.list_learners() if learner.get("learner_id") == own_learner_id]
+        _restore_user_progress(request, own_learner_id)
+        return [learner for learner in learning_service.list_learners() if learner.get("learner_id") == own_learner_id]
 
     @app.get(
         "/api/v1/learner/{learner_id}/profile",
