@@ -121,7 +121,7 @@ class SupabaseUserMaterials:
             if score:
                 scored.append((score, row))
         scored.sort(key=lambda item: item[0], reverse=True)
-        return [row for _, row in scored[:max(1, min(limit, 10))]
+        return [row for _, row in scored[:max(1, min(limit, 10))]]
 
     def get_progress_snapshot(self, owner_id: str):
         rows = self.store.select("learner_state_snapshots", params={
