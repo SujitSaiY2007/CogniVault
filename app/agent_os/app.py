@@ -30,7 +30,7 @@ try:
 except ImportError:
     AgentOS = None
 
-from ..models import Difficulty, Question, QuestionOption, QuestionType\nfrom ..db import EvidenceDB\nfrom ..ingest import ingest_file
+from ..models import Citation, Difficulty, Modality, Question, QuestionOption, QuestionType, TutorResponse\nfrom ..db import EvidenceDB\nfrom ..ingest import ingest_file
 from .service import AgentOSLearningService, AgentOSTutorService\nfrom .supabase_store import SupabaseStore\nfrom .supabase_accounts import SupabaseAuth, SupabaseUserMaterials
 
 
@@ -405,13 +405,37 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
     # =========================================================================
 
     @app.post("/api/v1/tutor/query", tags=["Tutoring"])
-    def tutor_query(req: TutorQueryRequest) -> dict[str, Any]:
-        """
-        Query the grounded tutor agent.
-        Returns grounded answer with exact citations, or deterministically abstains if unsupported.
-        """
+    def tutor_query(
+        req: TutorQueryRequest, request: Request,
+        authorization: Optional[str] = Header(None, alias="Authorization"),
+    ) -> dict[str, Any]:
+        """Answer using baseline material or the authenticated user's private course uploads."""
         if not req.query.strip():
             raise HTTPException(status_code=400, detail="Query cannot be empty.")
+        if request.app.state.supabase_enabled:
+            owner_id = _resolve_owner(request, _bearer_token(authorization))
+            matches = request.app.state.user_materials.search_evidence(owner_id, req.query, limit=3)
+            if matches:
+                citations = []
+                for item in matches:
+                    meta = item.get("metadata") or {}
+                    citations.append(Citation(
+                        evidence_id=item["evidence_id"], source_id=item["source_id"],
+                        modality=Modality(item["modality"]), location=item.get("location") or {},
+                        snippet=(item.get("evidence_text") or "")[:350],
+                        source_title=meta.get("source_title") or "Your uploaded course material",
+                    ))
+                excerpts = []
+                for citation in citations:
+                    location = citation.location
+                    locator = f"Page {location['page']}" if location.get("page") else (f"Slide {location['slide']}" if location.get("slide") else (f"Timestamp {location['timestamp']}" if location.get("timestamp") else "Course material"))
+                    excerpts.append(f"{citation.source_title} — {locator}: {citation.snippet}")
+                answer = "I found these relevant passages in your uploaded course materials. The excerpts below are source-grounded; I am not adding unsupported explanation.\n\n" + "\n\n".join(excerpts)
+                return TutorResponse(query=req.query.strip(), answer=answer, citations=citations,
+                    is_grounded=True, confidence=0.65, support_status="supported",
+                    reasoning_steps=["Retrieved evidence from this account's private course material store.",
+                                    "Returned excerpts with the original page, slide, or timestamp locators."],
+                    metadata={"scope": "private_account_materials"}).model_dump()
         resp = learning_service.ask_tutor(req.query, topic=req.topic)
         return resp.model_dump()
 
