@@ -180,6 +180,44 @@ def _issue_session(conn: sqlite3.Connection, username: str, learner_id: str) -> 
     return AuthResponse(access_token=token, username=username, learner_id=learner_id)
 
 
+def _restore_user_progress(request: Request, owner_id: str) -> None:
+    """Hydrate only this account's progress rows from its durable Supabase snapshot."""
+    if not request.app.state.supabase_enabled:
+        return
+    snapshot = request.app.state.user_materials.get_progress_snapshot(owner_id) or {}
+    db = request.app.state.service.db
+    conn = db.conn
+    for table in ("learner_states", "learner_interactions", "misconceptions", "error_signals"):
+        columns = [row[1] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()]
+        if "learner_id" not in columns:
+            continue
+        conn.execute(f"DELETE FROM {table} WHERE learner_id=?", (owner_id,))
+        rows = snapshot.get(table, [])
+        for item in rows:
+            selected = [column for column in columns if column in item]
+            if not selected:
+                continue
+            placeholders = ",".join("?" for _ in selected)
+            conn.execute(f"INSERT OR REPLACE INTO {table} ({','.join(selected)}) VALUES ({placeholders})", [item[column] for column in selected])
+    conn.commit()
+
+
+def _persist_user_progress(request: Request, owner_id: str) -> None:
+    """Save just the learner-owned progress rows; shared curriculum data is excluded."""
+    if not request.app.state.supabase_enabled:
+        return
+    db = request.app.state.service.db
+    snapshot = {}
+    for table in ("learner_states", "learner_interactions", "misconceptions", "error_signals"):
+        columns = [row[1] for row in db.conn.execute(f"PRAGMA table_info({table})").fetchall()]
+        if "learner_id" not in columns:
+            snapshot[table] = []
+            continue
+        rows = db.conn.execute(f"SELECT * FROM {table} WHERE learner_id=?", (owner_id,)).fetchall()
+        snapshot[table] = [dict(zip(columns, row)) for row in rows]
+    request.app.state.user_materials.save_progress_snapshot(owner_id, snapshot)
+
+
 def _bearer_token(authorization: Optional[str]) -> str:
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Sign in to access your private learning data.")
