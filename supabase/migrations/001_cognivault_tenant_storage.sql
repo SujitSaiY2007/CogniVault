@@ -57,3 +57,11 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values ('user-materials', 'user-materials', false, 26214400,
   array['application/pdf','application/vnd.openxmlformats-officedocument.presentationml.presentation','text/plain','text/vtt','application/x-subrip'])
 on conflict (id) do update set public=false, file_size_limit=26214400;
+
+create table if not exists public.learner_state_snapshots (
+  owner_id text primary key references public.cognivault_users(learner_id) on delete cascade,
+  snapshot_json jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.learner_state_snapshots enable row level security;
+revoke all on public.learner_state_snapshots from anon, authenticated;
