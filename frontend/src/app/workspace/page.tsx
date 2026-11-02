@@ -27,7 +27,7 @@ export default function Home() {
   const [inspectCitation, setInspectCitation] = useState<Citation | null>(null);
   const [coldStartOpen, setColdStartOpen] = useState<boolean>(false);
 
-  const loadInitialData = async () => {
+  const loadInitialData = async (identity: string = activeLearner) => {
     try {
       const [healthData, topicData, learnerList] = await Promise.all([
         api.getHealth().catch(() => null),
@@ -42,7 +42,7 @@ export default function Home() {
         setTopics(DEFAULT_CURRICULUM_TOPICS);
       }
       // Each signed-in account is bound to its own learner identity; never switch into another profile.
-      setLearners([activeLearner]);
+      setLearners([identity]);
     } catch {
       // Graceful offline fallback
     }
@@ -56,7 +56,7 @@ export default function Home() {
       setActiveLearner(user.learner_id);
       setLearners([user.learner_id]);
       setAuthReady(true);
-      loadInitialData();
+      loadInitialData(user.learner_id);
       const params = new URLSearchParams(window.location.search);
       const requestedTab = params.get("tab");
       if (["tutor", "assessment", "mastery", "misconceptions", "recommendations", "materials"].includes(requestedTab || "")) setActiveTab(requestedTab || "tutor");
