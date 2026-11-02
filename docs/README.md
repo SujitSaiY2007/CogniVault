@@ -33,4 +33,4 @@ Documentation is organized by purpose so the repository root remains focused on 
 - `archive/` — older phase reports and continuity notes; historical docs are not automatically current instructions
 - Evaluation datasets and recorded result artifacts remain in the root `evaluation/` directory
 
-The uploaded hackathon/reference PDFs remain unchanged at repository root in this cleanup branch.
+The uploaded reference PDFs are preserved unchanged under [reference/](reference/): [Important Details](reference/Important%20Details.pdf), [Submission Guidelines](reference/Multimodal%20AI%20Hackathon%202026%20-%20Submission%20Guidelines.pdf), [Problem Statements](reference/Problem%20Statements.pdf), and [Track D](reference/Track%20D.pdf).
