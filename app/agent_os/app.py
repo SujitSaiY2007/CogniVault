@@ -501,7 +501,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
             owner_id = _resolve_owner(request, _bearer_token(authorization))
             private = request.app.state.user_materials.get_source(owner_id, source_id)
             if private:
-                return private
+                return {key: private[key] for key in ("source_id", "filename", "title", "modality", "sha256", "evidence_count", "file_size_bytes", "created_at") if key in private}
         src = learning_service.get_source_details(source_id)
         if not src:
             raise HTTPException(status_code=404, detail=f"Source '{source_id}' not found.")
