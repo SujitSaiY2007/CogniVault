@@ -1,4 +1,4 @@
-"""Server-only Supabase REST/Storage adapter for durable CogniVault accounts and materials.
+""""Server-only Supabase REST/Storage adapter for durable CogniVault accounts and materials.
 
 The service-role key must never be sent to the browser. Data access helpers require
 an owner_id obtained from a validated CogniVault bearer session.
@@ -17,11 +17,17 @@ class SupabaseStore:
         self.key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
         if not self.url or not self.key:
             raise RuntimeError("Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.")
+
+        # Supabase's new sb_secret_* API keys are opaque keys, not JWTs.
+        # Send them via apikey only; Authorization: Bearer is reserved for
+        # JWT credentials (including legacy service_role keys).
         self.headers = {
             "apikey": self.key,
-            "Authorization": f"Bearer {self.key}",
             "Content-Type": "application/json",
         }
+        if self.key.startswith("eyJ"):
+            self.headers["Authorization"] = f"Bearer {self.key}"
+
         self.timeout = httpx.Timeout(15.0, connect=5.0)
 
     def _request(self, method: str, path: str, *, params=None, json=None, headers=None, content=None):
