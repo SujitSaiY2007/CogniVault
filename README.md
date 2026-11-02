@@ -59,10 +59,14 @@ flowchart LR
 | `data/corpus/` | Small reproducible course-material fixtures and manifest |
 | `evaluation/` | Evaluation runners, datasets, and recorded results |
 | `tests/` | Unit, acceptance, integration, and browser-walkthrough tests |
-| `docs/architecture/` | Technical architecture reference |\n| `docs/project/` | Project state, master plan, decision log, requirements traceability |\n| `docs/demo/` | Demo plan and walkthroughs |\n| `docs/evaluation/` | Evaluation protocol and reports |\n| `docs/policies/` | Grounding, security, and usage policies |\n| `docs/testing/` | Test specification |\n| `docs/hackathon/` | Hackathon submission planning |\n| `docs/evidence/` and `docs/archive/` | Preserved screenshots and historical phase records |
-| `ARCHITECTURE.md` | System design and component responsibilities |
-| `DECISION_LOG.md` | Decision history and implementation records |
-| `PROJECT_STATE.md` | Concise current repository status |
+| `docs/architecture/` | Technical architecture reference |
+| `docs/project/` | Project state, master plan, decision log, requirements traceability |
+| `docs/demo/` | Demo plan and walkthroughs |
+| `docs/evaluation/` | Evaluation protocol and reports |
+| `docs/policies/` | Grounding, security, and usage policies |
+| `docs/testing/` | Test specification |
+| `docs/hackathon/` | Hackathon submission planning |
+| `docs/evidence/` and `docs/archive/` | Preserved screenshots and historical phase records |
 
 ## Run locally
 
