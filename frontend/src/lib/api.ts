@@ -41,6 +41,7 @@ async function request<T>(
     headers["X-Learner-Id"] = learnerId;
   }
 
+  if (typeof window !== "undefined") { const token = window.localStorage.getItem("cognivault_session"); if (token) headers["Authorization"] = `Bearer ${token}`; }
   const url = `${API_BASE}${path}`;
 
   try {
@@ -133,8 +134,11 @@ export const api = {
     const formData = new FormData();
     formData.append("file", file);
 
+    const headers: Record<string, string> = {};
+    if (typeof window !== "undefined") { const token = window.localStorage.getItem("cognivault_session"); if (token) headers["Authorization"] = `Bearer ${token}`; }
     const res = await fetch(`${API_BASE}/api/v1/ingest/upload`, {
       method: "POST",
+      headers,
       body: formData,
     });
 
@@ -294,5 +298,22 @@ export const api = {
       },
       learnerId
     );
+  },
+};
+
+
+export interface AuthSession { access_token: string; token_type: string; username: string; learner_id: string; }
+export const authApi = {
+  async signup(username: string, password: string): Promise<AuthSession> {
+    return request<AuthSession>("/api/v1/auth/signup", { method: "POST", body: JSON.stringify({ username, password }) });
+  },
+  async login(username: string, password: string): Promise<AuthSession> {
+    return request<AuthSession>("/api/v1/auth/login", { method: "POST", body: JSON.stringify({ username, password }) });
+  },
+  async me(): Promise<{ username: string; learner_id: string }> {
+    return request("/api/v1/auth/me");
+  },
+  async logout(): Promise<void> {
+    await request("/api/v1/auth/logout", { method: "POST" });
   },
 };

@@ -1,15 +1,36 @@
 # Documentation Index
 
-- `../README.md`: project summary and repository truth.
-- `../PROJECT_STATE.md`: authoritative phase status.
-- `../CURRENT_OBJECTIVE.md`: active objective.
-- `../CURRENT_HANDOFF.md`: Chat 06 handoff and pending AG response.
-- `../NEXT_CHAT_PROMPT.md`: canonical next-chat prompt.
-- `continuity/CHAT_HISTORY.md`: Chat 0–06 continuity.
-- `continuity/FILE_OWNERSHIP.md`: immutable user uploads and project-authored files.
-- `CHAT05_UI_OVERHAUL_REPORT.md`: actual UI status and dashboard acceptance gate.
-- `REPOSITORY_BRANCH_MAP.md`: observed refs and branch governance.
-- `CHAT0_TECHNICAL_LOCK.md`: historical foundation specification; original next-phase instructions are superseded.
-- `PRIOR_ART_AND_POSITIONING.md`: prior-art and novelty guardrails.
+Documentation is organized by purpose so the repository root remains focused on application entry points and configuration.
 
-All user-uploaded PDF references must remain unchanged.
+## Architecture and project records
+- [Architecture](architecture/ARCHITECTURE.md)
+- [Project state](project/PROJECT_STATE.md)
+- [Project overview and plan](project/PROJECT_MASTER_PLAN.md)
+- [Decision log](project/DECISION_LOG.md)
+- [Requirements traceability](project/REQUIREMENTS_TRACEABILITY.md)
+- [Repository branch map](REPOSITORY_BRANCH_MAP.md)
+
+## Evaluation and testing
+- [Evaluation protocol](evaluation/EVALUATION_PROTOCOL.md)
+- [Test specification](testing/TEST_SPECIFICATION.md)
+- [Final verification and submission report](FINAL_VERIFICATION_AND_SUBMISSION_REPORT.md)
+
+## Demo and hackathon
+- [Demo plan](demo/DEMO_PLAN.md)
+- [Demo script and checklist](DEMO_SCRIPT_AND_CHECKLIST.md)
+- [Hackathon submission plan](hackathon/SUBMISSION_PLAN.md)
+- [Devpost submission guide](DEVPOST_SUBMISSION_GUIDE.md)
+- [Hackathon demo video script and plan](HACKATHON_DEMO_VIDEO_SCRIPT_AND_PLAN.md)
+- [Judge technical defense Q&A](JUDGE_TECHNICAL_DEFENSE_QA.md)
+
+## Policies and positioning
+- [Hallucination control](policies/HALLUCINATION_CONTROL.md)
+- [Security and usage policy](policies/SECURITY_AND_USAGE_POLICY.md)
+- [Prior art and positioning](PRIOR_ART_AND_POSITIONING.md)
+
+## Evidence and history
+- `evidence/chat03_walkthrough/` — preserved screenshots
+- `archive/` — older phase reports and continuity notes; historical docs are not automatically current instructions
+- Evaluation datasets and recorded result artifacts remain in the root `evaluation/` directory
+
+The uploaded reference PDFs are preserved unchanged under [reference/](reference/): [Important Details](reference/Important%20Details.pdf), [Submission Guidelines](reference/Multimodal%20AI%20Hackathon%202026%20-%20Submission%20Guidelines.pdf), [Problem Statements](reference/Problem%20Statements.pdf), and [Track D](reference/Track%20D.pdf).
