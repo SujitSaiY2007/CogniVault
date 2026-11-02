@@ -180,6 +180,24 @@ def _issue_session(conn: sqlite3.Connection, username: str, learner_id: str) -> 
     return AuthResponse(access_token=token, username=username, learner_id=learner_id)
 
 
+def _bearer_token(authorization: Optional[str]) -> str:
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(status_code=401, detail="Sign in to access your private learning data.")
+    token = authorization.split(" ", 1)[1].strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Sign in to access your private learning data.")
+    return token
+
+
+def _resolve_owner(request: Request, token: str) -> str:
+    if request.app.state.supabase_enabled:
+        resolved = request.app.state.supabase_auth.resolve_token(token)
+        if not resolved:
+            raise HTTPException(status_code=401, detail="Session expired. Sign in again.")
+        return resolved[1]
+    raise HTTPException(status_code=503, detail="Private Supabase storage is not configured.")
+
+
 def verify_learner_boundary(learner_id: str, request: Request, x_learner_id: Optional[str] = Header(None, alias="X-Learner-Id"), authorization: Optional[str] = Header(None, alias="Authorization")) -> None:
     validate_learner_id_format(learner_id)
     if not authorization or not authorization.lower().startswith("bearer "):
@@ -365,19 +383,29 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
 
     @app.get("/api/v1/evidence/search", tags=["Evidence"])
     def search_evidence(
+        request: Request,
         q: str = Query(..., description="Search query string"),
-        k: int = Query(5, description="Number of results to retrieve"),
+        k: int = Query(5, ge=1, le=10, description="Number of results to retrieve"),
         mode: str = Query("hybrid", description="Retrieval mode: hybrid, lexical, or semantic"),
+        authorization: Optional[str] = Header(None, alias="Authorization"),
     ) -> dict[str, Any]:
-        """Hybrid search across indexed course materials with physical locators."""
-        results, trace = learning_service.search_evidence(q, k=k, mode=mode)
+        """Search baseline course evidence plus owner-scoped private evidence."""
+        public_results, trace = learning_service.search_evidence(q, k=k, mode=mode)
+        results = [r.model_dump() for r in public_results]
+        if request.app.state.supabase_enabled:
+            owner_id = _resolve_owner(request, _bearer_token(authorization))
+            private_results = request.app.state.user_materials.search_evidence(owner_id, q, limit=k)
+            results = [{
+                "evidence_id": item["evidence_id"], "source_id": item["source_id"],
+                "score": float(item.get("score", 1)), "snippet": item["evidence_text"][:500],
+                "location": item.get("location") or {}, "source_title": item.get("metadata", {}).get("source_title", "Your uploaded material"),
+                "private": True,
+            } for item in private_results] + results[:max(0, k-len(private_results))]
         return {
-            "query": q,
-            "mode": mode,
-            "result_count": len(results),
-            "unsupported": trace.unsupported,
-            "reason": trace.reason,
-            "results": [r.model_dump() for r in results],
+            "query": q, "mode": mode, "result_count": len(results),
+            "unsupported": trace.unsupported and not (request.app.state.supabase_enabled and results),
+            "reason": None if request.app.state.supabase_enabled and results else trace.reason,
+            "results": results[:k],
         }
 
     @app.post("/api/v1/evidence/sync-chroma", tags=["Evidence"])
