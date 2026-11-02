@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Citation, CurriculumTopic, DEFAULT_CURRICULUM_TOPICS, SystemHealth } from "@/lib/types";
-import { api } from "@/lib/api";
+import { api, authApi } from "@/lib/api";
 import { Navbar } from "@/components/Navbar";
 import { TutorView } from "@/components/TutorView";
 import { AssessmentView } from "@/components/AssessmentView";
@@ -14,6 +15,9 @@ import { CitationDrawer } from "@/components/CitationDrawer";
 import { ColdStartModal } from "@/components/ColdStartModal";
 
 export default function Home() {
+  const router = useRouter();
+  const [authReady, setAuthReady] = useState(false);
+  const [accountUsername, setAccountUsername] = useState("");
   const [activeTab, setActiveTab] = useState<string>("tutor");
   const [activeLearner, setActiveLearner] = useState<string>("learner_demo");
   const [learners, setLearners] = useState<string[]>(["learner_demo"]);
@@ -37,49 +41,41 @@ export default function Home() {
       } else {
         setTopics(DEFAULT_CURRICULUM_TOPICS);
       }
-      if (learnerList && learnerList.length > 0) {
-        const ids = learnerList.map((l: any) => l.learner_id);
-        setLearners(ids);
-        if (!ids.includes(activeLearner)) {
-          setActiveLearner(ids[0]);
-        }
-      }
+      // Each signed-in account is bound to its own learner identity; never switch into another profile.
+      setLearners([activeLearner]);
     } catch {
       // Graceful offline fallback
     }
   };
 
   useEffect(() => {
-    loadInitialData();
-    if (typeof window !== "undefined") {
-      const requestedTab = new URLSearchParams(window.location.search).get("tab");
-      if (["tutor", "assessment", "mastery", "misconceptions", "recommendations", "materials"].includes(requestedTab || "")) {
-        setActiveTab(requestedTab || "tutor");
-      }
-    }
-    if (typeof window !== "undefined") {
+    const token = window.localStorage.getItem("cognivault_session");
+    if (!token) { router.replace("/login?mode=login"); return; }
+    authApi.me().then((user) => {
+      setAccountUsername(user.username);
+      setActiveLearner(user.learner_id);
+      setLearners([user.learner_id]);
+      setAuthReady(true);
+      loadInitialData();
       const params = new URLSearchParams(window.location.search);
-      if (params.get("demo_citation") === "true") {
-        setInspectCitation({
-          evidence_id: "physics_mechanics:e00001",
-          source_id: "physics_mechanics",
-          source_title: "Classical Mechanics & Dynamics",
-          modality: "pdf",
-          location: { page: 1 },
-          snippet: "Newton's Second Law of Motion: The rate of change of momentum of a body is directly proportional to the applied force: F = m * a.",
-        });
-      }
-    }
+      const requestedTab = params.get("tab");
+      if (["tutor", "assessment", "mastery", "misconceptions", "recommendations", "materials"].includes(requestedTab || "")) setActiveTab(requestedTab || "tutor");
+      if (params.get("demo_citation") === "true") setInspectCitation({
+        evidence_id: "physics_mechanics:e00001", source_id: "physics_mechanics",
+        source_title: "Classical Mechanics & Dynamics", modality: "pdf", location: { page: 1 },
+        snippet: "Newton's Second Law of Motion: The rate of change of momentum of a body is directly proportional to the applied force: F = m * a.",
+      });
+    }).catch(() => {
+      window.localStorage.removeItem("cognivault_session");
+      window.localStorage.removeItem("cognivault_username");
+      window.localStorage.removeItem("cognivault_learner_id");
+      router.replace("/login?mode=login");
+    });
   }, []);
 
-  const refreshLearners = async () => {
-    try {
-      const learnerList = await api.listLearners();
-      if (learnerList && learnerList.length > 0) {
-        setLearners(learnerList.map((l: any) => l.learner_id));
-      }
-    } catch {}
-  };
+  const refreshLearners = async () => { setLearners([activeLearner]); };
+
+  if (!authReady) return <main className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-200"><div className="text-sm font-semibold">Verifying your CogniVault session…</div></main>;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
@@ -92,6 +88,8 @@ export default function Home() {
         learners={learners}
         health={health}
         onOpenColdStart={() => setColdStartOpen(true)}
+        accountUsername={accountUsername}
+        onLogout={async () => { try { await authApi.logout(); } catch {} window.localStorage.removeItem("cognivault_session"); window.localStorage.removeItem("cognivault_username"); window.localStorage.removeItem("cognivault_learner_id"); router.replace("/login?mode=login"); }}
       />
 
       {/* Main View Area */}
