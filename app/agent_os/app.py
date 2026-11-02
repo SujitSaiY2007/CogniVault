@@ -536,7 +536,9 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
     @app.post("/api/v1/assessment/submit", tags=["Assessment"])
     def submit_assessment(
         req: AssessmentSubmissionRequest,
+        request: Request,
         x_learner_id: Optional[str] = Header(None, alias="X-Learner-Id"),
+        authorization: Optional[str] = Header(None, alias="Authorization"),
     ) -> dict[str, Any]:
         """
         Submit learner answer for evaluation:
@@ -545,14 +547,7 @@ def create_agent_os_app(service: Optional[AgentOSLearningService] = None) -> Fas
           3. Checks for misconception accumulation.
           4. Returns prerequisite-aware next recommendation.
         """
-        validate_learner_id_format(req.learner_id)
-        if x_learner_id:
-            validate_learner_id_format(x_learner_id)
-            if x_learner_id.strip() != req.learner_id.strip():
-                raise HTTPException(
-                    status_code=403,
-                    detail=f"Forbidden: Learner boundary mismatch. Header '{x_learner_id}' cannot mutate or read learner '{req.learner_id}'.",
-                )
+        verify_learner_boundary(req.learner_id, request, x_learner_id, authorization)
         try:
             return learning_service.submit_assessment_answer(
                 learner_id=req.learner_id,
