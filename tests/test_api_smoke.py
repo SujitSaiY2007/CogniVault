@@ -186,5 +186,5 @@ def test_username_password_authentication_and_learner_isolation(smoke_app):
 def test_signup_validates_username_and_password(smoke_app):
     app, service = smoke_app
     client = TestClient(app)
-    assert client.post("/api/v1/auth/signup", json={"username": "ab", "password": "12345678"}).status_code == 400
+    assert client.post("/api/v1/auth/signup", json={"username": "ab", "password": "12345678"}).status_code == 422
     assert client.post("/api/v1/auth/signup", json={"username": "valid_user", "password": "short"}).status_code == 422
