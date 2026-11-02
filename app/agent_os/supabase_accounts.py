@@ -75,10 +75,21 @@ class SupabaseUserMaterials:
         return rows[0] if rows else None
 
     def list_evidence(self, owner_id: str, source_id: str):
-        return self.store.select("user_evidence", params={
+        rows = self.store.select("user_evidence", params={
             "select": "evidence_id,source_id,modality,evidence_text,location,evidence_type,metadata",
             "owner_id": _eq(owner_id), "source_id": _eq(source_id), "order": "evidence_id.asc",
         }) or []
+        result = []
+        for row in rows:
+            meta = row.get("metadata") or {}
+            result.append({
+                "evidence_id": row["evidence_id"], "source_id": row["source_id"],
+                "modality": row["modality"], "text": row.get("evidence_text", ""),
+                "location": row.get("location") or {}, "evidence_type": row.get("evidence_type", "text"),
+                "asset_id": None, "topics": meta.get("topics", []), "concepts": meta.get("concepts", []),
+                "prerequisites": meta.get("prerequisites", []), "metadata": meta,
+            })
+        return result
 
     def delete_source(self, owner_id: str, source_id: str):
         source = self.get_source(owner_id, source_id)
