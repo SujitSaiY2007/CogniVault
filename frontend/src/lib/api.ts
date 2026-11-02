@@ -123,6 +123,13 @@ export const api = {
     return request<EvidenceUnit[]>(`/api/v1/sources/${encodeURIComponent(sourceId)}/evidence`);
   },
 
+  async deletePrivateSource(sourceId: string): Promise<{ status: string; source_id: string }> {
+    return request<{ status: string; source_id: string }>(
+      `/api/v1/sources/${encodeURIComponent(sourceId)}`,
+      { method: "DELETE" }
+    );
+  },
+
   async uploadMaterial(file: File): Promise<{
     source_id: string;
     title: string;
