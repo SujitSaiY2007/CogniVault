@@ -118,12 +118,10 @@ class SupabaseUserMaterials:
         return True
 
     def get_global_storage_usage(self) -> int:
-        rows = _paged_select(self.store, "user_sources", {"select": "file_size_bytes"}, max_rows=10000)
-        return sum(int(row.get("file_size_bytes", 0)) for row in rows)
+        return int(self.store.rpc("cognivault_global_storage_usage_bytes", {}))
 
     def get_global_evidence_count(self) -> int:
-        rows = _paged_select(self.store, "user_evidence", {"select": "evidence_id"}, max_rows=50000)
-        return len(rows)
+        return int(self.store.rpc("cognivault_global_evidence_count", {}))
 
     def create_source(self, record: dict):
         self.store.insert("user_sources", [record])
