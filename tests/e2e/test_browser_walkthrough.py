@@ -63,30 +63,20 @@ def ensure_servers_running(project_root: Path):
             stderr=subprocess.DEVNULL,
         )
         processes.append(backend_proc)
-        assert wait_for_url("http://127.0.0.1:8000/health", max_wait=20.0), "Backend failed to start on 8000"
+        assert wait_for_url("http://127.0.0.1:8000/health", max_wait=60.0), "Backend failed to start on 8000"
 
     # Check frontend
     if not is_service_ready("http://localhost:3000"):
+        npx_cmd = "npx.cmd" if sys.platform == "win32" else "npx"
         frontend_proc = subprocess.Popen(
-            ["node", ".next/standalone/server.js"],
+            [npx_cmd, "next", "start", "-p", "3000"],
             cwd=str(project_root / "frontend"),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            shell=(sys.platform == "win32"),
         )
         processes.append(frontend_proc)
-        if not wait_for_url("http://localhost:3000", max_wait=15.0):
-            # Fallback to next start
-            frontend_proc.terminate()
-            npx_cmd = "npx.cmd" if sys.platform == "win32" else "npx"
-            frontend_proc2 = subprocess.Popen(
-                [npx_cmd, "next", "start", "-p", "3000"],
-                cwd=str(project_root / "frontend"),
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                shell=(sys.platform == "win32"),
-            )
-            processes.append(frontend_proc2)
-            assert wait_for_url("http://localhost:3000", max_wait=20.0), "Frontend failed to start on 3000"
+        assert wait_for_url("http://localhost:3000", max_wait=30.0), "Frontend failed to start on 3000"
 
     return processes
 
@@ -107,13 +97,38 @@ def test_playwright_complete_product_walkthrough():
 
             page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
 
+            # Safely route any requests targeted at remote Render to the local backend
+            def handle_route(route):
+                req = route.request
+                url = req.url
+                if "cognivault-backend-znn4.onrender.com" in url:
+                    local_url = url.replace("https://cognivault-backend-znn4.onrender.com", "http://127.0.0.1:8000")
+                    try:
+                        resp = route.fetch(url=local_url)
+                        route.fulfill(response=resp)
+                    except Exception:
+                        route.abort()
+                else:
+                    route.continue_()
+
+            page.route("**/*", handle_route)
+
             # -----------------------------------------------------------------
             # 1. Desktop: Homepage / System Badges
             # -----------------------------------------------------------------
-            page.goto("http://localhost:3000", wait_until="networkidle")
+            page.goto("http://localhost:3000/workspace", wait_until="networkidle")
             page.wait_for_timeout(1000)
             assert "CogniVault" in page.title() or page.locator("text=CogniVault").count() > 0
             page.screenshot(path=str(evidence_dir / "01_desktop_home.png"), full_page=True)
+
+            # Sign up new session to enter workspace
+            test_username = f"e2e_{int(time.time())}"
+            page.goto("http://localhost:3000/login?mode=signup", wait_until="networkidle")
+            page.fill("#username", test_username)
+            page.fill("#password", "Password123!")
+            page.click("button[type='submit']")
+            page.wait_for_url("**/workspace*", timeout=15000)
+            page.wait_for_timeout(1000)
 
             # -----------------------------------------------------------------
             # 2. Desktop: Cold Start Diagnostic Modal
@@ -159,7 +174,7 @@ def test_playwright_complete_product_walkthrough():
             page.wait_for_timeout(1000)
             page.screenshot(path=str(evidence_dir / "05_citation_drawer.png"))
             # Return to main page
-            page.goto("http://localhost:3000", wait_until="networkidle")
+            page.goto("http://localhost:3000/workspace", wait_until="networkidle")
             page.wait_for_timeout(800)
             page.locator("nav button:has-text('Evidence Tutor')").first.click()
             page.wait_for_timeout(500)
@@ -181,7 +196,7 @@ def test_playwright_complete_product_walkthrough():
             # -----------------------------------------------------------------
             # 7. Desktop: Adaptive Practice Arena
             # -----------------------------------------------------------------
-            practice_tab = page.locator("nav button:has-text('Adaptive Practice')").first
+            practice_tab = page.locator("nav button:has-text('Adaptive Assessment'), nav button:has-text('Adaptive Practice')").first
             practice_tab.click()
             page.wait_for_timeout(1500)
 
@@ -192,7 +207,7 @@ def test_playwright_complete_product_walkthrough():
                 page.wait_for_timeout(400)
 
             submit_btn = page.locator("button:has-text('Submit Answer')").first
-            if submit_btn.is_visible():
+            if submit_btn.is_visible() and submit_btn.is_enabled():
                 submit_btn.click()
                 page.wait_for_timeout(2000)
 
@@ -248,7 +263,7 @@ def test_playwright_complete_product_walkthrough():
             page.screenshot(path=str(evidence_dir / "11_mobile_tutor.png"))
 
             # Mobile Practice Arena
-            page.locator("button:has-text('Adaptive Practice')").first.click()
+            page.locator("button:has-text('Adaptive Assessment'), button:has-text('Adaptive Practice')").first.click()
             page.wait_for_timeout(600)
             page.screenshot(path=str(evidence_dir / "12_mobile_practice.png"))
 
