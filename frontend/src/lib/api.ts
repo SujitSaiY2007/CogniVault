@@ -1,326 +1,196 @@
 /**
- * Typed API client for CogniVault AgentOS backend.
- * Provides typed methods for all learning loop, ingestion, and assessment endpoints.
+ * Typed client for the CogniVault API.
+ *
+ * Free hosting puts the backend to sleep when idle; the first request can
+ * take 30-60 s. Requests therefore retry network errors and 502/503/504
+ * responses with backoff, and report "waking up" through onStatus so the UI
+ * can explain the wait. Errors are never hidden behind fake data.
  */
-
-import {
+import type {
+  AssessmentCycleResult,
+  CourseMap,
   CurriculumTopic,
   Difficulty,
   EvidenceUnit,
+  Flashcard,
   LearnerProfile,
   Question,
   QuestionType,
+  QuizReport,
+  QuizSession,
   Recommendation,
   RemediationPackage,
   SourceRecord,
+  StudyPlan,
   SystemHealth,
-  TopicMasteryRecord,
   TutorResponse,
-  AssessmentCycleResult,
+  UploadResult,
 } from "./types";
 
-const API_BASE = (
-  process.env.NEXT_PUBLIC_API_URL || "https://cognivault-backend-znn4.onrender.com"
-).replace(/\/+$/, "");
+export const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "https://cognivault-backend-znn4.onrender.com").replace(/\/+$/, "");
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-  learnerId?: string,
-  timeoutMs: number = 4000
-): Promise<T> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(options.headers as Record<string, string>),
-  };
-
-  if (learnerId) {
-    headers["X-Learner-Id"] = learnerId;
-  }
-
-  if (typeof window !== "undefined") { const token = window.localStorage.getItem("cognivault_session"); if (token) headers["Authorization"] = `Bearer ${token}`; }
-  const url = `${API_BASE}${path}`;
-
-  try {
-    const res = await fetch(url, {
-      ...options,
-      headers,
-      signal: options.signal || controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      let errDetail = `API Error ${res.status}: ${res.statusText}`;
-      try {
-        const errJson = await res.json();
-        if (errJson.detail) {
-          errDetail = typeof errJson.detail === "string" ? errJson.detail : JSON.stringify(errJson.detail);
-        }
-      } catch {
-        // Fallback to status text
-      }
-      throw new Error(errDetail);
-    }
-
-    return (await res.json()) as T;
-  } catch (error: any) {
-    clearTimeout(timeoutId);
-    if (error.name === "AbortError") {
-      throw new Error(`Request to ${path} timed out. Using instant verified local engine.`);
-    }
-    if (error.name === "TypeError" && error.message.includes("fetch")) {
-      throw new Error(`Cannot connect to CogniVault backend (${API_BASE}). If the cloud container is waking up, please wait ~15 seconds and refresh.`);
-    }
-    throw error;
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
   }
 }
 
-export const api = {
-  // System Health
-  async getHealth(): Promise<SystemHealth> {
-    return request<SystemHealth>("/api/v1/health");
-  },
+type StatusListener = (state: "waking" | "ok") => void;
+const listeners = new Set<StatusListener>();
+export function onConnectionStatus(fn: StatusListener) {
+  listeners.add(fn);
+  return () => {
+    listeners.delete(fn);
+  };
+}
+function emit(state: "waking" | "ok") {
+  listeners.forEach((fn) => fn(state));
+}
 
-  // Tutor
-  async queryTutor(query: string, topic?: string): Promise<TutorResponse> {
-    return request<TutorResponse>("/api/v1/tutor/query", {
-      method: "POST",
-      body: JSON.stringify({ query, topic }),
-    });
-  },
+function token(): string | null {
+  return typeof window !== "undefined" ? window.localStorage.getItem("cognivault_session") : null;
+}
 
-  // Evidence & Search
-  async searchEvidence(q: string, k = 5, mode = "hybrid") {
-    return request<{
-      query: string;
-      mode: string;
-      result_count: number;
-      unsupported: boolean;
-      reason: string | null;
-      results: Array<{
-        evidence_id: string;
-        source_id: string;
-        score: number;
-        snippet: string;
-        location: Record<string, string | number>;
-      }>;
-    }>(`/api/v1/evidence/search?q=${encodeURIComponent(q)}&k=${k}&mode=${mode}`);
-  },
+function clearSession() {
+  if (typeof window === "undefined") return;
+  ["cognivault_session", "cognivault_username", "cognivault_learner_id"].forEach((k) => window.localStorage.removeItem(k));
+}
 
-  // Sources & Ingestion
-  async listSources(): Promise<SourceRecord[]> {
-    return request<SourceRecord[]>("/api/v1/sources");
-  },
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-  async getSourceDetails(sourceId: string): Promise<SourceRecord> {
-    return request<SourceRecord>(`/api/v1/sources/${encodeURIComponent(sourceId)}`);
-  },
+async function request<T>(path: string, options: RequestInit = {}, timeoutMs = 30000, retries = 3): Promise<T> {
+  const headers: Record<string, string> = { ...(options.headers as Record<string, string>) };
+  if (!(options.body instanceof FormData) && options.body !== undefined) headers["Content-Type"] = "application/json";
+  const t = token();
+  if (t) headers["Authorization"] = `Bearer ${t}`;
 
-  async getSourceEvidence(sourceId: string): Promise<EvidenceUnit[]> {
-    return request<EvidenceUnit[]>(`/api/v1/sources/${encodeURIComponent(sourceId)}/evidence`);
-  },
-
-  async deletePrivateSource(sourceId: string): Promise<{ status: string; source_id: string }> {
-    return request<{ status: string; source_id: string }>(
-      `/api/v1/sources/${encodeURIComponent(sourceId)}`,
-      { method: "DELETE" }
-    );
-  },
-
-  async uploadMaterial(file: File): Promise<{
-    source_id: string;
-    title: string;
-    modality: string;
-    sha256: string;
-    evidence_count: number;
-    status: string;
-  }> {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const headers: Record<string, string> = {};
-    if (typeof window !== "undefined") { const token = window.localStorage.getItem("cognivault_session"); if (token) headers["Authorization"] = `Bearer ${token}`; }
-    const res = await fetch(`${API_BASE}/api/v1/ingest/upload`, {
-      method: "POST",
-      headers,
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || `Upload failed with status ${res.status}`);
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(`${API_BASE}${path}`, { ...options, headers, signal: controller.signal });
+      clearTimeout(timer);
+      if ([502, 503, 504].includes(res.status) && attempt < retries) {
+        emit("waking");
+        await sleep(2000 * (attempt + 1));
+        continue;
+      }
+      if (!res.ok) {
+        let detail = `Request failed (${res.status}).`;
+        try {
+          const body = await res.json();
+          if (body?.detail) detail = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
+        } catch {
+          /* keep default */
+        }
+        if (res.status === 401 && path !== "/api/v1/auth/login") {
+          clearSession();
+          if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+            window.location.replace("/login?mode=login");
+          }
+        }
+        throw new ApiError(detail, res.status);
+      }
+      emit("ok");
+      if (res.status === 204) return undefined as T;
+      return (await res.json()) as T;
+    } catch (err: any) {
+      clearTimeout(timer);
+      if (err instanceof ApiError) throw err;
+      lastError = err;
+      if (attempt < retries) {
+        emit("waking");
+        await sleep(2500 * (attempt + 1));
+        continue;
+      }
     }
+  }
+  throw new ApiError(
+    lastError?.name === "AbortError"
+      ? "The server took too long to respond. It may be starting up; please try again in a moment."
+      : "Cannot reach the CogniVault server. Check your connection and try again.",
+    0
+  );
+}
 
-    return res.json();
+const post = <T>(path: string, body?: unknown, timeoutMs?: number) =>
+  request<T>(path, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body) }, timeoutMs);
+
+export const api = {
+  getHealth: () => request<SystemHealth>("/api/v1/health", {}, 60000, 4),
+
+  queryTutor: (query: string, history: string[] = [], allowGeneral = false, topic?: string) =>
+    post<TutorResponse>("/api/v1/tutor/query", { query, history, allow_general_knowledge: allowGeneral, topic }, 60000),
+
+  listSources: () => request<SourceRecord[]>("/api/v1/sources"),
+  getSourceEvidence: (id: string) => request<EvidenceUnit[]>(`/api/v1/sources/${encodeURIComponent(id)}/evidence`),
+  deleteSource: (id: string) => request<{ status: string }>(`/api/v1/sources/${encodeURIComponent(id)}`, { method: "DELETE" }),
+  uploadMaterial: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<UploadResult>("/api/v1/ingest/upload", { method: "POST", body: form }, 180000, 1);
   },
-
-  async syncChroma(): Promise<{ status: string; synced_units: number }> {
-    return request<{ status: string; synced_units: number }>("/api/v1/evidence/sync-chroma", {
-      method: "POST",
+  assetUrl: async (assetId: string): Promise<string> => {
+    const res = await fetch(`${API_BASE}/api/v1/assets/${encodeURIComponent(assetId)}`, {
+      headers: token() ? { Authorization: `Bearer ${token()}` } : {},
     });
+    if (!res.ok) throw new ApiError("Image unavailable", res.status);
+    return URL.createObjectURL(await res.blob());
   },
 
-  async seedCorpus(): Promise<{ status: string; stats: any }> {
-    return request<{ status: string; stats: any }>("/api/v1/corpus/seed", {
-      method: "POST",
-    });
-  },
+  listTopics: () => request<CurriculumTopic[]>("/api/v1/topics"),
+  courseMap: () => request<CourseMap>("/api/v1/course-map"),
 
-  // Curriculum & Topics
-  async listTopics(): Promise<CurriculumTopic[]> {
-    return request<CurriculumTopic[]>("/api/v1/topics");
-  },
+  selectQuestion: (topicId: string, served: string[] = [], difficulty?: Difficulty, questionType?: QuestionType) =>
+    post<Question>("/api/v1/assessment/select", {
+      topic_id: topicId,
+      served_question_ids: served,
+      target_difficulty: difficulty,
+      question_type: questionType,
+    }),
+  submitAnswer: (questionId: string, answer: string) =>
+    post<AssessmentCycleResult>("/api/v1/assessment/submit", { question_id: questionId, answer }),
 
-  // Assessment
-  async listQuestions(topicId?: string, difficulty?: Difficulty, questionType?: QuestionType): Promise<Question[]> {
-    const params = new URLSearchParams();
-    if (topicId) params.append("topic_id", topicId);
-    if (difficulty) params.append("difficulty", difficulty);
-    if (questionType) params.append("question_type", questionType);
-    const qs = params.toString();
-    return request<Question[]>(`/api/v1/assessment/questions${qs ? `?${qs}` : ""}`);
-  },
+  createQuiz: (opts: { topic_ids: string[]; count: number; types: string[]; difficulty?: string; mode: string }) =>
+    post<QuizSession>("/api/v1/quiz", opts),
+  diagnostic: () => post<QuizSession>("/api/v1/diagnostic"),
+  answerQuiz: (sessionId: string, questionId: string, answer: string) =>
+    post<AssessmentCycleResult & { recorded?: boolean }>(`/api/v1/quiz/${sessionId}/answer`, { question_id: questionId, answer }),
+  finishQuiz: (sessionId: string) => post<QuizReport>(`/api/v1/quiz/${sessionId}/finish`),
+  quizHistory: () => request<{ session_id: string; mode: string; created_at: string; finished: boolean; total: number; answered: number; percent: number | null }[]>("/api/v1/quiz"),
 
-  async selectAdaptiveQuestion(
-    topicId: string,
-    servedQuestionIds: string[] = [],
-    targetDifficulty?: Difficulty
-  ): Promise<Question> {
-    return request<Question>("/api/v1/assessment/select", {
-      method: "POST",
-      body: JSON.stringify({
-        topic_id: topicId,
-        served_question_ids: servedQuestionIds,
-        target_difficulty: targetDifficulty,
-      }),
-    });
-  },
+  getProfile: (learnerId: string) => request<LearnerProfile>(`/api/v1/learner/${encodeURIComponent(learnerId)}/profile`),
+  getMisconceptions: (learnerId: string) => request<RemediationPackage[]>(`/api/v1/learner/${encodeURIComponent(learnerId)}/misconceptions`),
+  resolveMisconception: (learnerId: string, signalId: string) =>
+    post<{ status: string }>(`/api/v1/learner/${encodeURIComponent(learnerId)}/misconceptions/${encodeURIComponent(signalId)}/resolve`),
+  getRecommendation: (learnerId: string, activeTopicId?: string) =>
+    request<Recommendation>(
+      `/api/v1/learner/${encodeURIComponent(learnerId)}/recommendations${activeTopicId ? `?active_topic_id=${encodeURIComponent(activeTopicId)}` : ""}`
+    ),
+  intake: (learnerId: string, ratings: Record<string, number>) =>
+    post<{ intake_status: string; initial_recommendation: Recommendation }>(`/api/v1/learner/${encodeURIComponent(learnerId)}/intake`, {
+      initial_topic_masteries: ratings,
+    }),
 
-  async submitAssessment(
-    learnerId: string,
-    questionId: string,
-    answer: string
-  ): Promise<AssessmentCycleResult> {
-    return request<AssessmentCycleResult>(
-      "/api/v1/assessment/submit",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          learner_id: learnerId,
-          question_id: questionId,
-          answer: answer,
-        }),
-      },
-      learnerId
-    );
-  },
-
-  // Learner Model & BKT
-  async listLearners(): Promise<Array<{
-    learner_id: string;
-    topics_tracked: number;
-    total_attempts: number;
-    total_correct: number;
-    active_misconceptions: number;
-  }>> {
-    return request("/api/v1/learners");
-  },
-
-  async getLearnerProfile(learnerId: string): Promise<LearnerProfile> {
-    return request<LearnerProfile>(`/api/v1/learner/${encodeURIComponent(learnerId)}/profile`, {}, learnerId);
-  },
-
-  async getLearnerMastery(learnerId: string): Promise<TopicMasteryRecord[]> {
-    return request<TopicMasteryRecord[]>(`/api/v1/learner/${encodeURIComponent(learnerId)}/mastery`, {}, learnerId);
-  },
-
-  async recordObservation(
-    learnerId: string,
-    topicId: string,
-    isCorrect: boolean
-  ): Promise<TopicMasteryRecord> {
-    return request<TopicMasteryRecord>(
-      `/api/v1/learner/${encodeURIComponent(learnerId)}/observation`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          topic_id: topicId,
-          is_correct: isCorrect,
-        }),
-      },
-      learnerId
-    );
-  },
-
-  // Misconceptions
-  async getMisconceptions(learnerId: string, topicId?: string): Promise<RemediationPackage[]> {
-    const qs = topicId ? `?topic_id=${encodeURIComponent(topicId)}` : "";
-    return request<RemediationPackage[]>(
-      `/api/v1/learner/${encodeURIComponent(learnerId)}/misconceptions${qs}`,
-      {},
-      learnerId
-    );
-  },
-
-  async resolveMisconception(learnerId: string, signalId: string): Promise<{ status: string; learner_id: string; topic_id: string }> {
-    return request<{ status: string; learner_id: string; topic_id: string }>(
-      `/api/v1/learner/${encodeURIComponent(learnerId)}/misconceptions/${encodeURIComponent(signalId)}/resolve`,
-      { method: "POST" },
-      learnerId
-    );
-  },
-
-  // Recommendations
-  async getRecommendations(learnerId: string, activeTopicId?: string): Promise<Recommendation> {
-    const qs = activeTopicId ? `?active_topic_id=${encodeURIComponent(activeTopicId)}` : "";
-    return request<Recommendation>(
-      `/api/v1/learner/${encodeURIComponent(learnerId)}/recommendations${qs}`,
-      {},
-      learnerId
-    );
-  },
-
-  // Cold-Start Diagnostic Intake
-  async coldStartIntake(
-    learnerId: string,
-    initialMasteries?: Record<string, number>,
-    diagnosticResponses?: Array<{ topic_id: string; is_correct: boolean }>
-  ): Promise<{
-    learner_id: string;
-    intake_status: string;
-    profile: LearnerProfile;
-    initial_recommendation: Recommendation;
-  }> {
-    return request(
-      `/api/v1/learner/${encodeURIComponent(learnerId)}/intake`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          initial_topic_masteries: initialMasteries,
-          diagnostic_responses: diagnosticResponses,
-        }),
-      },
-      learnerId
-    );
-  },
+  flashcards: (topicId?: string) => request<Flashcard[]>(`/api/v1/flashcards${topicId ? `?topic_id=${encodeURIComponent(topicId)}` : ""}`),
+  reviewFlashcard: (cardId: string, grade: number) => post<{ due: string; interval_days: number }>(`/api/v1/flashcards/${encodeURIComponent(cardId)}/review`, { grade }),
+  studyPlan: () => request<StudyPlan>("/api/v1/study-plan"),
+  saveStudyPlan: (examDate: string, minutesPerDay: number) => post<StudyPlan>("/api/v1/study-plan", { exam_date: examDate, minutes_per_day: minutesPerDay }),
 };
 
+export interface AuthSession {
+  access_token: string;
+  token_type: string;
+  username: string;
+  learner_id: string;
+}
 
-export interface AuthSession { access_token: string; token_type: string; username: string; learner_id: string; }
 export const authApi = {
-  async signup(username: string, password: string): Promise<AuthSession> {
-    return request<AuthSession>("/api/v1/auth/signup", { method: "POST", body: JSON.stringify({ username, password }) });
-  },
-  async login(username: string, password: string): Promise<AuthSession> {
-    return request<AuthSession>("/api/v1/auth/login", { method: "POST", body: JSON.stringify({ username, password }) });
-  },
-  async me(): Promise<{ username: string; learner_id: string }> {
-    return request("/api/v1/auth/me");
-  },
-  async logout(): Promise<void> {
-    await request("/api/v1/auth/logout", { method: "POST" });
-  },
+  signup: (username: string, password: string) => post<AuthSession>("/api/v1/auth/signup", { username, password }, 60000),
+  login: (username: string, password: string) => post<AuthSession>("/api/v1/auth/login", { username, password }, 60000),
+  me: () => request<{ username: string; learner_id: string }>("/api/v1/auth/me", {}, 60000, 4),
+  logout: () => post<void>("/api/v1/auth/logout"),
 };

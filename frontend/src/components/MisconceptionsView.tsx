@@ -1,195 +1,84 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Citation, RemediationPackage } from "@/lib/types";
+import React, { useCallback, useEffect, useState } from "react";
+import { AlertTriangle, CheckCircle2, MapPin } from "lucide-react";
 import { api } from "@/lib/api";
-import {
-  AlertTriangle,
-  BookOpen,
-  CheckCircle2,
-  FileText,
-  MapPin,
-  RefreshCw,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { Citation, RemediationPackage } from "@/lib/types";
+import { EmptyState, ErrorBanner, GhostButton, Panel, PrimaryButton, SectionHeader, Spinner } from "./ui";
 
-interface MisconceptionsViewProps {
-  activeLearner: string;
-  onOpenCitation: (cit: Citation) => void;
-}
-
-export const MisconceptionsView: React.FC<MisconceptionsViewProps> = ({
-  activeLearner,
-  onOpenCitation,
-}) => {
-  const [misconceptions, setMisconceptions] = useState<RemediationPackage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [resolvingId, setResolvingId] = useState<string | null>(null);
+export const MisconceptionsView: React.FC<{
+  learnerId: string;
+  refreshKey: number;
+  onPractice: (topicId: string) => void;
+  onOpenCitation: (c: Citation) => void;
+}> = ({ learnerId, refreshKey, onPractice, onOpenCitation }) => {
+  const [items, setItems] = useState<RemediationPackage[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const loadMisconceptions = async () => {
-    setLoading(true);
+  const load = useCallback(async () => {
     setError(null);
     try {
-      const data = await api.getMisconceptions(activeLearner);
-      setMisconceptions(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to load misconceptions.");
-    } finally {
-      setLoading(false);
+      setItems(await api.getMisconceptions(learnerId));
+    } catch (e: any) {
+      setError(e.message);
     }
-  };
+  }, [learnerId]);
 
   useEffect(() => {
-    loadMisconceptions();
-  }, [activeLearner]);
+    load();
+  }, [load, refreshKey]);
 
-  const handleResolve = async (pkg: RemediationPackage) => {
-    const signalIdToResolve = pkg.signal_id || `misc_${activeLearner}_${pkg.concept_id || pkg.topic_id}`;
-    setResolvingId(pkg.topic_id);
+  async function resolve(id: string) {
     try {
-      await api.resolveMisconception(activeLearner, signalIdToResolve);
-      await loadMisconceptions();
-    } catch {
-      await loadMisconceptions();
-    } finally {
-      setResolvingId(null);
+      await api.resolveMisconception(learnerId, id);
+      load();
+    } catch (e: any) {
+      setError(e.message);
     }
-  };
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-        <div>
-          <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-400" />
-            <span>Misconception Diagnostics & Remediation</span>
-          </h2>
-          <p className="text-xs text-slate-400">
-            D-016 Policy: Single slips are ignored; 2+ consecutive errors trigger targeted prerequisite remediation.
-          </p>
-        </div>
-
-        <button
-          onClick={loadMisconceptions}
-          disabled={loading}
-          className="flex items-center gap-2 self-start sm:self-auto rounded-xl border-2 border-slate-600 bg-slate-800 hover:border-indigo-400 px-4 py-2 text-xs font-bold text-slate-100 hover:text-white shadow-md transition-all cursor-pointer"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-          <span>Refresh</span>
-        </button>
-      </div>
-
-      {error && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs text-rose-400">
-          {error}
-        </div>
-      )}
-
-      {/* Misconceptions List */}
-      {misconceptions.length > 0 ? (
-        <div className="space-y-5">
-          {misconceptions.map((m, idx) => (
-            <div
-              key={idx}
-              className="rounded-2xl border border-amber-500/30 bg-slate-900 p-6 shadow-xl space-y-4"
-            >
-              {/* Header Badges */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-400 border border-amber-500/20">
-                    Topic: {m.topic_id}
-                  </span>
-                  {m.concept_id && (
-                    <span className="rounded-full bg-indigo-500/10 px-2.5 py-1 text-xs font-semibold text-indigo-400 border border-indigo-500/20">
-                      Concept: {m.concept_id}
-                    </span>
-                  )}
-                </div>
-                <span className="text-xs font-mono text-amber-300">
-                  Confidence: {(m.confidence * 100).toFixed(0)}%
-                </span>
-              </div>
-
-              {/* Diagnosis Description */}
-              <div>
-                <h3 className="text-base font-bold text-slate-100">
-                  {m.suspected_misconception}
-                </h3>
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                  {m.remediation_note}
-                </p>
-              </div>
-
-              {/* Remediation Evidence Cards */}
-              {m.evidence_items && m.evidence_items.length > 0 && (
-                <div className="pt-2 border-t border-slate-800 space-y-2">
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                    <BookOpen className="h-3 w-3 text-indigo-400" />
-                    <span>Recommended Foundation Review Materials ({m.evidence_items.length}):</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {m.evidence_items.map((ev, eIdx) => {
-                      const loc = ev.location || {};
-                      let locText = "Location";
-                      if (loc.page !== undefined) locText = `Page ${loc.page}`;
-                      else if (loc.slide !== undefined) locText = `Slide ${loc.slide}`;
-                      else if (loc.timestamp !== undefined) locText = `Time ${loc.timestamp}`;
-
-                      return (
-                        <div
-                          key={eIdx}
-                          className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs space-y-1.5"
-                        >
-                          <div className="flex items-center justify-between text-indigo-400 font-medium">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {locText}
-                            </span>
-                            <span className="uppercase text-[10px] text-slate-500 font-mono">
-                              {ev.modality}
-                            </span>
-                          </div>
-                          <p className="text-slate-300 line-clamp-2 italic font-serif">
-                            "{ev.text}"
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex justify-end pt-2 border-t border-slate-800">
-                <button
-                  onClick={() => handleResolve(m)}
-                  disabled={resolvingId === m.topic_id}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-xs font-extrabold text-white shadow-lg shadow-emerald-600/30 border-2 border-emerald-400/50 transition-all disabled:opacity-50 cursor-pointer hover:scale-105 active:scale-95"
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>Mark Remediated & Reset Signals</span>
-                </button>
-              </div>
+    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+      <SectionHeader icon={AlertTriangle} title="Misconceptions" subtitle="Flagged only after two or more errors on the same concept. Two correct answers in a row clear them automatically." />
+      {error && <ErrorBanner message={error} onRetry={load} />}
+      {!items && !error && <Spinner />}
+      {items && items.length === 0 && <EmptyState icon={CheckCircle2} title="No active misconceptions" body="Repeated errors on the same concept will show up here with the passages to re-read." />}
+      {items?.map((m) => (
+        <Panel key={m.signal_id} className="space-y-3 border-amber-500/30">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="text-sm font-bold text-amber-200">{m.suspected_misconception}</p>
+              <p className="text-xs text-slate-400">
+                {m.topic_name} · {m.error_count} errors · confidence {Math.round(m.confidence * 100)}%
+              </p>
             </div>
-          ))}
-        </div>
-      ) : (
-        /* Empty State */
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-12 text-center space-y-4">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <ShieldCheck className="h-7 w-7" />
+            <div className="flex gap-2">
+              <PrimaryButton onClick={() => onPractice(m.remediation_concept_id || m.topic_id)} className="px-3 py-1.5 text-xs">
+                Practise easy questions
+              </PrimaryButton>
+              <GhostButton onClick={() => resolve(m.signal_id)}>Mark resolved</GhostButton>
+            </div>
           </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-200">No Active Misconceptions Diagnosed</h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
-              Current responses demonstrate consistent understanding. If a student exhibits 2 or more consecutive errors on a concept, targeted remediation materials will appear here automatically.
-            </p>
+          <p className="text-xs text-slate-300">{m.remediation_note}</p>
+          <div className="space-y-2">
+            {m.evidence_items.map((e) => (
+              <button
+                key={e.evidence_id}
+                onClick={() =>
+                  onOpenCitation({ evidence_id: e.evidence_id, source_id: "", modality: e.modality as any, location: e.location, snippet: e.text, source_title: e.source_title, locator_label: e.locator_label })
+                }
+                className="block w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-left text-xs text-slate-300 hover:border-indigo-500/40"
+              >
+                <span className="mb-1 flex items-center gap-1 text-[11px] font-bold text-indigo-300">
+                  <MapPin className="h-3 w-3" /> {e.source_title}, {e.locator_label}
+                </span>
+                {e.text.slice(0, 260)}
+                {e.text.length > 260 ? "…" : ""}
+              </button>
+            ))}
           </div>
-        </div>
-      )}
+        </Panel>
+      ))}
     </div>
   );
 };

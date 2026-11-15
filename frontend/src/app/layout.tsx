@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "CogniVault — Evidence-First Adaptive Learning",
-  description: "Autonomous AgentOS personalized tutoring, grounded citations, verified assessments, and Bayesian Knowledge Tracing.",
+  description: "Study from your own course material with a tutor that cites every answer, verified practice questions, and a learner model that adapts.",
 };
 
 export default function RootLayout({

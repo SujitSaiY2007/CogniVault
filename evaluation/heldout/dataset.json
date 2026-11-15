@@ -1,0 +1,44 @@
+{
+  "description": "Held-out set written after development was finished and run once. Nothing in the code was changed in response to it. Part A uses the demo course; part B uses electricity_notes.md, a document the system never saw during development, uploaded as a normal user.",
+  "demo": {
+    "supported": [
+      {"q": "Does an object keep moving if no force acts on it?", "gold": [["demo-physics-mechanics", "Page 1"]], "must_include": ["constant speed|straight line"]},
+      {"q": "What is the unit of force?", "gold": [["demo-physics-mechanics", "Page 1"]], "must_include": ["newton"]},
+      {"q": "If you push a wall, what does the wall do?", "gold": [["demo-physics-mechanics", "Page 2"]], "must_include": ["pushes back"]},
+      {"q": "What equation gives momentum?", "gold": [["demo-physics-mechanics", "Page 2"]], "must_include": ["p = m * v"]},
+      {"q": "What units is work measured in?", "gold": [["demo-physics-mechanics", "Page 3"]], "must_include": ["joules"]},
+      {"q": "What is kinetic energy?", "gold": [["demo-physics-mechanics", "Page 3"]], "must_include": ["motion"]},
+      {"q": "What does g stand for in potential energy?", "gold": [["demo-physics-mechanics", "Page 3"]], "must_include": ["gravitational field strength"]},
+      {"q": "Does the medium travel with a wave?", "gold": [["demo-waves-optics", "Slide 1 (speaker notes)"], ["demo-waves-optics", "Slide 1"]], "must_include": ["not|without"]},
+      {"q": "What is frequency?", "gold": [["demo-waves-optics", "Slide 1"]], "must_include": ["per second|each second"]},
+      {"q": "How are the angles of incidence and reflection measured?", "gold": [["demo-waves-optics", "Slide 3"]], "must_include": ["normal"]},
+      {"q": "What is refraction?", "gold": [["demo-waves-optics", "Slide 4"]], "must_include": ["direction"]},
+      {"q": "What is the refractive index of glass?", "gold": [["demo-waves-optics", "Slide 5 (speaker notes)"]], "must_include": ["1.5"]},
+      {"q": "What are the roots of x^2 - 5x + 6?", "gold": [["demo-mathematics-calculus", "Page 1"]], "must_include": ["2 and 3"]},
+      {"q": "When does a quadratic have one repeated root?", "gold": [["demo-mathematics-calculus", "Page 1"]], "must_include": ["zero"]},
+      {"q": "What is the derivative of a constant?", "gold": [["demo-mathematics-calculus", "Page 2"]], "must_include": ["zero"]},
+      {"q": "What is the slope of the tangent line?", "gold": [["demo-mathematics-calculus", "Page 2"]], "must_include": ["derivative"]},
+      {"q": "Where does aerobic respiration happen?", "gold": [["demo-biology-cell-lecture", "00:02:50"]], "must_include": ["Mitochondria"]},
+      {"q": "What does chlorophyll do?", "gold": [["demo-biology-cell-lecture", "00:04:12"]], "must_include": ["absorbs light"]},
+      {"q": "Do bacteria have a nucleus?", "gold": [["demo-biology-cell-lecture", "00:00:12"]], "must_include": ["no nucleus"]},
+      {"q": "What fills the vacuole of a plant cell?", "gold": [["demo-biology-cell-lecture", "00:05:31"]], "must_include": ["cell sap"]}
+    ],
+    "trap": ["What is Newton's law of gravitation?", "What is the critical angle of water?", "What is the second derivative of x^3?", "How does the endoplasmic reticulum work?", "What is the speed of sound in air?", "Explain the fifth law of motion"],
+    "off": ["Who painted the Mona Lisa?", "What is the weather in Mumbai today?", "How do I bake bread?", "Explain blockchain consensus", "Write a poem about the sea"]
+  },
+  "upload": {
+    "file": "electricity_notes.md",
+    "supported": [
+      {"q": "What is electric current?", "section": "Electric Charge and Current", "must_include": ["flow of electric charge"]},
+      {"q": "How do you calculate current from charge and time?", "section": "Electric Charge and Current", "must_include": ["I = Q / t"]},
+      {"q": "Which way does conventional current flow?", "section": "Electric Charge and Current", "must_include": ["positive"]},
+      {"q": "What is potential difference?", "section": "Voltage and Resistance", "must_include": ["energy transferred per unit charge"]},
+      {"q": "State Ohm's law", "section": "Voltage and Resistance", "must_include": ["proportional"]},
+      {"q": "What happens to resistance in a longer wire?", "section": "Voltage and Resistance", "must_include": ["more resistance"]},
+      {"q": "How does current behave in a series circuit?", "section": "Series and Parallel Circuits", "must_include": ["same current"]},
+      {"q": "How is electrical power calculated?", "section": "Series and Parallel Circuits", "must_include": ["P = V * I"]}
+    ],
+    "trap": ["What is Kirchhoff's voltage law?", "How does a transistor amplify?", "What is the resistance of copper wire?"],
+    "off": ["What is mitosis?", "Who won the cricket world cup?"]
+  }
+}

@@ -1,285 +1,233 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Citation, EvidenceUnit, SourceRecord } from "@/lib/types";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { BookOpen, CheckCircle2, Eye, FileUp, Image as ImageIcon, Trash2, Upload, X } from "lucide-react";
 import { api } from "@/lib/api";
-import {
-  BookOpen,
-  CheckCircle2,
-  Database,
-  ExternalLink,
-  FileText,
-  Hash,
-  MapPin,
-  RefreshCw,
-  Sparkles,
-  Upload,
-  Video,
-} from "lucide-react";
+import { EvidenceUnit, SourceRecord, UploadResult } from "@/lib/types";
+import { EmptyState, ErrorBanner, GhostButton, Panel, SectionHeader, Spinner } from "./ui";
 
-interface IngestionViewProps {
-  onOpenCitation: (cit: Citation) => void;
-  onCurriculumUpdated?: () => void;
+const ACCEPT = ".pdf,.pptx,.srt,.vtt,.txt,.md";
+
+const badge = (m: string) =>
+  ({
+    pdf: "bg-rose-500/10 text-rose-300 border-rose-500/30",
+    pptx: "bg-amber-500/10 text-amber-300 border-amber-500/30",
+    video: "bg-sky-500/10 text-sky-300 border-sky-500/30",
+    text: "bg-slate-800 text-slate-300 border-slate-700",
+  }[m] || "bg-slate-800 text-slate-300 border-slate-700");
+
+const modalityName = (m: string) => ({ pdf: "PDF", pptx: "Slides", video: "Transcript", text: "Notes" }[m] || m);
+
+function locLabel(u: EvidenceUnit) {
+  const l = u.location;
+  if (l.page !== undefined) return `Page ${l.page}`;
+  if (l.slide !== undefined) return `Slide ${l.slide}${l.part === "notes" ? " notes" : ""}`;
+  if (l.timestamp !== undefined) return String(l.timestamp);
+  return String(l.section ?? "");
 }
 
-export const IngestionView: React.FC<IngestionViewProps> = ({ onOpenCitation, onCurriculumUpdated }) => {
+export const IngestionView: React.FC<{ onCurriculumUpdated?: () => void }> = ({ onCurriculumUpdated }) => {
   const [sources, setSources] = useState<SourceRecord[]>([]);
-  const [selectedSource, setSelectedSource] = useState<SourceRecord | null>(null);
-  const [evidenceUnits, setEvidenceUnits] = useState<EvidenceUnit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-  const [seeding, setSeeding] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [queue, setQueue] = useState<{ name: string; state: "uploading" | "done" | "error"; result?: UploadResult; error?: string }[]>([]);
+  const [viewing, setViewing] = useState<SourceRecord | null>(null);
+  const [units, setUnits] = useState<EvidenceUnit[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const loadSources = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.listSources();
-      setSources(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to load indexed sources.");
+      setSources(await api.listSources());
+    } catch (e: any) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadSources();
   }, []);
 
-  const handleInspect = async (src: SourceRecord) => {
-    setSelectedSource(src);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function upload(files: FileList | File[]) {
+    for (const file of Array.from(files)) {
+      setQueue((q) => [{ name: file.name, state: "uploading" }, ...q]);
+      try {
+        const result = await api.uploadMaterial(file);
+        setQueue((q) => q.map((x) => (x.name === file.name && x.state === "uploading" ? { ...x, state: "done", result } : x)));
+        onCurriculumUpdated?.();
+      } catch (e: any) {
+        setQueue((q) => q.map((x) => (x.name === file.name && x.state === "uploading" ? { ...x, state: "error", error: e.message } : x)));
+      }
+    }
+    load();
+  }
+
+  async function remove(s: SourceRecord) {
+    if (!window.confirm(`Delete "${s.title}"? Its topics, questions and stored file will be removed. Your past answers stay in your history.`)) return;
     try {
-      const units = await api.getSourceEvidence(src.source_id);
-      setEvidenceUnits(units);
-    } catch {
-      setEvidenceUnits([]);
+      await api.deleteSource(s.source_id);
+      await load();
+      onCurriculumUpdated?.();
+    } catch (e: any) {
+      setError(e.message);
     }
-  };
+  }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    setError(null);
+  async function view(s: SourceRecord) {
+    setViewing(s);
+    setUnits([]);
     try {
-      await api.uploadMaterial(file);
-      await loadSources();
-    } catch (err: any) {
-      setError(err.message || "File upload failed.");
-    } finally {
-      setUploading(false);
-      e.target.value = "";
+      setUnits(await api.getSourceEvidence(s.source_id));
+    } catch (e: any) {
+      setError(e.message);
     }
-  };
+  }
 
-  const handleSyncChroma = async () => {
-    setSyncing(true);
-    setSyncStatus(null);
-    try {
-      const res = await api.syncChroma();
-      setSyncStatus(`Successfully synchronized ${res.synced_units} evidence units into ChromaDB!`);
-      await loadSources();
-    } catch (err: any) {
-      setError(err.message || "Failed to synchronize ChromaDB.");
-    } finally {
-      setSyncing(false);
-    }
-  };
+  const mine = sources.filter((s) => s.owner === "you");
+  const demo = sources.filter((s) => s.owner !== "you");
 
-  const handleSeedCorpus = async () => {
-    setSeeding(true);
-    setError(null);
-    try {
-      await api.seedCorpus();
-      setSyncStatus("Successfully seeded baseline curriculum topics and verified question bank!");
-      await loadSources();
-      if (onCurriculumUpdated) onCurriculumUpdated();
-    } catch (err: any) {
-      setError(err.message || "Failed to seed default corpus.");
-    } finally {
-      setSeeding(false);
-    }
-  };
-
-  const getModalityBadge = (m: string) => {
-    switch (m.toLowerCase()) {
-      case "pdf":
-        return "bg-rose-500/10 text-rose-400 border-rose-500/20";
-      case "pptx":
-        return "bg-amber-500/10 text-amber-400 border-amber-500/20";
-      case "video":
-        return "bg-sky-500/10 text-sky-400 border-sky-500/20";
-      default:
-        return "bg-slate-800 text-slate-300 border-slate-700";
-    }
-  };
+  const Row = ({ s }: { s: SourceRecord }) => (
+    <tr className="transition-colors hover:bg-slate-800/40">
+      <td className="px-4 py-3">
+        <div className="font-semibold text-slate-200">{s.title}</div>
+        <div className="mt-0.5 text-[11px] text-slate-500">{(s.topics || []).map((t) => t.name).join(" · ") || "—"}</div>
+      </td>
+      <td className="px-4 py-3">
+        <span className={`rounded border px-2 py-0.5 text-[10px] font-bold uppercase ${badge(s.modality)}`}>{modalityName(s.modality)}</span>
+      </td>
+      <td className="px-4 py-3 font-mono text-slate-300">{s.evidence_count}</td>
+      <td className="px-4 py-3 text-right">
+        <div className="flex justify-end gap-2">
+          <GhostButton onClick={() => view(s)}>
+            <Eye className="h-3.5 w-3.5" /> Passages
+          </GhostButton>
+          {s.owner === "you" && (
+            <GhostButton onClick={() => remove(s)} className="hover:border-rose-400">
+              <Trash2 className="h-3.5 w-3.5" />
+            </GhostButton>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-        <div>
-          <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-indigo-400" />
-            <span>Course Knowledge Base & Materials Ingestion</span>
-          </h2>
-          <p className="text-xs text-slate-400">
-            Multimodal sources (PDFs, PPTX decks, video transcripts) indexed with physical locators & SHA-256 provenance.
-          </p>
-        </div>
+    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+      <SectionHeader icon={BookOpen} title="Course Materials" subtitle="Upload PDFs, PowerPoint decks, lecture transcripts (.srt/.vtt) or notes (.txt/.md). Each is split into cited passages, topics and practice questions." />
+      {error && <ErrorBanner message={error} onRetry={load} />}
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={handleSeedCorpus}
-            disabled={seeding}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${seeding ? "animate-spin" : ""}`} />
-            <span>{seeding ? "Seeding Corpus..." : "Seed Default Corpus"}</span>
-          </button>
-
-          <button
-            onClick={handleSyncChroma}
-            disabled={syncing}
-            className="flex items-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 px-3.5 py-2 text-xs font-semibold text-indigo-300 transition-colors disabled:opacity-50"
-          >
-            <Database className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
-            <span>{syncing ? "Syncing ChromaDB..." : "Sync Vector Store"}</span>
-          </button>
-
-          <label className="flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-3.5 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-600/25 transition-all cursor-pointer">
-            <Upload className="h-3.5 w-3.5" />
-            <span>{uploading ? "Ingesting..." : "Upload Material"}</span>
-            <input
-              type="file"
-              accept=".pdf,.pptx,.txt"
-              onChange={handleFileUpload}
-              disabled={uploading}
-              className="hidden"
-            />
-          </label>
-        </div>
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          if (e.dataTransfer.files.length) upload(e.dataTransfer.files);
+        }}
+        onClick={() => fileRef.current?.click()}
+        className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
+          dragOver ? "border-indigo-400 bg-indigo-500/10" : "border-slate-700 hover:border-slate-500"
+        }`}
+      >
+        <FileUp className="h-8 w-8 text-indigo-400" />
+        <p className="mt-2 text-sm font-bold text-slate-200">Drop files here or click to upload</p>
+        <p className="mt-1 text-xs text-slate-500">PDF · PPTX · SRT · VTT · TXT · MD, up to 25 MB each. Videos: upload the transcript or captions file.</p>
+        <input ref={fileRef} type="file" accept={ACCEPT} multiple className="hidden" onChange={(e) => e.target.files && upload(e.target.files)} />
       </div>
 
-      {syncStatus && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-400 flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
-          <span>{syncStatus}</span>
-        </div>
-      )}
-
-      {error && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs text-rose-400">
-          {error}
-        </div>
-      )}
-
-      {/* Sources Table */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900 shadow-xl overflow-hidden">
-        <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">
-            Indexed Course Sources ({sources.length})
-          </h3>
-          <span className="text-xs text-slate-400 font-mono">Provenance Track D</span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Title & Source ID</th>
-                <th className="py-3 px-4">Modality</th>
-                <th className="py-3 px-4">Evidence Units</th>
-                <th className="py-3 px-4">SHA-256 Provenance</th>
-                <th className="py-3 px-4 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/80">
-              {sources.map((s) => (
-                <tr key={s.source_id} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-slate-200">{s.title}</div>
-                    <div className="font-mono text-[11px] text-slate-500">{s.source_id}</div>
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <span className={`px-2 py-0.5 rounded border uppercase text-[10px] font-bold ${getModalityBadge(s.modality)}`}>
-                      {s.modality}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 font-mono text-slate-300">
-                    {s.evidence_count ?? "—"} units
-                  </td>
-                  <td className="py-3.5 px-4 font-mono text-[11px] text-slate-500 truncate max-w-xs" title={s.sha256}>
-                    {s.sha256 ? `${s.sha256.slice(0, 16)}...` : "—"}
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <button
-                      onClick={() => handleInspect(s)}
-                      className="px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs transition-colors"
-                    >
-                      View Units
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Evidence Units Inspector */}
-      {selectedSource && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <div>
-              <h3 className="text-sm font-bold text-slate-100">
-                Extracted Evidence: {selectedSource.title}
-              </h3>
-              <p className="text-xs text-slate-400">
-                Physical locators verified for source `{selectedSource.source_id}` ({evidenceUnits.length} units).
-              </p>
-            </div>
-            <button
-              onClick={() => setSelectedSource(null)}
-              className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
+      {queue.length > 0 && (
+        <div className="space-y-2">
+          {queue.map((q, i) => (
+            <div
+              key={`${q.name}-${i}`}
+              className={`rounded-xl border p-3 text-xs ${q.state === "error" ? "border-rose-500/30 bg-rose-950/20 text-rose-200" : q.state === "done" ? "border-emerald-500/30 bg-emerald-950/20 text-emerald-200" : "border-slate-700 bg-slate-900 text-slate-300"}`}
             >
-              Close Inspector
-            </button>
-          </div>
-
-          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-            {evidenceUnits.map((u) => {
-              const loc = u.location || {};
-              let locText = "Location";
-              if (loc.page !== undefined) locText = `Page ${loc.page}`;
-              else if (loc.slide !== undefined) locText = `Slide ${loc.slide}`;
-              else if (loc.timestamp !== undefined) locText = `Timestamp ${loc.timestamp}`;
-
-              return (
-                <div
-                  key={u.evidence_id}
-                  className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 space-y-1.5 text-xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 font-semibold text-indigo-400">
-                      <MapPin className="h-3.5 w-3.5" />
-                      <span>{locText}</span>
+              <div className="flex items-center gap-2 font-semibold">
+                {q.state === "uploading" ? <Spinner label={`Reading ${q.name}… larger files take longer.`} /> : q.state === "done" ? <CheckCircle2 className="h-4 w-4" /> : <X className="h-4 w-4" />}
+                {q.state !== "uploading" && <span>{q.name}</span>}
+              </div>
+              {q.result && (
+                <p className="mt-1 text-slate-300">
+                  {q.result.evidence_count} passages{q.result.figure_count ? `, ${q.result.figure_count} figures` : ""}, {q.result.topics.length} topics ({q.result.topics.map((t) => t.name).join(", ")}),{" "}
+                  {q.result.question_count} verified questions.
+                  {q.result.warnings.map((w) => (
+                    <span key={w} className="block text-amber-300">
+                      ⚠ {w}
                     </span>
-                    <span className="font-mono text-[11px] text-slate-500">
-                      {u.evidence_id}
-                    </span>
+                  ))}
+                </p>
+              )}
+              {q.error && <p className="mt-1">{q.error}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {loading ? (
+        <Spinner label="Loading your library…" />
+      ) : (
+        <>
+          <Panel className="overflow-hidden p-0">
+            <div className="border-b border-slate-800 p-4 text-sm font-bold uppercase tracking-wider text-slate-300">Your material ({mine.length})</div>
+            {mine.length === 0 ? (
+              <div className="p-6">
+                <EmptyState icon={Upload} title="Nothing uploaded yet" body="Until you upload your own files, the tutor and quizzes use the demo course below." />
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs">
+                <tbody className="divide-y divide-slate-800/80">
+                  {mine.map((s) => (
+                    <Row key={s.source_id} s={s} />
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </Panel>
+          <Panel className="overflow-hidden p-0">
+            <div className="border-b border-slate-800 p-4 text-sm font-bold uppercase tracking-wider text-slate-300">Demo course ({demo.length})</div>
+            <table className="w-full text-left text-xs">
+              <tbody className="divide-y divide-slate-800/80">
+                {demo.map((s) => (
+                  <Row key={s.source_id} s={s} />
+                ))}
+              </tbody>
+            </table>
+          </Panel>
+        </>
+      )}
+
+      {viewing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={() => setViewing(null)}>
+          <div className="max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-100">{viewing.title}</h3>
+              <button onClick={() => setViewing(null)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {units.length === 0 ? (
+              <Spinner />
+            ) : (
+              <div className="space-y-2">
+                {units.map((u) => (
+                  <div key={u.evidence_id} className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs">
+                    <div className="mb-1 flex items-center gap-2 text-[11px] text-indigo-300">
+                      {u.evidence_type === "figure" && <ImageIcon className="h-3 w-3" />}
+                      <b>{locLabel(u)}</b>
+                      {u.section && <span className="text-slate-500">· {u.section}</span>}
+                    </div>
+                    <p className="whitespace-pre-wrap text-slate-300">{u.text}</p>
                   </div>
-                  <p className="text-slate-300 font-serif italic line-clamp-3">
-                    "{u.text}"
-                  </p>
-                </div>
-              );
-            })}
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

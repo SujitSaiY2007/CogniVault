@@ -1,195 +1,86 @@
 "use client";
 
 import React, { useState } from "react";
-import { CurriculumTopic } from "@/lib/types";
+import { GraduationCap, X } from "lucide-react";
 import { api } from "@/lib/api";
-import { CheckCircle2, Sparkles, UserPlus, X, Zap } from "lucide-react";
+import { CurriculumTopic, QuizSession } from "@/lib/types";
+import { ErrorBanner, GhostButton, PrimaryButton } from "./ui";
 
-interface ColdStartModalProps {
+const LEVELS = ["New to me", "Heard of it", "Comfortable", "Confident"];
+
+export const ColdStartModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
+  learnerId: string;
   topics: CurriculumTopic[];
-  onComplete: (learnerId: string) => void;
-}
-
-export const ColdStartModal: React.FC<ColdStartModalProps> = ({
-  isOpen,
-  onClose,
-  topics,
-  onComplete,
-}) => {
-  const [learnerId, setLearnerId] = useState("");
-  const [masteryLevels, setMasteryLevels] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(false);
+  onComplete: (quiz: QuizSession | null) => void;
+}> = ({ isOpen, onClose, learnerId, topics, onComplete }) => {
+  const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   if (!isOpen) return null;
 
-  const handleSliderChange = (topicId: string, value: number) => {
-    setMasteryLevels((prev) => ({
-      ...prev,
-      [topicId]: value,
-    }));
-  };
+  const shown = (topics.some((t) => t.owner === "you") ? topics.filter((t) => t.owner === "you") : topics).slice(0, 14);
 
-  const handleQuickPreset = (suggested: string) => {
-    setLearnerId(suggested);
+  async function finish(withQuiz: boolean) {
+    setBusy(true);
     setError(null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    let cleanId = learnerId.trim().toLowerCase().replace(/[^a-zA-Z0-9_\-\.]/g, "_");
-    if (!cleanId) {
-      cleanId = `learner_${Math.floor(1000 + Math.random() * 9000)}`;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    // Build masteries map (defaults to 0.10 if untouched)
-    const masteries: Record<string, number> = {};
-    topics.forEach((t) => {
-      masteries[t.topic_id] = masteryLevels[t.topic_id] ?? 0.10;
-    });
-
     try {
-      await api.coldStartIntake(cleanId, masteries, []);
-    } catch (err: any) {
-      console.warn("API intake background sync note (applied optimistic local learner state):", err);
+      const scaled = Object.fromEntries(Object.entries(ratings).map(([k, v]) => [k, v / 3]));
+      await api.intake(learnerId, scaled);
+      const quiz = withQuiz ? await api.diagnostic() : null;
+      onComplete(quiz);
+    } catch (e: any) {
+      setError(e.message);
     } finally {
-      setLoading(false);
-      onComplete(cleanId);
-      setLearnerId("");
-      setMasteryLevels({});
-      onClose();
+      setBusy(false);
     }
-  };
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-      <div className="relative w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl p-6 sm:p-7 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-start justify-between pb-4 border-b border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-6">
+        <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 text-white shadow-lg shadow-indigo-500/25">
-              <UserPlus className="h-5 w-5" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+              <GraduationCap className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-100">Learner Diagnostic Intake</h3>
-              <p className="text-xs text-slate-400">Establish a personalized BKT baseline for a fresh student</p>
+              <h3 className="text-base font-bold text-slate-100">Placement check</h3>
+              <p className="text-xs text-slate-400">Tell us roughly what you know, then take a short quiz (one easy question per topic). Self-ratings count as weak evidence; your answers matter more.</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
-          >
+          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800">
             <X className="h-5 w-5" />
           </button>
         </div>
-
-        {error && (
-          <div className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-400">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="mt-5 space-y-5">
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 block mb-1.5">
-              Learner Identifier
-            </label>
-            <input
-              id="input-learner-id"
-              type="text"
-              placeholder="e.g. learner_sophia_2026"
-              value={learnerId}
-              onChange={(e) => setLearnerId(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-[11px] font-bold text-slate-300">Quick suggestions:</span>
-              {["learner_sophia", "learner_alex", "learner_david"].map((name) => (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => handleQuickPreset(name)}
-                  className="rounded-lg border-2 border-slate-600 bg-slate-800 hover:border-indigo-400 hover:bg-slate-700 px-2.5 py-1 text-[11px] font-mono text-indigo-300 hover:text-white font-bold transition-all shadow-sm cursor-pointer"
-                >
-                  +{name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-                Prior Knowledge Baseline
-              </label>
-              <span className="text-[11px] text-slate-400">Default: 0.10 (Novice)</span>
-            </div>
-            <p className="text-xs text-slate-400 mb-3">
-              Configure initial belief probability P(L₀) for each topic. Bayesian Knowledge Tracing will mathematically update latent mastery from this baseline.
-            </p>
-
-            <div className="space-y-3.5 max-h-56 overflow-y-auto pr-1">
-              {topics.map((t) => {
-                const currentVal = masteryLevels[t.topic_id] ?? 0.10;
-                return (
-                  <div
-                    key={t.topic_id}
-                    className="rounded-xl border border-slate-800 bg-slate-950/70 p-3"
+        {error && <ErrorBanner message={error} />}
+        <div className="mt-3 space-y-3">
+          {shown.map((t) => (
+            <div key={t.topic_id} className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+              <p className="text-xs font-semibold text-slate-200">{t.name}</p>
+              <div className="mt-2 grid grid-cols-4 gap-1.5">
+                {LEVELS.map((label, i) => (
+                  <button
+                    key={label}
+                    onClick={() => setRatings((r) => ({ ...r, [t.topic_id]: i }))}
+                    className={`rounded-lg border px-2 py-1.5 text-[11px] font-semibold ${ratings[t.topic_id] === i ? "border-indigo-400 bg-indigo-500/20 text-white" : "border-slate-700 text-slate-400 hover:border-slate-500"}`}
                   >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-semibold text-slate-200">{t.name}</span>
-                      <span className="font-mono text-xs font-bold text-indigo-400">
-                        {(currentVal * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.05"
-                      max="0.80"
-                      step="0.05"
-                      value={currentVal}
-                      onChange={(e) => handleSliderChange(t.topic_id, parseFloat(e.target.value))}
-                      className="w-full accent-indigo-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
-                    />
-                    <div className="flex justify-between text-[10px] text-slate-500 mt-1">
-                      <span>Beginner (5%)</span>
-                      <span>Intermediate (40%)</span>
-                      <span>Advanced (80%)</span>
-                    </div>
-                  </div>
-                );
-              })}
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-800">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700 rounded-xl transition-all cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-xs font-extrabold text-white shadow-xl shadow-indigo-600/35 border-2 border-indigo-300/60 transition-all disabled:opacity-50 cursor-pointer hover:scale-105 active:scale-95"
-            >
-              {loading ? (
-                <span>Initializing Profile...</span>
-              ) : (
-                <>
-                  <Zap className="h-4 w-4" />
-                  <span>Initialize Learner Profile</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+          ))}
+        </div>
+        <div className="mt-5 flex flex-wrap justify-end gap-2">
+          <GhostButton onClick={() => finish(false)} disabled={busy}>
+            Save ratings only
+          </GhostButton>
+          <PrimaryButton onClick={() => finish(true)} disabled={busy}>
+            {busy ? "Preparing…" : "Save and start placement quiz"}
+          </PrimaryButton>
+        </div>
       </div>
     </div>
   );

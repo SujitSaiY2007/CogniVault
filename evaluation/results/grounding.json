@@ -1,0 +1,674 @@
+{
+  "dataset": {
+    "supported": 51,
+    "trap": 12,
+    "off": 12
+  },
+  "retrieval": {
+    "hybrid_rrf_rerank": {
+      "context_precision@5": 0.9146,
+      "context_recall@5": 1.0,
+      "mrr": 0.9444
+    },
+    "bm25_only": {
+      "context_precision@5": 0.9313,
+      "context_recall@5": 1.0,
+      "mrr": 0.9771
+    },
+    "dense_only": {
+      "context_precision@5": 0.8931,
+      "context_recall@5": 1.0,
+      "mrr": 0.9395
+    }
+  },
+  "answers": {
+    "answer_rate": 0.9804,
+    "answered_as_partial": 4,
+    "citation_accuracy": 1.0,
+    "answer_correctness": 0.98,
+    "faithfulness": 1.0
+  },
+  "abstention": {
+    "trap": {
+      "declined": 9,
+      "flagged": 3,
+      "leaked": 0
+    },
+    "off": {
+      "declined": 12,
+      "flagged": 0,
+      "leaked": 0
+    },
+    "confusion": {
+      "tp": 50,
+      "fn": 1,
+      "fp": 0,
+      "tn": 24
+    },
+    "answer_precision": 1.0,
+    "answer_recall": 0.9804,
+    "f1": 0.9901,
+    "leakage_rate": 0.0
+  },
+  "gate_ablation": {
+    "full": {
+      "supported_answered": 50,
+      "negatives_leaked": 0
+    },
+    "no_specifier_rule": {
+      "supported_answered": 50,
+      "negatives_leaked": 0
+    },
+    "no_partial_mode": {
+      "supported_answered": 48,
+      "negatives_leaked": 0
+    }
+  },
+  "question_bank": {
+    "total": 111,
+    "verified": 111,
+    "by_type": {
+      "mcq": 66,
+      "short_answer": 31,
+      "numerical": 14
+    },
+    "by_generator": {
+      "term-mcq": 33,
+      "definition-mcq": 33,
+      "cloze": 31,
+      "formula-inverse": 7,
+      "formula-forward": 7
+    },
+    "numerical_recomputed_ok": "7/7",
+    "evidence_links_valid": 111,
+    "near_duplicates": 0,
+    "topics_with_questions": 16,
+    "topics_total": 17
+  },
+  "per_question": [
+    {
+      "q": "What does Newton's first law say?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 1"
+      ]
+    },
+    {
+      "q": "Why do heavier things resist being pushed more?",
+      "status": "unsupported",
+      "citation_ok": false,
+      "answer_ok": false,
+      "cited": []
+    },
+    {
+      "q": "Why do seatbelts work?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 1"
+      ]
+    },
+    {
+      "q": "State Newton's second law of motion",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 1"
+      ]
+    },
+    {
+      "q": "What is the equation linking force, mass and acceleration?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 1"
+      ]
+    },
+    {
+      "q": "What is one newton?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 1"
+      ]
+    },
+    {
+      "q": "What happens to acceleration if the mass doubles?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 1"
+      ]
+    },
+    {
+      "q": "Explain action and reaction forces",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 2"
+      ]
+    },
+    {
+      "q": "Why don't action-reaction pairs cancel out?",
+      "status": "partial",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 2"
+      ]
+    },
+    {
+      "q": "How is momentum defined?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 2"
+      ]
+    },
+    {
+      "q": "What is conserved in a collision of an isolated system?",
+      "status": "partial",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 2"
+      ]
+    },
+    {
+      "q": "What is impulse?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 2"
+      ]
+    },
+    {
+      "q": "How do you calculate work done by a force?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 3"
+      ]
+    },
+    {
+      "q": "Is work done when carrying a bag horizontally?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 3"
+      ]
+    },
+    {
+      "q": "What is the formula for kinetic energy?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 3"
+      ]
+    },
+    {
+      "q": "How is gravitational potential energy worked out?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 3"
+      ]
+    },
+    {
+      "q": "What does the work-energy principle state?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 3"
+      ]
+    },
+    {
+      "q": "Describe the free-body diagram of the pushed box",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-physics-mechanics Page 1"
+      ]
+    },
+    {
+      "q": "What is a wave?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 1"
+      ]
+    },
+    {
+      "q": "Define wavelength",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 1"
+      ]
+    },
+    {
+      "q": "What unit is frequency measured in?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 1"
+      ]
+    },
+    {
+      "q": "How are wave speed, frequency and wavelength related?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 2"
+      ]
+    },
+    {
+      "q": "What is the period of a wave?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 2"
+      ]
+    },
+    {
+      "q": "Does frequency change when a wave enters a new medium?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 2 (speaker notes)"
+      ]
+    },
+    {
+      "q": "What is the law of reflection?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 3"
+      ]
+    },
+    {
+      "q": "What is the normal line?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 3"
+      ]
+    },
+    {
+      "q": "Why does light bend when it enters glass?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 4 (speaker notes)"
+      ]
+    },
+    {
+      "q": "Write down Snell's law",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 4"
+      ]
+    },
+    {
+      "q": "What is the refractive index of a medium?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 5"
+      ]
+    },
+    {
+      "q": "What is the refractive index of water?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 5 (speaker notes)"
+      ]
+    },
+    {
+      "q": "When does total internal reflection happen?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 6"
+      ]
+    },
+    {
+      "q": "How do optical fibres carry light?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-waves-optics Slide 6"
+      ]
+    },
+    {
+      "q": "What is a quadratic equation?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-mathematics-calculus Page 1"
+      ]
+    },
+    {
+      "q": "Give the quadratic formula",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-mathematics-calculus Page 1"
+      ]
+    },
+    {
+      "q": "What does a negative discriminant mean?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-mathematics-calculus Page 1"
+      ]
+    },
+    {
+      "q": "How do you factorise x^2 - 5x + 6?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-mathematics-calculus Page 1"
+      ]
+    },
+    {
+      "q": "What is the difference of two squares identity?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-mathematics-calculus Page 1"
+      ]
+    },
+    {
+      "q": "What does a derivative measure?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-mathematics-calculus Page 2"
+      ]
+    },
+    {
+      "q": "What is the power rule for differentiation?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-mathematics-calculus Page 2"
+      ]
+    },
+    {
+      "q": "Differentiate x cubed",
+      "status": "partial",
+      "citation_ok": true,
+      "answer_ok": false,
+      "cited": [
+        "demo-mathematics-calculus Page 2"
+      ]
+    },
+    {
+      "q": "How do you differentiate a product of two functions?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-mathematics-calculus Page 2"
+      ]
+    },
+    {
+      "q": "Explain the chain rule",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-mathematics-calculus Page 2"
+      ]
+    },
+    {
+      "q": "What is cell theory?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-biology-cell-lecture 00:00:12"
+      ]
+    },
+    {
+      "q": "How do prokaryotic and eukaryotic cells differ?",
+      "status": "partial",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-biology-cell-lecture 00:00:12"
+      ]
+    },
+    {
+      "q": "What does the cell membrane do?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-biology-cell-lecture 00:01:35"
+      ]
+    },
+    {
+      "q": "What is stored in the nucleus?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-biology-cell-lecture 00:06:42"
+      ]
+    },
+    {
+      "q": "Which organelle releases energy from glucose?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-biology-cell-lecture 00:02:50"
+      ]
+    },
+    {
+      "q": "What is ATP used for?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-biology-cell-lecture 00:02:50"
+      ]
+    },
+    {
+      "q": "What happens during photosynthesis?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-biology-cell-lecture 00:04:12"
+      ]
+    },
+    {
+      "q": "Where are proteins made in a cell?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-biology-cell-lecture 00:05:31"
+      ]
+    },
+    {
+      "q": "What is the plant cell wall made of?",
+      "status": "supported",
+      "citation_ok": true,
+      "answer_ok": true,
+      "cited": [
+        "demo-biology-cell-lecture 00:05:31"
+      ]
+    }
+  ],
+  "negatives": [
+    {
+      "q": "What is Newton's fourth law?",
+      "status": "unsupported",
+      "reason": "The material does not mention 'fourth' in this context."
+    },
+    {
+      "q": "What is the third rule of differentiation for quotients?",
+      "status": "unsupported",
+      "reason": "The material does not mention 'third' in this context."
+    },
+    {
+      "q": "What is the refractive index of diamond?",
+      "status": "partial",
+      "reason": null
+    },
+    {
+      "q": "How does a nuclear reactor use momentum?",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "What is the formula for centripetal force?",
+      "status": "partial",
+      "reason": null
+    },
+    {
+      "q": "Explain the photoelectric effect",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "What did the 1905 paper on relativity say?",
+      "status": "unsupported",
+      "reason": "The material does not mention '1905' in this context."
+    },
+    {
+      "q": "How does the Golgi apparatus package proteins?",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "What is the integral of x squared?",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "Explain Doppler shift of sound waves",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "What is the quotient rule?",
+      "status": "partial",
+      "reason": null
+    },
+    {
+      "q": "What is meiosis?",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "Who won the 2014 football World Cup?",
+      "status": "unsupported",
+      "reason": "The material does not mention '2014' in this context."
+    },
+    {
+      "q": "What is the capital of France?",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "Write me a recipe for chocolate cake",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "What were the economic causes of the French Revolution?",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "Who is the current prime minister of India?",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "How do I install Python on Windows?",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "Recommend a good movie for tonight",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "What is the stock price of Apple?",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "Translate hello into Japanese",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "hi there",
+      "status": "unsupported",
+      "reason": "The question has no subject words to look up."
+    },
+    {
+      "q": "Explain monetary policy and inflation targeting",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    },
+    {
+      "q": "What is quantum entanglement?",
+      "status": "unsupported",
+      "reason": "Your course material covers too little of this question to answer it reliably."
+    }
+  ],
+  "runtime_seconds": 0.23,
+  "engine": {
+    "answers": "extractive (no model configured)",
+    "embeddings": "hashing-v1-512"
+  }
+}

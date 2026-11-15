@@ -1,0 +1,90 @@
+{
+  "demo_course": {
+    "answered": 19,
+    "partial": 1,
+    "citation_ok": 18,
+    "answer_ok": 17,
+    "trap_declined": 3,
+    "trap_flagged": 1,
+    "trap_leaked": 2,
+    "off_declined": 5,
+    "off_leaked": 0,
+    "misses": [
+      {
+        "q": "What is the unit of force?",
+        "status": "supported",
+        "cited": [
+          "00:00:12"
+        ],
+        "answer": "Cell theory states that all living things are made of one or more cells, that the cell is the basic unit of life, and that new cells come from existing cells. [1]"
+      },
+      {
+        "q": "What units is work measured in?",
+        "status": "unsupported",
+        "reason": "The matching terms are scattered across unrelated passages."
+      },
+      {
+        "q": "What is the slope of the tangent line?",
+        "status": "supported",
+        "cited": [
+          "Page 2"
+        ],
+        "answer": "Geometrically, it is the slope of the tangent line to the graph at a point. [1]"
+      },
+      {
+        "q": "What is Newton's law of gravitation?",
+        "status": "LEAKED"
+      },
+      {
+        "q": "What is the critical angle of water?",
+        "status": "LEAKED"
+      }
+    ],
+    "answer_rate": 0.95,
+    "citation_accuracy": 0.947,
+    "answer_correctness": 0.895,
+    "n": {
+      "supported": 20,
+      "trap": 6,
+      "off": 5
+    }
+  },
+  "unseen_upload": {
+    "answered": 8,
+    "partial": 1,
+    "citation_ok": 8,
+    "answer_ok": 8,
+    "trap_declined": 1,
+    "trap_flagged": 2,
+    "trap_leaked": 0,
+    "off_declined": 2,
+    "off_leaked": 0,
+    "misses": [],
+    "answer_rate": 1.0,
+    "citation_accuracy": 1.0,
+    "answer_correctness": 1.0,
+    "n": {
+      "supported": 8,
+      "trap": 3,
+      "off": 2
+    },
+    "upload": {
+      "evidence_count": 3,
+      "topics": [
+        {
+          "topic_id": "src-38ba60284a38088f800b:electric-charge-and-current",
+          "name": "Electric Charge and Current"
+        },
+        {
+          "topic_id": "src-38ba60284a38088f800b:voltage-and-resistance",
+          "name": "Voltage and Resistance"
+        },
+        {
+          "topic_id": "src-38ba60284a38088f800b:series-and-parallel-circuits",
+          "name": "Series and Parallel Circuits"
+        }
+      ],
+      "question_count": 24
+    }
+  }
+}

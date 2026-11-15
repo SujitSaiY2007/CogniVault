@@ -1,0 +1,661 @@
+{
+  "version": 2,
+  "description": "Team-built test set for the bundled demo course. 'gold' lists acceptable (source, locator) pairs; 'must_include' are words a correct answer has to contain. Questions are written as a student would ask them, often paraphrased rather than copied from the text. 'trap' questions sound on-topic but the material does not answer them; 'off' questions are unrelated.",
+  "supported": [
+    {
+      "q": "What does Newton's first law say?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "rest",
+        "net external force"
+      ]
+    },
+    {
+      "q": "Why do heavier things resist being pushed more?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "inertia"
+      ]
+    },
+    {
+      "q": "Why do seatbelts work?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "inertia"
+      ]
+    },
+    {
+      "q": "State Newton's second law of motion",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "acceleration",
+        "mass"
+      ]
+    },
+    {
+      "q": "What is the equation linking force, mass and acceleration?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "F = m * a"
+      ]
+    },
+    {
+      "q": "What is one newton?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "kilogram"
+      ]
+    },
+    {
+      "q": "What happens to acceleration if the mass doubles?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "halves"
+      ]
+    },
+    {
+      "q": "Explain action and reaction forces",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 2"
+        ]
+      ],
+      "must_include": [
+        "opposite"
+      ]
+    },
+    {
+      "q": "Why don't action-reaction pairs cancel out?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 2"
+        ]
+      ],
+      "must_include": [
+        "different objects"
+      ]
+    },
+    {
+      "q": "How is momentum defined?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 2"
+        ]
+      ],
+      "must_include": [
+        "mass",
+        "velocity"
+      ]
+    },
+    {
+      "q": "What is conserved in a collision of an isolated system?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 2"
+        ]
+      ],
+      "must_include": [
+        "momentum"
+      ]
+    },
+    {
+      "q": "What is impulse?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 2"
+        ]
+      ],
+      "must_include": [
+        "change in momentum"
+      ]
+    },
+    {
+      "q": "How do you calculate work done by a force?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 3"
+        ]
+      ],
+      "must_include": [
+        "W = F * d"
+      ]
+    },
+    {
+      "q": "Is work done when carrying a bag horizontally?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 3"
+        ]
+      ],
+      "must_include": [
+        "perpendicular"
+      ]
+    },
+    {
+      "q": "What is the formula for kinetic energy?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 3"
+        ]
+      ],
+      "must_include": [
+        "0.5 * m * v^2"
+      ]
+    },
+    {
+      "q": "How is gravitational potential energy worked out?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 3"
+        ]
+      ],
+      "must_include": [
+        "m * g * h"
+      ]
+    },
+    {
+      "q": "What does the work-energy principle state?",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 3"
+        ]
+      ],
+      "must_include": [
+        "kinetic energy"
+      ]
+    },
+    {
+      "q": "Describe the free-body diagram of the pushed box",
+      "gold": [
+        [
+          "demo-physics-mechanics",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "friction"
+      ]
+    },
+    {
+      "q": "What is a wave?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 1"
+        ]
+      ],
+      "must_include": [
+        "energy"
+      ]
+    },
+    {
+      "q": "Define wavelength",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 1"
+        ]
+      ],
+      "must_include": [
+        "crests"
+      ]
+    },
+    {
+      "q": "What unit is frequency measured in?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 1"
+        ]
+      ],
+      "must_include": [
+        "hertz"
+      ]
+    },
+    {
+      "q": "How are wave speed, frequency and wavelength related?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 2"
+        ]
+      ],
+      "must_include": [
+        "v = f * lambda"
+      ]
+    },
+    {
+      "q": "What is the period of a wave?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 2"
+        ]
+      ],
+      "must_include": [
+        "T = 1 / f"
+      ]
+    },
+    {
+      "q": "Does frequency change when a wave enters a new medium?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 2 (speaker notes)"
+        ],
+        [
+          "demo-waves-optics",
+          "Slide 2"
+        ]
+      ],
+      "must_include": [
+        "same"
+      ]
+    },
+    {
+      "q": "What is the law of reflection?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 3"
+        ]
+      ],
+      "must_include": [
+        "angle of incidence"
+      ]
+    },
+    {
+      "q": "What is the normal line?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 3"
+        ]
+      ],
+      "must_include": [
+        "perpendicular"
+      ]
+    },
+    {
+      "q": "Why does light bend when it enters glass?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 4"
+        ],
+        [
+          "demo-waves-optics",
+          "Slide 4 (speaker notes)"
+        ]
+      ],
+      "must_include": [
+        "slows|speed"
+      ]
+    },
+    {
+      "q": "Write down Snell's law",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 4"
+        ]
+      ],
+      "must_include": [
+        "n1 * sin(theta1)"
+      ]
+    },
+    {
+      "q": "What is the refractive index of a medium?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 5"
+        ]
+      ],
+      "must_include": [
+        "speed of light"
+      ]
+    },
+    {
+      "q": "What is the refractive index of water?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 5 (speaker notes)"
+        ]
+      ],
+      "must_include": [
+        "1.33"
+      ]
+    },
+    {
+      "q": "When does total internal reflection happen?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 6"
+        ]
+      ],
+      "must_include": [
+        "critical angle"
+      ]
+    },
+    {
+      "q": "How do optical fibres carry light?",
+      "gold": [
+        [
+          "demo-waves-optics",
+          "Slide 6"
+        ]
+      ],
+      "must_include": [
+        "total internal reflection"
+      ]
+    },
+    {
+      "q": "What is a quadratic equation?",
+      "gold": [
+        [
+          "demo-mathematics-calculus",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "ax^2"
+      ]
+    },
+    {
+      "q": "Give the quadratic formula",
+      "gold": [
+        [
+          "demo-mathematics-calculus",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "sqrt(b^2 - 4ac)"
+      ]
+    },
+    {
+      "q": "What does a negative discriminant mean?",
+      "gold": [
+        [
+          "demo-mathematics-calculus",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "no real roots"
+      ]
+    },
+    {
+      "q": "How do you factorise x^2 - 5x + 6?",
+      "gold": [
+        [
+          "demo-mathematics-calculus",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "(x - 2)(x - 3)"
+      ]
+    },
+    {
+      "q": "What is the difference of two squares identity?",
+      "gold": [
+        [
+          "demo-mathematics-calculus",
+          "Page 1"
+        ]
+      ],
+      "must_include": [
+        "(a - b)(a + b)"
+      ]
+    },
+    {
+      "q": "What does a derivative measure?",
+      "gold": [
+        [
+          "demo-mathematics-calculus",
+          "Page 2"
+        ]
+      ],
+      "must_include": [
+        "rate of change"
+      ]
+    },
+    {
+      "q": "What is the power rule for differentiation?",
+      "gold": [
+        [
+          "demo-mathematics-calculus",
+          "Page 2"
+        ]
+      ],
+      "must_include": [
+        "n * x^(n-1)"
+      ]
+    },
+    {
+      "q": "Differentiate x cubed",
+      "gold": [
+        [
+          "demo-mathematics-calculus",
+          "Page 2"
+        ]
+      ],
+      "must_include": [
+        "3x^2"
+      ]
+    },
+    {
+      "q": "How do you differentiate a product of two functions?",
+      "gold": [
+        [
+          "demo-mathematics-calculus",
+          "Page 2"
+        ]
+      ],
+      "must_include": [
+        "u' * v"
+      ]
+    },
+    {
+      "q": "Explain the chain rule",
+      "gold": [
+        [
+          "demo-mathematics-calculus",
+          "Page 2"
+        ]
+      ],
+      "must_include": [
+        "composite"
+      ]
+    },
+    {
+      "q": "What is cell theory?",
+      "gold": [
+        [
+          "demo-biology-cell-lecture",
+          "00:00:12"
+        ]
+      ],
+      "must_include": [
+        "cells"
+      ]
+    },
+    {
+      "q": "How do prokaryotic and eukaryotic cells differ?",
+      "gold": [
+        [
+          "demo-biology-cell-lecture",
+          "00:00:12"
+        ]
+      ],
+      "must_include": [
+        "nucleus"
+      ]
+    },
+    {
+      "q": "What does the cell membrane do?",
+      "gold": [
+        [
+          "demo-biology-cell-lecture",
+          "00:01:35"
+        ]
+      ],
+      "must_include": [
+        "enter"
+      ]
+    },
+    {
+      "q": "What is stored in the nucleus?",
+      "gold": [
+        [
+          "demo-biology-cell-lecture",
+          "00:01:35"
+        ],
+        [
+          "demo-biology-cell-lecture",
+          "00:06:42"
+        ]
+      ],
+      "must_include": [
+        "DNA"
+      ]
+    },
+    {
+      "q": "Which organelle releases energy from glucose?",
+      "gold": [
+        [
+          "demo-biology-cell-lecture",
+          "00:02:50"
+        ]
+      ],
+      "must_include": [
+        "Mitochondria"
+      ]
+    },
+    {
+      "q": "What is ATP used for?",
+      "gold": [
+        [
+          "demo-biology-cell-lecture",
+          "00:02:50"
+        ]
+      ],
+      "must_include": [
+        "energy"
+      ]
+    },
+    {
+      "q": "What happens during photosynthesis?",
+      "gold": [
+        [
+          "demo-biology-cell-lecture",
+          "00:04:12"
+        ]
+      ],
+      "must_include": [
+        "glucose"
+      ]
+    },
+    {
+      "q": "Where are proteins made in a cell?",
+      "gold": [
+        [
+          "demo-biology-cell-lecture",
+          "00:05:31"
+        ]
+      ],
+      "must_include": [
+        "Ribosomes"
+      ]
+    },
+    {
+      "q": "What is the plant cell wall made of?",
+      "gold": [
+        [
+          "demo-biology-cell-lecture",
+          "00:05:31"
+        ]
+      ],
+      "must_include": [
+        "cellulose"
+      ]
+    }
+  ],
+  "trap": [
+    "What is Newton's fourth law?",
+    "What is the third rule of differentiation for quotients?",
+    "What is the refractive index of diamond?",
+    "How does a nuclear reactor use momentum?",
+    "What is the formula for centripetal force?",
+    "Explain the photoelectric effect",
+    "What did the 1905 paper on relativity say?",
+    "How does the Golgi apparatus package proteins?",
+    "What is the integral of x squared?",
+    "Explain Doppler shift of sound waves",
+    "What is the quotient rule?",
+    "What is meiosis?"
+  ],
+  "off": [
+    "Who won the 2014 football World Cup?",
+    "What is the capital of France?",
+    "Write me a recipe for chocolate cake",
+    "What were the economic causes of the French Revolution?",
+    "Who is the current prime minister of India?",
+    "How do I install Python on Windows?",
+    "Recommend a good movie for tonight",
+    "What is the stock price of Apple?",
+    "Translate hello into Japanese",
+    "hi there",
+    "Explain monetary policy and inflation targeting",
+    "What is quantum entanglement?"
+  ]
+}

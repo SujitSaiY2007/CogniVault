@@ -1,149 +1,101 @@
 # CogniVault
 
-**An evidence-first adaptive learning companion** that connects course materials, grounded tutoring, verified practice, and learner mastery tracking.
+**A study companion that only answers from your own course material.** Upload your PDFs, slides, lecture transcripts or notes. CogniVault cites the exact page, slide or timestamp behind every answer, and declines questions the material doesn't cover. It generates checked practice questions and tracks what you know with Bayesian Knowledge Tracing. It then plans what to study next.
 
-> Hackathon project · Multimodal AI Hackathon 2026 · Track D — Personalized Tutoring & Adaptive Learning
+> Started at the Multimodal AI Hackathon 2026 (Track D, Personalized Tutoring & Adaptive Learning) and rebuilt in v2 as a usable product. The v1 hackathon records are in [`docs/archive/v1-hackathon`](docs/archive/v1-hackathon).
 
-[![Python](https://img.shields.io/badge/Python-3.12-blue)](https://python.org)
-[![Backend](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Agno-009688)](https://fastapi.tiangolo.com/)
-[![Frontend](https://img.shields.io/badge/Frontend-Next.js%20%7C%20TypeScript-black)](https://nextjs.org/)
+## What it does
 
-## Overview
+| | |
+|---|---|
+| **Library** | PDF (text, headings, figures with captions), PPTX (slides, tables, speaker notes, pictures), `.srt`/`.vtt` lecture captions, `.txt`/`.md` notes. Each file is split into cited passages, topics, concepts and prerequisites automatically. |
+| **Tutor** | Hybrid search (BM25 + embeddings, RRF fusion, coverage re-rank, MMR). An evidence gate decides whether to **answer**, answer as **partial** (naming what the material doesn't mention) or **decline**. Every sentence links to its source. Follow-up questions work. |
+| **Practice & exams** | MCQ, numerical and fill-in questions generated from your text and verified before use. Numerical answers are computed from the formulas in your notes. Quick practice, custom quizzes and mock exams end with a report: weak topics, confusions, misconceptions, and passages to re-read. |
+| **Learner model** | BKT with item-specific guess/slip, partial credit and forgetting. Misconceptions are flagged after repeated errors. Recommendations follow prerequisites, interleave topics and avoid "wheel-spinning". |
+| **Study tools** | Placement check (cold start), day-by-day plan to an exam date, SM-2 flashcards, and a course map of topics and prerequisites. |
+| **Optional AI** | With `GEMINI_API_KEY` (or a local Ollama), the model writes explanations. Each sentence is still checked against the cited passage: unsupported sentences are removed, and the app falls back to the extractive answer if too few survive. Without a key, everything works using the extractive engine. |
 
-CogniVault is designed around a simple learning loop:
+## Results (v2, demo course, `python -m evaluation.run_eval`)
 
-**Course sources → addressable evidence → grounded tutoring → verified assessment → learner-state update → explainable next step**
+| Metric | Value |
+|---|---|
+| Context precision@5 / recall@5 / MRR (hybrid) | 0.91 / 1.00 / 0.94 |
+| Answer rate on 51 supported questions | 98% (4 flagged partial) |
+| Citation accuracy / answer correctness | 100% / 98% |
+| Off-topic questions leaked as answered | 0 / 12 |
+| On-topic "trap" questions leaked | 0 / 12 (9 declined, 3 flagged) |
+| Question bank | 111 questions, all verified, 0 near-duplicates, numerical keys recomputed 7/7 |
 
-Instead of treating a learner's question as an unconstrained chat prompt, the system uses indexed course evidence and source locators, checks evidence sufficiency, and can abstain when support is inadequate. Practice answers update an interpretable Bayesian Knowledge Tracing (BKT) learner model, which informs mastery, prerequisite checks, misconception support, and recommendations.
+**Held-out set** (written after development, run once): on the demo course, 95% of questions answered with 95% citation accuracy, and **2 of 6 trap questions leaked**. On a document never seen before (uploaded as a user), 8/8 questions were answered correctly with correct citations. One rule (unseen terms → partial) was added after the first held-out run; both runs are recorded in `evaluation/results/`.
 
-## Product capabilities
+**Simulated students** (`python -m evaluation.simulate`; 30 students × 3 profiles, 60 questions each, ground-truth knowledge). Adaptive practice beat a fixed syllabus order by +6 to +11 points of topics truly learned, and random practice by +8 to +15 points (all 95% CIs exclude 0). The repetition rate was 5–10%, against 26% for random.
 
-- **Source ingestion and provenance** — PDF, PowerPoint, and supported text/transcript content with evidence records and source locators.
-- **Hybrid retrieval** — lexical and semantic retrieval with evidence traces.
-- **Grounded tutor** — source-linked responses and a fail-closed evidence sufficiency path.
-- **Assessment workflow** — quiz selection and deterministic structural/numerical verification.
-- **Learner model** — topic-level BKT state, prerequisite-aware recommendations, and repeated-error misconception diagnostics.
-- **Learning UI** — Next.js frontend plus a preserved Streamlit interface for local workflows.
-- **Evaluation assets** — benchmark runners, simulated learner studies, result files, and automated tests.
+Read [`docs/EVALUATION.md`](docs/EVALUATION.md) before quoting these numbers: it covers the corpus size, the simulation assumptions and the known failure cases.
 
-Feature behavior and scope are described in the source and technical documents; deployment and metric claims should be interpreted in the context of their recorded verification evidence.
-
-## Architecture at a glance
+## Architecture
 
 ```mermaid
 flowchart LR
-  Sources[PDF · PPTX · Text/Transcript] --> Ingest[Ingestion & Provenance]
-  Ingest --> Evidence[Evidence Store]
-  Evidence --> Retrieval[Hybrid Retrieval]
-  Retrieval --> Gate{Evidence sufficient?}
-  Gate -->|Yes| Tutor[Grounded Tutor]
-  Gate -->|No| Abstain[Abstain]
-  Tutor --> Citations[Verified source locators]
-  Practice[Assessment] --> Verify[Deterministic verification]
-  Verify --> BKT[BKT learner state]
-  BKT --> Next[Prerequisites · Remediation · Recommendations]
-  Frontend[Next.js UI] <--> API[FastAPI / Agno AgentOS]
-  API --> Retrieval
-  API --> Tutor
-  API --> Practice
-  API --> BKT
-  Legacy[Streamlit UI] -. preserved local entry .-> API
+  F[PDF · PPTX · SRT/VTT · notes] --> P[Parsers: locators, headings, figures]
+  P --> K[Topics · concepts · prerequisites]
+  P --> I[(SQLite: FTS5 + vectors)]
+  Q[Question] --> R[BM25 + embeddings → RRF → coverage re-rank → MMR]
+  I --> R --> G{Evidence gate}
+  G -->|covered| A[Extractive answer or model answer + sentence verification]
+  G -->|partly| PA[Partial answer naming the gap]
+  G -->|not covered| D[Decline]
+  K --> QG[Question generators + verifier] --> X[Quizzes · exams · reports]
+  X --> B[BKT + forgetting + misconceptions] --> RC[Recommendations · plan · flashcards]
+  UI[Next.js] <--> API[FastAPI] --> S[(Supabase: accounts, files, progress)]
 ```
 
-## Repository map
-
-| Path | Purpose |
-|---|---|
-| `app/` | Python application services, retrieval, tutor, assessment, learner model, API, and Streamlit UI |
-| `frontend/` | Next.js / TypeScript application |
-| `data/corpus/` | Small reproducible course-material fixtures and manifest |
-| `evaluation/` | Evaluation runners, datasets, and recorded results |
-| `tests/` | Unit, acceptance, integration, and browser-walkthrough tests |
-| `docs/architecture/` | Technical architecture reference |
-| `docs/project/` | Project state, master plan, decision log, requirements traceability |
-| `docs/demo/` | Demo plan and walkthroughs |
-| `docs/evaluation/` | Evaluation protocol and reports |
-| `docs/policies/` | Grounding, security, and usage policies |
-| `docs/testing/` | Test specification |
-| `docs/hackathon/` | Hackathon submission planning |
-| `docs/evidence/` and `docs/archive/` | Preserved screenshots and historical phase records |
+Details are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Run locally
 
-### Prerequisites
-
-- Python 3.12+
-- Node.js 18+ and npm
-- Optional: Ollama for a local model provider
-
-### Backend
-
 ```bash
-git clone https://github.com/SujitSaiY2007/CogniVault.git
-cd CogniVault
+# backend (Python 3.11+)
+python -m venv .venv && source .venv/bin/activate      # Windows: .\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+uvicorn app.api:app --reload --port 8000               # API docs at http://localhost:8000/docs
 
-python -m venv .venv
-# Windows PowerShell:
-.\.venv\Scripts\Activate.ps1
-# macOS/Linux:
-# source .venv/bin/activate
+# frontend (Node 18+), second terminal
+cd frontend && npm install
+echo NEXT_PUBLIC_API_URL=http://localhost:8000 > .env.local
+npm run dev                                            # http://localhost:3000
 
-pip install -r requirements.txt
-pip install -e .
-python -m uvicorn app.agent_os.app:app --host 127.0.0.1 --port 8000
+# checks
+pytest                                  # 62 tests, about 5 s
+python -m evaluation.run_eval           # retrieval / grounding / question bank
+python -m evaluation.run_heldout        # held-out set
+python -m evaluation.simulate           # simulated students (about 45 s)
 ```
 
-API health route: `http://localhost:8000/api/v1/health`  
-API docs: `http://localhost:8000/docs`
+No keys are needed. Optional settings are in `.env.example`.
 
-### Frontend
+## Deploy (free tiers)
 
-In a second terminal:
+* **Backend → Render** using `render.yaml`. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` so accounts, uploads and progress survive restarts (run `supabase/migrations/001_cognivault_tenant_storage.sql` once). `GEMINI_API_KEY` is optional. Set `CORS_ORIGINS` to your frontend URL.
+* **Frontend → Vercel** with root `frontend/` and `NEXT_PUBLIC_API_URL` set to the Render URL.
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+Free Render instances sleep when idle. The UI shows "Waking server…" and retries automatically.
 
-Open `http://localhost:3000`. Configure the API base URL using `frontend/.env.example` when needed.
+## Repository
 
-### Legacy Streamlit interface
+| Path | |
+|---|---|
+| `app/` | backend: `ingest`, `knowledge`, `retrieval`, `grounding`, `questions`, `learner`, `study`, `service`, `api`, `persistence` |
+| `frontend/` | Next.js 14 + TypeScript + Tailwind |
+| `data/corpus/` | demo course (project-authored, CC0; rebuilt by `app/corpus.py`) |
+| `evaluation/` | datasets, runners, recorded results |
+| `tests/` | unit, API and persistence tests |
+| `docs/` | architecture, evaluation, archived v1 records, hackathon reference PDFs |
 
-```bash
-python -m streamlit run app/ui/main.py
-```
+## Limitations
 
-## Tests and evaluation
+* Lexical grounding can still accept a question whose words all appear in the material when the combination doesn't (for example "Newton's law of gravitation" next to "gravitational potential energy"). A configured model adds a second check.
+* Scanned PDFs need a vision model for their text. Video files must be uploaded as captions (`.srt`/`.vtt`).
+* The default embeddings are hashing-based (no download). Paraphrases with no shared words can be missed; set `EMBEDDING_PROVIDER=gemini` for stronger semantic matching.
+* The evaluation corpus is small and project-authored.
 
-```bash
-pytest -v
-python -m evaluation.runner
-python -m evaluation.simulate_learners
-```
-
-The repository's [Final Verification & Submission Report](docs/FINAL_VERIFICATION_AND_SUBMISSION_REPORT.md) records a **143-test pass** and a frontend production build result for the integration work. These are recorded historical results, not a claim that this branch's tests were rerun during this documentation cleanup. Review the report for its environment, timings, and scope. Evaluation artifacts are retained under `evaluation/`.
-
-## Documentation
-
-- [Architecture](docs/architecture/ARCHITECTURE.md)
-- [Evaluation protocol](docs/evaluation/EVALUATION_PROTOCOL.md)
-- [Final verification report](docs/FINAL_VERIFICATION_AND_SUBMISSION_REPORT.md)
-- [Demo plan](docs/demo/DEMO_PLAN.md) · [Demo script and checklist](docs/DEMO_SCRIPT_AND_CHECKLIST.md)
-- [Judge technical defense Q&A](docs/JUDGE_TECHNICAL_DEFENSE_QA.md)
-- [Documentation index](docs/README.md)
-- [Decision log](docs/project/DECISION_LOG.md)
-- [Project state](docs/project/PROJECT_STATE.md)
-- [Hackathon reference PDFs](docs/README.md#evidence-and-history)
-
-## Deployment
-
-Deployment configuration is present in the repository (`render.yaml`, `vercel.json`, and frontend configuration). Availability, provider quotas, data durability, and live endpoint health can change; treat hosted links and deployment status as requiring a fresh check before relying on them. The backend's persistence may depend on host storage configuration.
-
-## AI assistance and authorship
-
-This project was developed with AI-assisted coding tools and frameworks, alongside human-directed design, implementation, evaluation, and review. See the project documentation and hackathon submission materials for the specific tools and disclosures. Code ownership and responsibility remain with the project team.
-
-## License
-
-A license file is not present on the reviewed `main` branch. Add the intended license before describing this repository as MIT-licensed.
+MIT License. Built with AI-assisted development; the design, review and responsibility belong to the project team.

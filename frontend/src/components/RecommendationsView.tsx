@@ -1,206 +1,217 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { CurriculumTopic, DEFAULT_CURRICULUM_TOPICS, Recommendation } from "@/lib/types";
+import React, { useCallback, useEffect, useState } from "react";
+import { CalendarDays, Compass, Layers, MapPin, RotateCw } from "lucide-react";
 import { api } from "@/lib/api";
-import {
-  ArrowRight,
-  BookOpen,
-  CheckCircle2,
-  Compass,
-  GitBranch,
-  Layers,
-  Lock,
-  RefreshCw,
-  Sparkles,
-  Unlock,
-} from "lucide-react";
+import { ACTION_LABELS, Citation, Flashcard, Recommendation, StudyPlan, locatorLabel } from "@/lib/types";
+import { EmptyState, ErrorBanner, GhostButton, Panel, PrimaryButton, SectionHeader, Spinner } from "./ui";
 
-interface RecommendationsViewProps {
-  activeLearner: string;
-  onNavigateToPractice: (topicId: string) => void;
-}
+const GRADES = [
+  { label: "Again", grade: 1, cls: "hover:border-rose-400" },
+  { label: "Hard", grade: 3, cls: "hover:border-amber-400" },
+  { label: "Good", grade: 4, cls: "hover:border-teal-400" },
+  { label: "Easy", grade: 5, cls: "hover:border-emerald-400" },
+];
 
-export const RecommendationsView: React.FC<RecommendationsViewProps> = ({
-  activeLearner,
-  onNavigateToPractice,
-}) => {
-  const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
-  const [topics, setTopics] = useState<CurriculumTopic[]>(DEFAULT_CURRICULUM_TOPICS);
-  const [loading, setLoading] = useState(true);
+function Flashcards({ onOpenCitation }: { onOpenCitation: (c: Citation) => void }) {
+  const [cards, setCards] = useState<Flashcard[] | null>(null);
+  const [i, setI] = useState(0);
+  const [flipped, setFlipped] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = async () => {
-    setLoading(true);
+  const load = useCallback(async () => {
     setError(null);
     try {
-      const [recData, topicList] = await Promise.all([
-        api.getRecommendations(activeLearner),
-        api.listTopics().catch(() => []),
-      ]);
-      setRecommendation(recData);
-      if (topicList && topicList.length > 0) {
-        setTopics(topicList);
-      } else {
-        setTopics(DEFAULT_CURRICULUM_TOPICS);
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to load curriculum recommendations.");
-    } finally {
-      setLoading(false);
+      setCards(await api.flashcards());
+      setI(0);
+      setFlipped(false);
+    } catch (e: any) {
+      setError(e.message);
     }
-  };
+  }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function grade(g: number) {
+    if (!cards) return;
+    try {
+      await api.reviewFlashcard(cards[i].card_id, g);
+    } catch (e: any) {
+      setError(e.message);
+      return;
+    }
+    setFlipped(false);
+    setI((x) => x + 1);
+  }
+
+  if (error) return <ErrorBanner message={error} onRetry={load} />;
+  if (!cards) return <Spinner />;
+  if (i >= cards.length)
+    return (
+      <EmptyState
+        icon={Layers}
+        title={cards.length ? "Done for now" : "No cards due"}
+        body="Cards come back when spaced repetition says they are due. Weaker topics come first."
+        action={<GhostButton onClick={load}><RotateCw className="h-4 w-4" /> Check again</GhostButton>}
+      />
+    );
+  const c = cards[i];
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-between text-xs text-slate-400">
+        <span>{c.topic_name}</span>
+        <span>
+          {i + 1} / {cards.length}
+        </span>
+      </div>
+      <button onClick={() => setFlipped(!flipped)} className="flex min-h-[160px] w-full flex-col items-center justify-center rounded-2xl border-2 border-slate-700 bg-slate-950 p-6 text-center hover:border-indigo-400">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{flipped ? "Answer" : c.kind === "formula" ? "Formula" : "Term"}</p>
+        <p className={`mt-2 ${flipped ? "text-sm text-slate-200" : "text-xl font-bold text-white"}`}>{flipped ? c.back : c.front}</p>
+        {!flipped && <p className="mt-3 text-[11px] text-slate-500">Tap to reveal</p>}
+      </button>
+      {flipped && (
+        <>
+          {c.citation && (
+            <button onClick={() => onOpenCitation(c.citation!)} className="flex items-center gap-1 text-xs text-indigo-300 underline decoration-dotted">
+              <MapPin className="h-3 w-3" /> {c.citation.source_title}, {locatorLabel(c.citation)}
+            </button>
+          )}
+          <div className="grid grid-cols-4 gap-2">
+            {GRADES.map((g) => (
+              <GhostButton key={g.label} onClick={() => grade(g.grade)} className={g.cls}>
+                {g.label}
+              </GhostButton>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function Plan() {
+  const [plan, setPlan] = useState<StudyPlan | null>(null);
+  const [exam, setExam] = useState("");
+  const [minutes, setMinutes] = useState(60);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, [activeLearner]);
+    api
+      .studyPlan()
+      .then((p) => {
+        setPlan(p);
+        setExam(p.exam_date);
+        setMinutes(p.minutes_per_day);
+      })
+      .catch((e) => setError(e.message));
+  }, []);
 
-  const getActionBadge = (action: string) => {
-    switch (action) {
-      case "foundational_review":
-        return { label: "Foundational Review", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
-      case "targeted_practice":
-        return { label: "Targeted Practice", color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/30" };
-      case "mixed_application":
-        return { label: "Mixed Application", color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30" };
-      case "advance_topic":
-        return { label: "Advance to Next Topic", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" };
-      case "remediate_misconception":
-        return { label: "Misconception Remediation", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
-      default:
-        return { label: action, color: "bg-slate-800 text-slate-300 border-slate-700" };
+  async function save() {
+    setBusy(true);
+    setError(null);
+    try {
+      setPlan(await api.saveStudyPlan(exam, minutes));
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
     }
-  };
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-        <div>
-          <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <Compass className="h-5 w-5 text-indigo-400" />
-            <span>Curriculum Roadmap & Recommendations</span>
-          </h2>
-          <p className="text-xs text-slate-400">
-            Prerequisite gatekeeping (threshold ≥ 0.70) and BKT mastery policy brackets dictate next best learning actions.
-          </p>
-        </div>
-
-        <button
-          onClick={loadData}
-          disabled={loading}
-          className="flex items-center gap-2 self-start sm:self-auto rounded-xl border-2 border-slate-600 bg-slate-800 hover:border-indigo-400 px-4 py-2 text-xs font-bold text-slate-100 hover:text-white shadow-md transition-all cursor-pointer"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-          <span>Refresh</span>
-        </button>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end gap-3 text-xs text-slate-300">
+        <label>
+          Exam date
+          <input type="date" value={exam} onChange={(e) => setExam(e.target.value)} className="mt-1 block rounded-xl border-2 border-slate-600 bg-slate-900 px-3 py-2 text-slate-100" />
+        </label>
+        <label>
+          Minutes per day
+          <input type="number" min={10} max={600} step={10} value={minutes} onChange={(e) => setMinutes(+e.target.value)} className="mt-1 block w-28 rounded-xl border-2 border-slate-600 bg-slate-900 px-3 py-2 text-slate-100" />
+        </label>
+        <PrimaryButton onClick={save} disabled={busy || !exam}>
+          {busy ? "Planning…" : "Update plan"}
+        </PrimaryButton>
       </div>
-
-      {error && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs text-rose-400">
-          {error}
-        </div>
-      )}
-
-      {/* Recommended Next Step Hero Card */}
-      {recommendation && (
-        <div className="rounded-2xl border-2 border-indigo-500/40 bg-gradient-to-br from-slate-900 via-indigo-950/30 to-slate-900 p-6 sm:p-7 shadow-2xl space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-indigo-400">
-                <Sparkles className="h-4 w-4" />
-                <span>Next Pedagogical Recommendation</span>
-              </span>
-            </div>
-            <span className={`px-3 py-1 rounded-xl border text-xs font-semibold ${getActionBadge(recommendation.recommended_action).color}`}>
-              {getActionBadge(recommendation.recommended_action).label}
-            </span>
-          </div>
-
-          <div>
-            <h3 className="text-xl font-bold text-slate-100">
-              Target Topic: {recommendation.topic_id}
-            </h3>
-            <p className="text-sm text-slate-300 mt-2 leading-relaxed font-medium">
-              {recommendation.rationale}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800">
-            <div className="flex items-center gap-3 text-xs text-slate-400">
-              <span>Suggested Difficulty: <strong className="text-slate-200 capitalize font-bold">{recommendation.difficulty}</strong></span>
-              <span>Evidence units to review: <strong className="text-slate-200 font-bold">{recommendation.suggested_evidence_ids.length}</strong></span>
-            </div>
-
-            <button
-              onClick={() => onNavigateToPractice(recommendation.topic_id)}
-              className="flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-xs font-extrabold text-white shadow-xl shadow-indigo-600/35 border-2 border-indigo-300/60 transition-all cursor-pointer hover:scale-105 active:scale-95"
-            >
-              <span>Practice Suggested Topic</span>
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Prerequisite Topology Visualizer */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-            <GitBranch className="h-4 w-4 text-indigo-400" />
-            <span>Curriculum Dependency & Prerequisite Map</span>
-          </h3>
-          <span className="text-xs text-slate-400">{topics.length} registered topics</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
-          {topics.map((t) => {
-            const hasPrereqs = t.prerequisites && t.prerequisites.length > 0;
-            return (
-              <div
-                key={t.topic_id}
-                className="rounded-xl border border-slate-800 bg-slate-950/70 p-4 space-y-2.5"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-100">{t.name}</h4>
-                    <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{t.description}</p>
-                  </div>
-                  {hasPrereqs ? (
-                    <span className="flex items-center gap-1 text-[11px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                      <Lock className="h-3 w-3" />
-                      <span>Has Prereqs</span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                      <Unlock className="h-3 w-3" />
-                      <span>Foundational</span>
-                    </span>
-                  )}
+      {error && <ErrorBanner message={error} />}
+      {!plan && !error && <Spinner />}
+      {plan?.warning && <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">{plan.warning}</div>}
+      {plan && (
+        <div className="space-y-2">
+          {plan.plan
+            .filter((d) => d.blocks.length)
+            .slice(0, 21)
+            .map((d) => (
+              <div key={d.date} className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <p className="mb-1.5 text-xs font-bold text-slate-200">
+                  {new Date(d.date + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}
+                </p>
+                <div className="space-y-1">
+                  {d.blocks.map((b, i) => (
+                    <p key={i} className="flex justify-between gap-2 text-xs text-slate-400">
+                      <span>
+                        <b className={b.kind === "exam" ? "text-purple-300" : b.kind === "review" ? "text-teal-300" : "text-slate-200"}>{b.topic_name}</b> — {b.activity}
+                      </span>
+                      <span className="shrink-0 font-mono">{b.minutes} min</span>
+                    </p>
+                  ))}
                 </div>
-
-                {hasPrereqs && (
-                  <div className="text-xs text-slate-400 pt-1 border-t border-slate-800/80">
-                    <span className="text-[11px] text-slate-500 font-semibold uppercase block mb-1">
-                      Required Prerequisites:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {t.prerequisites.map((p, pIdx) => (
-                        <span
-                          key={pIdx}
-                          className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[11px] border border-slate-700"
-                        >
-                          {p}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
-            );
-          })}
+            ))}
+          {plan.plan.every((d) => !d.blocks.length) && <p className="text-xs text-slate-400">Everything is mastered. Keep up with flashcards.</p>}
         </div>
+      )}
+    </div>
+  );
+}
+
+export const RecommendationsView: React.FC<{
+  learnerId: string;
+  refreshKey: number;
+  onPractice: (topicId: string) => void;
+  onOpenCitation: (c: Citation) => void;
+}> = ({ learnerId, refreshKey, onPractice, onOpenCitation }) => {
+  const [rec, setRec] = useState<Recommendation | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<"plan" | "cards">("plan");
+
+  const load = useCallback(async () => {
+    setError(null);
+    try {
+      setRec(await api.getRecommendation(learnerId));
+    } catch (e: any) {
+      setError(e.message);
+    }
+  }, [learnerId]);
+  useEffect(() => {
+    load();
+  }, [load, refreshKey]);
+
+  return (
+    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+      <SectionHeader icon={Compass} title="Study Plan" subtitle="Your next best step, a day-by-day plan to your exam, and spaced-repetition flashcards from your sources." />
+      {error && <ErrorBanner message={error} onRetry={load} />}
+      {rec && rec.topic_id && (
+        <Panel className="flex flex-col gap-3 border-indigo-500/40 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-indigo-300">Next step · {ACTION_LABELS[rec.recommended_action]}</p>
+            <p className="mt-1 text-base font-bold text-white">{rec.topic_name}</p>
+            <p className="mt-1 text-sm text-slate-300">{rec.rationale}</p>
+          </div>
+          <PrimaryButton onClick={() => onPractice(rec.topic_id)}>Practise now</PrimaryButton>
+        </Panel>
+      )}
+      <div className="flex gap-2">
+        <GhostButton onClick={() => setTab("plan")} className={tab === "plan" ? "border-indigo-400" : ""}>
+          <CalendarDays className="h-4 w-4" /> Day-by-day plan
+        </GhostButton>
+        <GhostButton onClick={() => setTab("cards")} className={tab === "cards" ? "border-indigo-400" : ""}>
+          <Layers className="h-4 w-4" /> Flashcards
+        </GhostButton>
       </div>
+      <Panel>{tab === "plan" ? <Plan /> : <Flashcards onOpenCitation={onOpenCitation} />}</Panel>
     </div>
   );
 };

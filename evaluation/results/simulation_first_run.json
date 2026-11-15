@@ -1,0 +1,159 @@
+{
+  "adaptive": {
+    "novice": {
+      "true_mastery_by_session": [
+        0.1406,
+        0.2219,
+        0.2906,
+        0.3594,
+        0.4469,
+        0.5156,
+        0.5781
+      ],
+      "gain": 0.4375,
+      "repetition_rate": 0.2592,
+      "auc": 0.727,
+      "brier": 0.2185,
+      "estimate_mae": 0.0784
+    },
+    "intermediate": {
+      "true_mastery_by_session": [
+        0.4375,
+        0.5094,
+        0.5813,
+        0.6312,
+        0.7,
+        0.7562,
+        0.8187
+      ],
+      "gain": 0.3812,
+      "repetition_rate": 0.2117,
+      "auc": 0.7312,
+      "brier": 0.2331,
+      "estimate_mae": 0.0672
+    },
+    "advanced": {
+      "true_mastery_by_session": [
+        0.8656,
+        0.8938,
+        0.9219,
+        0.9437,
+        0.9625,
+        0.9781,
+        0.9906
+      ],
+      "gain": 0.125,
+      "repetition_rate": 0.1033,
+      "auc": 0.6157,
+      "brier": 0.2805,
+      "estimate_mae": 0.0457
+    }
+  },
+  "syllabus": {
+    "novice": {
+      "true_mastery_by_session": [
+        0.1406,
+        0.225,
+        0.325,
+        0.4156,
+        0.4938,
+        0.5687,
+        0.6062
+      ],
+      "gain": 0.4656,
+      "repetition_rate": 0.05,
+      "auc": 0.7186,
+      "brier": 0.2083,
+      "estimate_mae": 0.2466
+    },
+    "intermediate": {
+      "true_mastery_by_session": [
+        0.4375,
+        0.5,
+        0.5781,
+        0.6438,
+        0.7156,
+        0.775,
+        0.8125
+      ],
+      "gain": 0.375,
+      "repetition_rate": 0.05,
+      "auc": 0.7292,
+      "brier": 0.2384,
+      "estimate_mae": 0.1873
+    },
+    "advanced": {
+      "true_mastery_by_session": [
+        0.8656,
+        0.8906,
+        0.9125,
+        0.9187,
+        0.9313,
+        0.9375,
+        0.9437
+      ],
+      "gain": 0.0781,
+      "repetition_rate": 0.05,
+      "auc": 0.6159,
+      "brier": 0.2626,
+      "estimate_mae": 0.1001
+    }
+  },
+  "random": {
+    "novice": {
+      "true_mastery_by_session": [
+        0.1406,
+        0.2125,
+        0.2938,
+        0.3844,
+        0.4469,
+        0.5156,
+        0.5719
+      ],
+      "gain": 0.4313,
+      "repetition_rate": 0.2667,
+      "auc": 0.731,
+      "brier": 0.2018,
+      "estimate_mae": 0.2323
+    },
+    "intermediate": {
+      "true_mastery_by_session": [
+        0.4375,
+        0.5031,
+        0.5781,
+        0.6562,
+        0.6937,
+        0.7312,
+        0.75
+      ],
+      "gain": 0.3125,
+      "repetition_rate": 0.2658,
+      "auc": 0.782,
+      "brier": 0.2101,
+      "estimate_mae": 0.1849
+    },
+    "advanced": {
+      "true_mastery_by_session": [
+        0.8656,
+        0.8781,
+        0.9,
+        0.9156,
+        0.925,
+        0.9313,
+        0.9375
+      ],
+      "gain": 0.0719,
+      "repetition_rate": 0.2633,
+      "auc": 0.6659,
+      "brier": 0.2425,
+      "estimate_mae": 0.1668
+    }
+  },
+  "settings": {
+    "students_per_profile": 20,
+    "sessions": 6,
+    "questions_per_session": 10,
+    "topics": 16,
+    "runtime_seconds": 10.6
+  }
+}

@@ -3,18 +3,27 @@ services:
     name: cognivault-backend
     runtime: python
     plan: free
-    buildCommand: "pip install -U pip && pip install -r requirements.txt"
-    startCommand: "uvicorn app.agent_os.app:app --host 0.0.0.0 --port $PORT"
+    buildCommand: pip install -U pip && pip install -r requirements.txt
+    startCommand: uvicorn app.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.4
       - key: APP_ENV
         value: production
       - key: MODEL_PROVIDER
-        value: gemini
+        value: auto
       - key: GEMINI_API_KEY
-        value: ""
+        sync: false
       - key: GEMINI_MODEL
         value: gemini-2.0-flash
-      - key: CHROMA_PERSIST_DIR
-        value: data/chroma
+      - key: EMBEDDING_PROVIDER
+        value: hashing
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://cogni-vault.vercel.app
+      - key: CV_DATA_DIR
+        value: /tmp/cognivault

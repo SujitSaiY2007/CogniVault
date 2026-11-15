@@ -1,471 +1,232 @@
-from __future__ import annotations
-import base64
-import hashlib
-import json
-from pathlib import Path
-import pymupdf
-from pptx import Presentation
-from pptx.util import Inches, Pt
+"""Bundled demo course (original, project-authored, CC0).
 
-from .db import EvidenceDB
-from .ingest import ingest_pdf, ingest_pptx, ingest_transcript
-from .models import (
-    Difficulty,
-    QuestionOption,
-    QuestionType,
-)
-from .assessment import AssessmentEngine
+Four sources in four formats so every parser path is exercised:
+  physics_mechanics.pdf      textbook chapter with headings, formulas and a figure
+  waves_optics.pptx          lecture slides with speaker notes and a diagram
+  mathematics_calculus.pdf   handbook pages on algebra and derivatives
+  biology_cell_lecture.srt   timestamped lecture transcript
+
+Files are generated deterministically if missing, so the repository can be
+rebuilt from source.
+"""
+from __future__ import annotations
 
 import io
-from PIL import Image, ImageDraw
+from pathlib import Path
 
-def get_diagram_png_bytes() -> bytes:
-    img = Image.new("RGB", (200, 200), color=(240, 245, 255))
-    draw = ImageDraw.Draw(img)
-    draw.rectangle([20, 20, 180, 180], outline=(40, 80, 180), width=3)
-    draw.line([100, 30, 100, 170], fill=(220, 50, 50), width=2)
-    draw.line([30, 100, 170, 100], fill=(50, 180, 50), width=2)
+PHYSICS = [
+    ("Classical Mechanics", [
+        ("Newton's First Law", [
+            "Newton's first law states that an object at rest stays at rest, and an object in motion keeps moving in a straight line at constant speed, unless a net external force acts on it.",
+            "Inertia is the tendency of an object to resist changes in its state of motion. Objects with more mass have more inertia, so they are harder to start, stop or turn.",
+            "A seatbelt works because of inertia: when a car brakes suddenly, the passenger's body tends to keep moving forward until the belt applies a force.",
+        ]),
+        ("Newton's Second Law", [
+            "Newton's second law states that the acceleration of an object is directly proportional to the net force on it and inversely proportional to its mass. In equation form, F = m * a, where F is the net force in newtons (N), m is the mass in kilograms (kg), and a is the acceleration in metres per second squared (m/s^2).",
+            "A newton is the force needed to accelerate a mass of one kilogram at one metre per second squared.",
+            "Doubling the net force on an object doubles its acceleration, while doubling the mass halves the acceleration.",
+        ]),
+    ]),
+    ("Forces in Pairs and Momentum", [
+        ("Newton's Third Law", [
+            "Newton's third law states that for every action force there is an equal and opposite reaction force. The two forces act on different objects, so they never cancel each other out.",
+            "When you push against a wall, the wall pushes back on your hands with a force of the same size in the opposite direction.",
+        ]),
+        ("Linear Momentum", [
+            "Momentum is the product of an object's mass and its velocity. It is written p = m * v, where p is the momentum in kilogram metres per second (kg m/s), m is the mass in kilograms (kg), and v is the velocity in metres per second (m/s).",
+            "The law of conservation of momentum states that the total momentum of an isolated system stays constant during a collision or explosion.",
+            "This section builds on Newton's second law, because a net force acting on an object changes its momentum.",
+            "Impulse is the change in momentum of an object, equal to the net force multiplied by the time for which it acts.",
+        ]),
+    ]),
+    ("Work and Energy", [
+        ("Work", [
+            "Work is the energy transferred when a force moves an object through a distance in the direction of the force. It is calculated as W = F * d, where W is the work in joules (J), F is the force in newtons (N), and d is the displacement in metres (m).",
+            "Calculating work requires Newton's second law, because F in this formula is the net force on the object.",
+            "No work is done when the force is perpendicular to the motion, for example when carrying a bag horizontally at constant height.",
+        ]),
+        ("Kinetic and Potential Energy", [
+            "Kinetic energy is the energy an object has because of its motion. It is calculated as E_k = 0.5 * m * v^2, where E_k is the kinetic energy in joules (J), m is the mass in kilograms (kg), and v is the speed in metres per second (m/s).",
+            "Gravitational potential energy is the energy stored in an object because of its height above a reference level. It is calculated as E_p = m * g * h, where E_p is the potential energy in joules (J), m is the mass in kilograms (kg), g is the gravitational field strength in newtons per kilogram (N/kg), and h is the height in metres (m).",
+            "The work-energy principle states that the net work done on an object equals the change in its kinetic energy.",
+        ]),
+    ]),
+]
+
+MATH = [
+    ("Algebra", [
+        ("Quadratic Equations", [
+            "A quadratic equation is an equation of the form ax^2 + bx + c = 0, where a, b and c are constants and a is not zero.",
+            "The quadratic formula gives the roots of any quadratic equation: x = (-b +- sqrt(b^2 - 4ac)) / (2a).",
+            "The discriminant is the expression b^2 - 4ac under the square root in the quadratic formula. If the discriminant is positive there are two distinct real roots, if it is zero there is one repeated real root, and if it is negative there are no real roots.",
+        ]),
+        ("Factorising", [
+            "Factorising is the process of writing an expression as a product of simpler expressions. For example, x^2 - 5x + 6 can be factorised as (x - 2)(x - 3), so its roots are 2 and 3.",
+            "The difference of two squares is the identity a^2 - b^2 = (a - b)(a + b).",
+        ]),
+    ]),
+    ("Differential Calculus", [
+        ("The Derivative", [
+            "The derivative is the instantaneous rate of change of a function with respect to its input. Geometrically, it is the slope of the tangent line to the graph at a point.",
+            "Factorising and simplifying fractions, covered in the algebra chapter, are needed before working with derivatives.",
+        ]),
+        ("Rules of Differentiation", [
+            "The power rule states that the derivative of x^n is n * x^(n-1) for any real number n. For example, the derivative of x^3 is 3x^2.",
+            "The constant rule states that the derivative of a constant is zero.",
+            "The product rule states that the derivative of u * v is u' * v + u * v'.",
+            "The chain rule states that the derivative of a composite function f(g(x)) is f'(g(x)) * g'(x).",
+        ]),
+    ]),
+]
+
+SLIDES = [
+    ("Wave Basics", ["A wave is a disturbance that transfers energy from one place to another without transferring matter.",
+                     "Wavelength is the distance between two consecutive crests of a wave, measured in metres (m).",
+                     "Frequency is the number of waves passing a point each second, measured in hertz (Hz)."],
+     "Start with a rope or slinky demo. Stress that the medium does not travel with the wave."),
+    ("The Wave Equation", ["The wave equation relates speed, frequency and wavelength: v = f * lambda",
+                           "where v is the wave speed in metres per second (m/s), f is the frequency in hertz (Hz), and lambda is the wavelength in metres (m).",
+                           "The period is the time for one complete wave: T = 1 / f"],
+     "Frequency is set by the source and stays the same when a wave enters a new medium; speed and wavelength change."),
+    ("Reflection", ["The law of reflection states that the angle of incidence equals the angle of reflection.",
+                    "Both angles are measured from the normal, an imaginary line perpendicular to the surface."],
+     "Use a plane mirror and a ray box to show equal angles."),
+    ("Refraction and Snell's Law", ["Refraction is the change in direction of a wave as it passes from one medium into another and its speed changes.",
+                                    "Snell's law states that n1 * sin(theta1) = n2 * sin(theta2) at the boundary between two media.",
+                                    "Refraction builds on the wave equation: when the wave speed changes, the wavelength changes too."],
+     "Light bends towards the normal when it slows down, for example from air into glass."),
+    ("Refractive Index", ["The refractive index of a medium is the ratio of the speed of light in a vacuum to the speed of light in the medium: n = c / v",
+                          "where c is the speed of light in a vacuum in metres per second (m/s) and v is the speed of light in the medium in metres per second (m/s)."],
+     "Water has a refractive index of about 1.33 and glass about 1.5."),
+    ("Total Internal Reflection", ["Total internal reflection happens when light travelling in a denser medium hits the boundary at an angle greater than the critical angle, so all of it is reflected.",
+                                   "Optical fibres use total internal reflection to carry light signals over long distances.",
+                                   "This idea builds on Snell's law and the refractive index of a medium."],
+     "Link back to Snell's law: beyond the critical angle there is no refracted ray."),
+]
+
+TRANSCRIPT = [
+    (12, "Welcome to today's lecture on cell biology. We are going to look at what cells are made of and what each part does."),
+    (31, "Cell theory states that all living things are made of one or more cells, that the cell is the basic unit of life, and that new cells come from existing cells."),
+    (58, "There are two broad kinds of cell. Prokaryotic cells, such as bacteria, have no nucleus. Eukaryotic cells, such as plant and animal cells, keep their DNA inside a nucleus."),
+    (95, "The cell membrane is a thin, flexible barrier that controls which substances enter and leave the cell. It is partially permeable."),
+    (131, "The nucleus is the control centre of a eukaryotic cell. It contains the genetic material, DNA, which carries the instructions for making proteins."),
+    (170, "Mitochondria are organelles where aerobic respiration takes place. They release energy from glucose and store it as ATP, which is why they are called the powerhouse of the cell."),
+    (214, "ATP, adenosine triphosphate, is the molecule cells use to carry energy to the processes that need it, such as muscle contraction and active transport."),
+    (252, "Chloroplasts are found in plant cells and some algae. They contain chlorophyll, which absorbs light energy for photosynthesis."),
+    (289, "Photosynthesis is the process in which plants use light energy to convert carbon dioxide and water into glucose and oxygen."),
+    (331, "Ribosomes are small structures where proteins are made, following the instructions copied from DNA."),
+    (366, "Plant cells also have a cell wall made of cellulose, which gives the cell strength and support, and a large vacuole filled with cell sap."),
+    (402, "To summarise: the membrane controls entry and exit, the nucleus stores DNA, mitochondria release energy as ATP, and chloroplasts carry out photosynthesis."),
+]
+
+
+def _diagram_png(kind: str) -> bytes:
+    from PIL import Image, ImageDraw
+
+    img = Image.new("RGB", (320, 220), (255, 255, 255))
+    d = ImageDraw.Draw(img)
+    if kind == "fbd":
+        d.rectangle([120, 80, 200, 140], outline=(0, 0, 0), width=3)
+        for (x0, y0, x1, y1) in [(160, 80, 160, 20), (160, 140, 160, 200), (200, 110, 290, 110), (120, 110, 40, 110)]:
+            d.line([x0, y0, x1, y1], fill=(0, 0, 0), width=3)
+        d.text((165, 15), "Normal force", fill=(0, 0, 0))
+        d.text((165, 195), "Weight", fill=(0, 0, 0))
+        d.text((230, 95), "Push", fill=(0, 0, 0))
+        d.text((40, 95), "Friction", fill=(0, 0, 0))
+    else:
+        d.line([20, 110, 300, 110], fill=(0, 0, 0), width=2)
+        d.line([60, 20, 160, 110], fill=(0, 0, 0), width=3)
+        d.line([160, 110, 230, 210], fill=(0, 0, 0), width=3)
+        d.line([160, 20, 160, 210], fill=(120, 120, 120), width=1)
+        d.text((30, 90), "air (n1)", fill=(0, 0, 0))
+        d.text((30, 120), "glass (n2)", fill=(0, 0, 0))
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     return buf.getvalue()
 
-def create_physics_pdf(file_path: Path) -> str:
+
+def _pdf(chapters, title: str, figure: tuple[int, str] | None = None) -> bytes:
+    import pymupdf
+
     doc = pymupdf.open()
-
-    # Page 1: Newton's Laws
-    p1 = doc.new_page()
-    p1.insert_text(
-        (50, 60),
-        "CogniVault School Science: Classical Mechanics & Dynamics\n\n"
-        "1. Newton's First Law of Motion (Law of Inertia):\n"
-        "An object remains at rest or in uniform motion in a straight line unless acted upon by an external net force.\n\n"
-        "2. Newton's Second Law of Motion:\n"
-        "The acceleration of an object is directly proportional to the net force acting upon it and inversely proportional to its mass: F = m * a.\n"
-        "Where F is force in Newtons (N), m is mass in kilograms (kg), and a is acceleration in m/s^2.\n\n"
-        "3. Newton's Third Law of Motion:\n"
-        "For every action, there is an equal and opposite reaction (F_AB = -F_BA).\n"
-    )
-
-    # Page 2: Momentum and Work-Energy with Diagram
-    p2 = doc.new_page()
-    p2.insert_text(
-        (50, 60),
-        "4. Linear Momentum:\n"
-        "Linear momentum p is the product of mass and velocity: p = m * v.\n"
-        "In an isolated system, total momentum is conserved during all collisions.\n\n"
-        "5. Mechanical Work & Kinetic Energy:\n"
-        "Work done by a constant force is the product of force and displacement in the direction of force: W = F * d.\n"
-        "Kinetic Energy of a body of mass m moving with speed v is given by E_k = 0.5 * m * v^2.\n"
-        "Figure 1.1: Free-body force vector diagram showing balanced normal and gravitational forces."
-    )
-    p2.insert_image(pymupdf.Rect(50, 260, 250, 460), stream=get_diagram_png_bytes())
-
-    doc.save(file_path)
+    for ci, (chapter, sections) in enumerate(chapters, 1):
+        page = doc.new_page()
+        y = 60
+        page.insert_text((50, y), f"{ci}. {chapter}", fontsize=18, fontname="hebo")
+        y += 34
+        for sec, paras in sections:
+            page.insert_text((50, y), sec, fontsize=13.5, fontname="hebo")
+            y += 22
+            for para in paras:
+                rect = pymupdf.Rect(50, y, 545, y + 200)
+                h = page.insert_textbox(rect, para, fontsize=10.5, fontname="helv")
+                used = 200 - h if h >= 0 else 200
+                y += used + 10
+            y += 6
+        if figure and figure[0] == ci:
+            page.insert_image(pymupdf.Rect(50, y, 290, y + 165), stream=_diagram_png("fbd"))
+            page.insert_text((50, y + 182), figure[1], fontsize=9.5, fontname="helv")
+    doc.set_metadata({"title": title, "author": "CogniVault demo course (CC0)"})
+    data = doc.tobytes(deflate=True, garbage=3)
     doc.close()
+    return data
 
-    content = file_path.read_bytes()
-    return hashlib.sha256(content).hexdigest()
 
-def create_optics_pptx(file_path: Path) -> str:
+def _pptx() -> bytes:
+    from pptx import Presentation
+    from pptx.util import Inches, Pt
+
     prs = Presentation()
-
-    # Slide 1: Wave Fundamentals
-    slide1 = prs.slides.add_slide(prs.slide_layouts[1])
-    slide1.shapes.title.text = "Wave Properties & The Wave Equation"
-    slide1.shapes.placeholders[1].text = (
-        "Wave speed equation relates propagation speed (v), frequency (f), and wavelength (lambda):\n"
-        "v = f * lambda\n\n"
-        "Frequency is measured in Hertz (Hz), wavelength in meters (m), and wave speed in m/s.\n"
-        "Wave frequency remains constant when passing from one medium to another."
-    )
-
-    # Slide 2: Geometric Optics & Refraction
-    slide2 = prs.slides.add_slide(prs.slide_layouts[1])
-    slide2.shapes.title.text = "Laws of Reflection & Snell's Law of Refraction"
-    slide2.shapes.placeholders[1].text = (
-        "Law of Reflection: The angle of incidence equals the angle of reflection (theta_i = theta_r).\n\n"
-        "Snell's Law of Refraction: Describes bending of light at the boundary between two media:\n"
-        "n1 * sin(theta1) = n2 * sin(theta2)\n\n"
-        "Where n1 and n2 are the refractive indices of medium 1 and medium 2 respectively."
-    )
-
-    prs.save(file_path)
-    content = file_path.read_bytes()
-    return hashlib.sha256(content).hexdigest()
-
-def create_math_pdf(file_path: Path) -> str:
-    doc = pymupdf.open()
-
-    # Page 1: Algebra & Quadratic Formula
-    p1 = doc.new_page()
-    p1.insert_text(
-        (50, 60),
-        "CogniVault School Mathematics: Algebra to Introductory Calculus\n\n"
-        "1. Quadratic Equations & Quadratic Formula:\n"
-        "A standard quadratic equation has the form ax^2 + bx + c = 0, where a != 0.\n"
-        "The roots of the quadratic equation are given by the Quadratic Formula:\n"
-        "x = (-b +- sqrt(b^2 - 4ac)) / (2a).\n"
-        "The discriminant D = b^2 - 4ac determines the nature of roots:\n"
-        "- D > 0: two distinct real roots\n"
-        "- D = 0: one real repeated root\n"
-        "- D < 0: two complex conjugate roots.\n"
-    )
-
-    # Page 2: Differential Calculus
-    p2 = doc.new_page()
-    p2.insert_text(
-        (50, 60),
-        "2. Derivatives and Rules of Differentiation:\n"
-        "The power rule states that d/dx [x^n] = n * x^(n-1).\n"
-        "The derivative of a constant is zero: d/dx [c] = 0.\n"
-        "Trigonometric derivatives:\n"
-        "- d/dx [sin(x)] = cos(x)\n"
-        "- d/dx [cos(x)] = -sin(x)\n"
-        "- d/dx [tan(x)] = sec^2(x)\n"
-        "Prerequisite Note: Mastering algebraic manipulation is required before evaluating calculus limits."
-    )
-
-    doc.save(file_path)
-    doc.close()
-    content = file_path.read_bytes()
-    return hashlib.sha256(content).hexdigest()
-
-def create_biology_transcript(file_path: Path) -> str:
-    text = (
-        "[00:30] Welcome to Cellular Biology. Today we explore cell structure and primary organelles.\n"
-        "[01:15] Cell Theory states that all living organisms are composed of one or more cells, and cells are the basic unit of life.\n"
-        "[02:40] Mitochondria are double-membrane bound organelles known as the powerhouse of the cell, producing ATP via cellular respiration.\n"
-        "[04:20] Chloroplasts in plant cells carry out photosynthesis, converting light energy and CO2 into glucose and oxygen.\n"
-        "[05:50] The nucleus houses genetic material in the form of DNA chromatin fibers.\n"
-    )
-    file_path.write_text(text, encoding="utf-8")
-    content = file_path.read_bytes()
-    return hashlib.sha256(content).hexdigest()
-
-def build_reproducible_corpus(data_dir: Path) -> dict[str, str]:
-    corpus_dir = data_dir / "corpus"
-    corpus_dir.mkdir(parents=True, exist_ok=True)
-
-    hashes: dict[str, str] = {}
-
-    p_pdf = corpus_dir / "physics_mechanics.pdf"
-    hashes["physics_mechanics"] = create_physics_pdf(p_pdf)
-
-    o_pptx = corpus_dir / "waves_optics.pptx"
-    hashes["waves_optics"] = create_optics_pptx(o_pptx)
-
-    m_pdf = corpus_dir / "mathematics_calculus.pdf"
-    hashes["mathematics_calculus"] = create_math_pdf(m_pdf)
-
-    b_txt = corpus_dir / "biology_cell_lecture.txt"
-    hashes["biology_cell_lecture"] = create_biology_transcript(b_txt)
-
-    manifest = {
-        "corpus_id": "cognivault-school-stem-benchmark-v1",
-        "corpus_version": "1.0.0",
-        "description": "Deterministic, reproducible School Mathematics and Science educational corpus fixtures created for CogniVault (Track D: Personalized Tutoring & Adaptive Learning).",
-        "license": "CC0 1.0 Universal (Public Domain Dedication) / MIT License for project-authored synthetic test fixtures",
-        "provenance_type": "project_authored_synthetic",
-        "provenance_note": "Synthetic curriculum fixtures authored specifically for the CogniVault project, aligned with standard secondary school Mathematics (Algebra & Calculus), Physics (Classical Mechanics & Geometric Optics), and Biology (Cell Biology) educational benchmarks.",
-        "parser_and_extractor_metadata": {
-            "pdf_extractor": "PyMuPDF (fitz) v1.24+",
-            "pptx_extractor": "python-pptx v1.0.2+",
-            "transcript_extractor": "CogniVault Timestamped Regex Parser v1.0.0",
-            "chunker_version": "CogniVault Hybrid Structure-Aware Chunker v1.0.0"
-        },
-        "sources": [
-            {
-                "source_id": "physics_mechanics",
-                "title": "Classical Mechanics & Dynamics Textbook",
-                "filename": "physics_mechanics.pdf",
-                "subject": "Physics",
-                "grade_level": "Secondary / High School",
-                "modality": "pdf",
-                "extractor": "pymupdf",
-                "author": "CogniVault Project Team",
-                "license": "CC0-1.0 (Public Domain Dedication)",
-                "sha256": hashes["physics_mechanics"],
-                "topics": ["Newtonian Mechanics", "Work and Energy"],
-                "concepts": ["First Law", "Second Law", "Third Law", "Momentum", "Work", "Kinetic Energy"],
-                "status": "verified"
-            },
-            {
-                "source_id": "waves_optics",
-                "title": "Wave Properties & Geometric Optics Lecture Slides",
-                "filename": "waves_optics.pptx",
-                "subject": "Physics",
-                "grade_level": "Secondary / High School",
-                "modality": "pptx",
-                "extractor": "python-pptx",
-                "author": "CogniVault Project Team",
-                "license": "CC0-1.0 (Public Domain Dedication)",
-                "sha256": hashes["waves_optics"],
-                "topics": ["Wave Properties", "Geometric Optics"],
-                "concepts": ["Wave Equation", "Reflection", "Snell's Law", "Refraction"],
-                "status": "verified"
-            },
-            {
-                "source_id": "mathematics_calculus",
-                "title": "Algebra & Introductory Calculus Handbook",
-                "filename": "mathematics_calculus.pdf",
-                "subject": "Mathematics",
-                "grade_level": "Secondary / High School",
-                "modality": "pdf",
-                "extractor": "pymupdf",
-                "author": "CogniVault Project Team",
-                "license": "CC0-1.0 (Public Domain Dedication)",
-                "sha256": hashes["mathematics_calculus"],
-                "topics": ["Algebra", "Differential Calculus"],
-                "concepts": ["Quadratic Formula", "Discriminant", "Power Rule", "Trig Derivatives"],
-                "status": "verified"
-            },
-            {
-                "source_id": "biology_cell_lecture",
-                "title": "Cell Biology Lecture Transcript",
-                "filename": "biology_cell_lecture.txt",
-                "subject": "Biology",
-                "grade_level": "Secondary / High School",
-                "modality": "text",
-                "extractor": "regex-transcript",
-                "author": "CogniVault Project Team",
-                "license": "CC0-1.0 (Public Domain Dedication)",
-                "sha256": hashes["biology_cell_lecture"],
-                "topics": ["Cell Biology"],
-                "concepts": ["Cell Theory", "Mitochondria", "Chloroplasts", "Nucleus"],
-                "status": "verified"
-            }
-        ]
-    }
-
-    manifest_path = data_dir / "corpus_manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-
-    return hashes
-
-def seed_database_from_corpus(db: EvidenceDB, data_dir: Path | str | None = None) -> dict[str, int]:
-    if data_dir is None:
-        data_dir = Path("data")
-    else:
-        data_dir = Path(data_dir)
-
-    corpus_dir = data_dir / "corpus"
-    if not corpus_dir.exists():
-        build_reproducible_corpus(data_dir)
-
-    # 1. Ingest files
-    ingest_pdf(corpus_dir / "physics_mechanics.pdf", db, source_id="physics_mechanics")
-    ingest_pptx(corpus_dir / "waves_optics.pptx", db, source_id="waves_optics")
-    ingest_pdf(corpus_dir / "mathematics_calculus.pdf", db, source_id="mathematics_calculus")
-    ingest_transcript(corpus_dir / "biology_cell_lecture.txt", db, source_id="biology_cell_lecture")
-
-    # 2. Register Topics and Concepts
-    # Topics
-    db.add_topic("Newtonian Mechanics", "Newtonian Mechanics", description="Forces and motion")
-    db.add_topic("Work and Energy", "Work and Energy", description="Work, kinetic and potential energy")
-    db.add_topic("Wave Properties", "Wave Properties", description="Wave speed, frequency, wavelength")
-    db.add_topic("Geometric Optics", "Geometric Optics", description="Reflection and refraction")
-    db.add_topic("Algebra", "Algebra", description="Polynomials and quadratic equations")
-    db.add_topic("Differential Calculus", "Differential Calculus", description="Limits and derivatives")
-    db.add_topic("Cell Biology", "Cell Biology", description="Cellular organelles and respiration")
-
-    # Concepts & Prerequisites
-    db.add_concept("Algebra", "Algebra", topic_id="Algebra")
-    db.add_concept("Quadratic Formula", "Quadratic Formula", topic_id="Algebra")
-    db.add_concept("Differential Calculus", "Differential Calculus", topic_id="Differential Calculus")
-    db.add_concept("Power Rule", "Power Rule", topic_id="Differential Calculus")
-    db.link_concept_prerequisite("Differential Calculus", "Algebra")
-    db.link_concept_prerequisite("Power Rule", "Algebra")
-
-    db.add_concept("Newtonian Mechanics", "Newtonian Mechanics", topic_id="Newtonian Mechanics")
-    db.add_concept("Second Law", "Second Law", topic_id="Newtonian Mechanics")
-    db.add_concept("Work and Energy", "Work and Energy", topic_id="Work and Energy")
-    db.add_concept("Kinetic Energy", "Kinetic Energy", topic_id="Work and Energy")
-    db.link_concept_prerequisite("Work and Energy", "Newtonian Mechanics")
-    db.link_concept_prerequisite("Kinetic Energy", "Second Law")
-
-    db.add_concept("Wave Properties", "Wave Properties", topic_id="Wave Properties")
-    db.add_concept("Geometric Optics", "Geometric Optics", topic_id="Geometric Optics")
-    db.link_concept_prerequisite("Geometric Optics", "Wave Properties")
-
-    # 3. Seed verified questions for assessment engine
-    engine = AssessmentEngine(db)
-
-    # Question 1: Physics MCQ
-    ev_physics = [e.evidence_id for e in db.get_evidence_for_topic("Newtonian Mechanics") or list(db.all_evidence())[:1]]
-    engine.build_and_verify_question(
-        question_id="q_seed_01",
-        topic_id="Newtonian Mechanics",
-        concept_id="Second Law",
-        prompt="According to Newton's Second Law of Motion, what is the formula relating force, mass, and acceleration?",
-        expected_answer="A",
-        evidence_ids=ev_physics[:1],
-        difficulty=Difficulty.easy,
-        question_type=QuestionType.mcq,
-        options=[
-            QuestionOption(key="A", text="F = m * a"),
-            QuestionOption(key="B", text="F = m / a"),
-            QuestionOption(key="C", text="F = 0.5 * m * v^2"),
-            QuestionOption(key="D", text="F = m * g * h")
-        ],
-        solution="Newton's second law is defined by Force = mass * acceleration (F = m * a)."
-    )
-
-    # Question 1b: Physics MCQ Alternative
-    engine.build_and_verify_question(
-        question_id="q_seed_01_alt",
-        topic_id="Newtonian Mechanics",
-        concept_id="Second Law",
-        prompt="If a net force of 20 N is applied to a 5 kg object, what is its acceleration?",
-        expected_answer="B",
-        evidence_ids=ev_physics[:1],
-        difficulty=Difficulty.medium,
-        question_type=QuestionType.mcq,
-        options=[
-            QuestionOption(key="A", text="2 m/s^2"),
-            QuestionOption(key="B", text="4 m/s^2"),
-            QuestionOption(key="C", text="10 m/s^2"),
-            QuestionOption(key="D", text="100 m/s^2")
-        ],
-        solution="Using a = F / m = 20 N / 5 kg = 4 m/s^2."
-    )
-
-    # Question 2: Physics Numerical
-    engine.build_and_verify_question(
-        question_id="q_seed_02",
-        topic_id="Work and Energy",
-        concept_id="Kinetic Energy",
-        prompt="Calculate the kinetic energy in Joules of a 4.0 kg object moving at a velocity of 3.0 m/s (E_k = 0.5 * m * v^2).",
-        expected_answer="18.0",
-        evidence_ids=ev_physics[:1],
-        difficulty=Difficulty.medium,
-        question_type=QuestionType.numerical,
-        tolerance=0.1,
-        solution="E_k = 0.5 * 4.0 kg * (3.0 m/s)^2 = 0.5 * 4.0 * 9.0 = 18.0 Joules."
-    )
-
-    # Question 3: Mathematics MCQ
-    ev_math = [e.evidence_id for e in db.get_evidence_for_topic("Algebra") or list(db.all_evidence())[:1]]
-    engine.build_and_verify_question(
-        question_id="q_seed_03",
-        topic_id="Algebra",
-        concept_id="Quadratic Formula",
-        prompt="What is the quadratic formula used to solve ax^2 + bx + c = 0?",
-        expected_answer="A",
-        evidence_ids=ev_math[:1],
-        difficulty=Difficulty.medium,
-        question_type=QuestionType.mcq,
-        options=[
-            QuestionOption(key="A", text="x = (-b +- sqrt(b^2 - 4ac)) / (2a)"),
-            QuestionOption(key="B", text="x = (-b +- sqrt(b^2 + 4ac)) / (2a)"),
-            QuestionOption(key="C", text="x = (-b +- 4ac) / (2a)"),
-            QuestionOption(key="D", text="x = (b +- sqrt(b^2 - 4ac)) / a")
-        ],
-        solution="The quadratic formula is x = (-b +- sqrt(b^2 - 4ac)) / (2a)."
-    )
-
-    # Question 4: Biology MCQ
-    ev_bio = [e.evidence_id for e in db.get_evidence_for_topic("Cell Biology") or list(db.all_evidence())[:1]]
-    engine.build_and_verify_question(
-        question_id="q_seed_04",
-        topic_id="Cell Biology",
-        concept_id="Mitochondria",
-        prompt="Which cellular organelle is responsible for producing ATP via cellular respiration?",
-        expected_answer="B",
-        evidence_ids=ev_bio[:1],
-        difficulty=Difficulty.easy,
-        question_type=QuestionType.mcq,
-        options=[
-            QuestionOption(key="A", text="Ribosome"),
-            QuestionOption(key="B", text="Mitochondria"),
-            QuestionOption(key="C", text="Endoplasmic Reticulum"),
-            QuestionOption(key="D", text="Golgi Apparatus")
-        ],
-        solution="Mitochondria are the powerhouse of the cell, generating ATP through respiration."
-    )
-
-    # Question 5: Optics MCQ
-    ev_optics = [e.evidence_id for e in db.get_evidence_for_topic("Geometric Optics") or list(db.all_evidence())[:1]]
-    engine.build_and_verify_question(
-        question_id="q_seed_05",
-        topic_id="Geometric Optics",
-        concept_id="Snell's Law",
-        prompt="Which mathematical equation states Snell's law of refraction across media 1 and 2?",
-        expected_answer="C",
-        evidence_ids=ev_optics[:1],
-        difficulty=Difficulty.medium,
-        question_type=QuestionType.mcq,
-        options=[
-            QuestionOption(key="A", text="n1 * cos(theta1) = n2 * cos(theta2)"),
-            QuestionOption(key="B", text="n1 / sin(theta1) = n2 / sin(theta2)"),
-            QuestionOption(key="C", text="n1 * sin(theta1) = n2 * sin(theta2)"),
-            QuestionOption(key="D", text="n1 * v1 = n2 * v2")
-        ],
-        solution="Snell's law is given by n1 * sin(theta1) = n2 * sin(theta2)."
-    )
-
-    # Question 6: Differential Calculus MCQ
-    engine.build_and_verify_question(
-        question_id="q_seed_06",
-        topic_id="Differential Calculus",
-        concept_id="Power Rule",
-        prompt="Using the power rule of differentiation (d/dx [x^n] = n * x^(n-1)), what is the derivative of f(x) = x^3?",
-        expected_answer="B",
-        evidence_ids=ev_math[:1],
-        difficulty=Difficulty.easy,
-        question_type=QuestionType.mcq,
-        options=[
-            QuestionOption(key="A", text="3 * x"),
-            QuestionOption(key="B", text="3 * x^2"),
-            QuestionOption(key="C", text="x^2 / 3"),
-            QuestionOption(key="D", text="3 * x^4")
-        ],
-        solution="By the power rule: d/dx [x^3] = 3 * x^(3-1) = 3 * x^2."
-    )
-
-    # Question 7: Wave Properties MCQ
-    ev_wave = [e.evidence_id for e in db.get_evidence_for_topic("Wave Properties") or list(db.all_evidence())[:1]]
-    engine.build_and_verify_question(
-        question_id="q_seed_07",
-        topic_id="Wave Properties",
-        concept_id="Wave Properties",
-        prompt="What is the wave speed equation relating propagation speed (v), frequency (f), and wavelength (lambda)?",
-        expected_answer="A",
-        evidence_ids=ev_optics[:1] if not ev_wave else ev_wave[:1],
-        difficulty=Difficulty.easy,
-        question_type=QuestionType.mcq,
-        options=[
-            QuestionOption(key="A", text="v = f * lambda"),
-            QuestionOption(key="B", text="v = f / lambda"),
-            QuestionOption(key="C", text="v = f + lambda"),
-            QuestionOption(key="D", text="v = lambda / f^2")
-        ],
-        solution="The wave speed equation relates propagation speed v, frequency f, and wavelength lambda: v = f * lambda."
-    )
-
-    stats = {
-        "sources": len(db.all_sources()),
-        "evidence_units": len(list(db.all_evidence())),
-        "topics": len(db.all_topics()),
-        "concepts": len(db.all_concepts()),
-        "questions": len(db.all_questions())
-    }
-    return stats
+    for i, (title, bullets, notes) in enumerate(SLIDES):
+        s = prs.slides.add_slide(prs.slide_layouts[1])
+        s.shapes.title.text = title
+        tf = s.placeholders[1].text_frame
+        tf.text = bullets[0]
+        for b in bullets[1:]:
+            p = tf.add_paragraph()
+            p.text = b
+            p.font.size = Pt(18)
+        s.notes_slide.notes_text_frame.text = notes
+        if title.startswith("Refraction"):
+            pic = s.shapes.add_picture(io.BytesIO(_diagram_png("ray")), Inches(6.2), Inches(4.6), width=Inches(3.2))
+            pic._element.nvPicPr.cNvPr.set("descr", "Ray diagram: light bending towards the normal as it passes from air (n1) into glass (n2)")
+    buf = io.BytesIO()
+    prs.save(buf)
+    return buf.getvalue()
 
 
-def get_corpus_manifest(manifest_path: str | Path = "data/corpus_manifest.json") -> dict:
-    """Retrieve corpus manifest metadata dict, generating or reading manifest file."""
-    p = Path(manifest_path)
-    if p.exists():
-        with open(p, "r", encoding="utf-8") as f:
-            return json.load(f)
+def _srt() -> bytes:
+    def ts(s: float) -> str:
+        return f"{int(s // 3600):02d}:{int(s % 3600 // 60):02d}:{int(s % 60):02d},000"
+
+    out = []
+    for i, (start, text) in enumerate(TRANSCRIPT, 1):
+        end = TRANSCRIPT[i][0] - 1 if i < len(TRANSCRIPT) else start + 30
+        out.append(f"{i}\n{ts(start)} --> {ts(end)}\n{text}\n")
+    return "\n".join(out).encode("utf-8")
+
+
+def build_all() -> dict[str, bytes]:
     return {
-        "corpus_id": "cognivault-school-math-science-v1",
-        "version": "1.0.0",
-        "description": "Deterministic baseline Mathematics and Science educational corpus.",
-        "sources": []
+        "physics_mechanics.pdf": _pdf(PHYSICS, "Classical Mechanics", (1, "Figure 1: Free-body diagram of a box being pushed, showing the normal force, weight, push and friction.")),
+        "waves_optics.pptx": _pptx(),
+        "mathematics_calculus.pdf": _pdf(MATH, "Algebra and Calculus"),
+        "biology_cell_lecture.srt": _srt(),
     }
 
 
-seed_corpus = seed_database_from_corpus
+DEMO_TITLES = {
+    "physics_mechanics.pdf": "Classical Mechanics (textbook)",
+    "waves_optics.pptx": "Waves and Optics (lecture slides)",
+    "mathematics_calculus.pdf": "Algebra and Calculus (handbook)",
+    "biology_cell_lecture.srt": "Cell Biology (lecture video transcript)",
+}
 
 
+def ensure_corpus(corpus_dir: Path) -> list[Path]:
+    corpus_dir.mkdir(parents=True, exist_ok=True)
+    names = ["physics_mechanics.pdf", "waves_optics.pptx", "mathematics_calculus.pdf", "biology_cell_lecture.srt"]
+    if not all((corpus_dir / n).exists() for n in names):
+        for name, data in build_all().items():
+            (corpus_dir / name).write_bytes(data)
+    return [corpus_dir / n for n in names]
