@@ -62,7 +62,8 @@ class Settings:
 def load_settings() -> Settings:
     data_dir = Path(_env("CV_DATA_DIR", str(ROOT / "data")))
     db_path = Path(_env("CV_DB_PATH", str(data_dir / "cognivault.sqlite")))
-    origins = tuple(o.strip() for o in _env("CORS_ORIGINS").split(",") if o.strip())
+    # Browsers send origins without a trailing slash, so "https://x.app/" must match "https://x.app".
+    origins = tuple(o.strip().rstrip("/") for o in _env("CORS_ORIGINS").split(",") if o.strip().rstrip("/"))
     return Settings(
         app_env=_env("APP_ENV", "development"),
         data_dir=data_dir,

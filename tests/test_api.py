@@ -148,3 +148,10 @@ def test_new_users_start_with_no_demo_documents():
     shown = CogniVault(Settings(data_dir=ROOT / "data", show_demo_course=True), db=Database(":memory:"), llm=LLM())
     shown.seed_demo_course()
     assert shown.db.topics("learner-new")
+
+
+def test_cors_accepts_origin_with_trailing_slash_in_env(monkeypatch):
+    from fastapi.testclient import TestClient
+    from app.config import load_settings
+    monkeypatch.setenv("CORS_ORIGINS", "https://app.example.vercel.app/, https://other.vercel.app")
+    assert load_settings().cors_origins == ("https://app.example.vercel.app", "https://other.vercel.app")
