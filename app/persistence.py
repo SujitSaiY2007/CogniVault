@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import logging
 import secrets
 import time
 from typing import Any, Optional
@@ -23,6 +24,7 @@ import httpx
 from .db import Database
 
 SESSION_TTL = 30 * 86400
+log = logging.getLogger("cognivault.storage")
 
 
 class StorageError(RuntimeError):
@@ -126,6 +128,8 @@ class SupabaseBackend(Backend):
                                         headers={**self.headers, **(headers or {})}, content=content)
             except httpx.HTTPError as exc:
                 last = exc
+                log.warning("Supabase %s %s failed (attempt %d): %s: %s", method, path.split("?")[0],
+                            attempt + 1, type(exc).__name__, str(exc)[:200])
                 time.sleep(0.4 * (attempt + 1))
                 continue
             if r.status_code == 409:
@@ -134,12 +138,40 @@ class SupabaseBackend(Backend):
                 time.sleep(0.4 * (attempt + 1))
                 continue
             if r.status_code >= 400:
+                log.warning("Supabase %s %s returned %s: %s", method, path.split("?")[0], r.status_code, r.text[:200])
                 raise StorageError(f"Storage request failed ({r.status_code}).")
             if r.status_code == 204 or not r.content:
                 return None
             ctype = r.headers.get("content-type", "")
             return r.json() if "json" in ctype else r.content
         raise StorageError("Storage is temporarily unreachable.") from last
+
+    def diagnose(self) -> dict:
+        """Probe Supabase and report what fails. Never returns secrets."""
+        key = self.headers.get("apikey", "")
+        info = {
+            "url_host": self.url.split("//", 1)[-1].split("/", 1)[0],
+            "url_has_scheme": self.url.startswith(("http://", "https://")),
+            "url_has_whitespace": any(c.isspace() for c in self.url),
+            "key_kind": "sb_secret" if key.startswith("sb_secret_") else "jwt" if key.startswith("eyJ")
+                        else "sb_publishable" if key.startswith("sb_publishable_") else "unknown",
+            "key_length": len(key),
+            "key_has_whitespace": any(c.isspace() for c in key),
+            "key_is_ascii": key.isascii(),
+        }
+        probes = {}
+        for name, path in (("rest_users_table", "/rest/v1/cognivault_users?select=username&limit=1"),
+                           ("rest_sources_table", "/rest/v1/user_sources?select=source_id&limit=1"),
+                           ("storage_bucket", f"/storage/v1/bucket/{self.BUCKET}")):
+            try:
+                r = self.client.get(f"{self.url}{path}", headers=self.headers)
+                probes[name] = {"ok": r.status_code < 400, "status": r.status_code,
+                                "note": "" if r.status_code < 400 else r.text[:160]}
+            except Exception as exc:  # report the exact failure class
+                probes[name] = {"ok": False, "error": type(exc).__name__, "note": str(exc)[:160]}
+        info["probes"] = probes
+        info["all_ok"] = all(p["ok"] for p in probes.values())
+        return info
 
     def _select(self, table, params):
         return self._req("GET", f"/rest/v1/{table}", params=params) or []

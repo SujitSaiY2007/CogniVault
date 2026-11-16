@@ -118,3 +118,18 @@ def test_unsupported_and_oversized_uploads_are_rejected(fresh):
     assert c.post("/api/v1/ingest/upload", headers=h, files={"file": ("x.exe", b"MZ", "application/octet-stream")}).status_code == 422
     big = b"a" * (25 * 1024 * 1024 + 1)
     assert c.post("/api/v1/ingest/upload", headers=h, files={"file": ("big.txt", big, "text/plain")}).status_code == 413
+
+
+def test_storage_diagnostics_local(fresh):
+    r = client_for(fresh).get("/api/v1/diagnostics/storage")
+    assert r.status_code == 200
+    assert r.json()["all_ok"] is True
+
+
+def test_supabase_diagnose_reports_connection_failure():
+    from app.persistence import SupabaseBackend
+    b = SupabaseBackend("http://127.0.0.1:9", "sb_secret_testkey")
+    d = b.diagnose()
+    assert d["key_kind"] == "sb_secret" and d["all_ok"] is False
+    assert all(p["ok"] is False and p["error"] for p in d["probes"].values())
+    assert "sb_secret_testkey" not in str(d)

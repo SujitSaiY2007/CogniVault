@@ -202,6 +202,14 @@ def create_app(service: Optional[CogniVault] = None, settings: Optional[Settings
             raise HTTPException(401, "Incorrect username or password.")
         return issue(user["username"], user["learner_id"])
 
+    @app.get("/api/v1/diagnostics/storage", tags=["System"])
+    def storage_diagnostics():
+        """Reports whether the server can reach its storage. No secrets are returned."""
+        backend = svc.backend
+        if not hasattr(backend, "diagnose"):
+            return {"backend": getattr(backend, "name", "local"), "durable": False, "all_ok": True}
+        return {"backend": backend.name, "durable": True, **backend.diagnose()}
+
     @app.get("/api/v1/auth/me", tags=["Auth"])
     def me(request: Request, learner_id: str = Depends(current_user)):
         return {"username": request.state.username, "learner_id": learner_id}
