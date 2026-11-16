@@ -162,3 +162,19 @@ def test_study_plan_warns_when_time_is_too_short(fresh):
     assert plan["warning"] and plan["blocks_needed"] > plan["blocks_available"]
     long = study_plan(m, "u6", fresh.db.topics(PUBLIC_OWNER), (datetime.now(timezone.utc).date() + timedelta(days=30)).isoformat(), 120)
     assert long["warning"] is None and long["plan"][-1]["blocks"][-1]["kind"] == "exam"
+
+
+def test_short_plan_gives_every_topic_a_share(fresh):
+    m = LearnerModel(fresh.db)
+    topics = fresh.db.topics(PUBLIC_OWNER)
+    plan = study_plan(m, "u7", topics, (datetime.now(timezone.utc).date() + timedelta(days=8)).isoformat(), 60)
+    assert plan["warning"]
+    covered = {b["topic_id"] for day in plan["plan"] for b in day["blocks"] if b["topic_id"]}
+    assert len(covered) == len(topics) and plan["topics_covered"] == len(topics)
+    assert sum(1 for day in plan["plan"] for b in day["blocks"] if b["kind"] == "practice") <= plan["blocks_available"]
+
+
+def test_plan_for_empty_course_is_flagged_empty(fresh):
+    m = LearnerModel(fresh.db)
+    plan = study_plan(m, "u8", [], None, 60)
+    assert plan["empty"] is True and plan["topics_covered"] == 0

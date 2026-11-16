@@ -206,7 +206,7 @@ export interface CurriculumTopic {
 
 export interface QuizSession {
   session_id: string;
-  mode: "practice" | "exam" | "diagnostic";
+  mode: "practice" | "exam";
   created_at: string;
   topic_ids: string[];
   question_ids: string[];
@@ -282,6 +282,10 @@ export interface StudyPlan {
   blocks_needed: number;
   blocks_available: number;
   warning: string | null;
+  total_minutes: number;
+  topics_covered: number;
+  topics_total: number;
+  empty: boolean;
 }
 
 export interface CourseMap {

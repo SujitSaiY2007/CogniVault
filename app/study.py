@@ -112,15 +112,27 @@ def study_plan(model: LearnerModel, learner_id: str, topics: list[TopicRecord], 
 
     plan: list[dict[str, Any]] = [{"date": (today + timedelta(days=i)).isoformat(), "blocks": []} for i in range(days)]
     study_days = days - 1 if days > 2 else days
-    queue = [t for t in ordered if need[t.topic_id] > 0]
-    d = 0
     total_capacity = study_days * per_day
     total_need = sum(need.values())
+    wanted = total_need
+    if total_need > total_capacity > 0:
+        # Not enough time for everything: give every topic a fair share (at least one block)
+        # instead of filling early topics and leaving the last ones with nothing.
+        scale = total_capacity / total_need
+        need = {tid: (max(1, int(n * scale)) if n else 0) for tid, n in need.items()}
+        while sum(need.values()) > total_capacity:
+            biggest = max(need, key=lambda k: need[k])
+            if need[biggest] <= 1:
+                break
+            need[biggest] -= 1
+    queue = [t for t in ordered if need[t.topic_id] > 0]
+    max_topics_per_day = per_day if wanted > total_capacity else 2
+    d = 0
     for t in queue:
         n = need[t.topic_id]
         while n > 0 and d < study_days:
             day = plan[d]
-            if len(day["blocks"]) >= per_day or len({b["topic_id"] for b in day["blocks"]}) >= 2 and t.topic_id not in {b["topic_id"] for b in day["blocks"]}:
+            if len(day["blocks"]) >= per_day or len({b["topic_id"] for b in day["blocks"]}) >= max_topics_per_day and t.topic_id not in {b["topic_id"] for b in day["blocks"]}:
                 d += 1
                 continue
             p = model.current(learner_id, t.topic_id)
@@ -146,11 +158,16 @@ def study_plan(model: LearnerModel, learner_id: str, topics: list[TopicRecord], 
     if days > 2:
         plan[-1]["blocks"].append({"topic_id": "", "topic_name": "All topics", "activity": "Mock exam (mixed, timed)", "minutes": min(60, minutes_per_day), "kind": "exam"})
     warning = None
-    if total_need > total_capacity:
-        warning = (f"You need about {total_need} practice blocks ({total_need * BLOCK_MIN} min) but have {total_capacity} "
-                   f"({total_capacity * BLOCK_MIN} min) before the exam. Increase daily time or focus on the weakest topics first.")
+    if wanted > total_capacity:
+        warning = (f"Full mastery of every topic needs about {wanted * BLOCK_MIN // 60} h {wanted * BLOCK_MIN % 60} min, "
+                   f"but you have about {total_capacity * BLOCK_MIN // 60} h {total_capacity * BLOCK_MIN % 60} min before the exam. "
+                   "The plan gives every topic a share of your time. Add daily time or move the exam date for more depth.")
+    scheduled = [b for day in plan for b in day["blocks"]]
     return {"exam_date": exam.isoformat(), "days": days, "minutes_per_day": minutes_per_day, "plan": plan,
-            "blocks_needed": total_need, "blocks_available": total_capacity, "warning": warning}
+            "blocks_needed": wanted, "blocks_available": total_capacity, "warning": warning,
+            "total_minutes": sum(b["minutes"] for b in scheduled),
+            "topics_covered": len({b["topic_id"] for b in scheduled if b["topic_id"]}),
+            "topics_total": len(ordered), "empty": not ordered}
 
 
 def course_map(model: LearnerModel, learner_id: str, topics: list[TopicRecord]) -> dict[str, Any]:

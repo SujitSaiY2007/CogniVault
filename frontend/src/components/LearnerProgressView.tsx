@@ -40,8 +40,8 @@ export const LearnerProgressView: React.FC<{ learnerId: string; refreshKey: numb
           ["Topics practised", records.length],
         ].map(([k, v]) => (
           <Panel key={k as string}>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{k}</p>
-            <p className="mt-1 text-2xl font-black text-white">{v}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{k}</p>
+            <p className="mt-1 text-2xl font-black text-slate-900">{v}</p>
           </Panel>
         ))}
       </div>
@@ -50,26 +50,26 @@ export const LearnerProgressView: React.FC<{ learnerId: string; refreshKey: numb
         <EmptyState icon={TrendingUp} title="No practice yet" body="Answer a few questions in Practice & Exams. Your mastery per topic will appear here." />
       ) : (
         <Panel className="space-y-4">
-          <h3 className="text-sm font-bold text-slate-100">Topic mastery (weakest first)</h3>
+          <h3 className="text-sm font-bold text-slate-900">Topic mastery (weakest first)</h3>
           {records.map((r) => (
             <div key={r.topic_id} className="space-y-1.5">
               <div className="flex items-center justify-between gap-2 text-xs">
-                <span className="font-semibold text-slate-200">{r.topic_name || r.topic_id}</span>
-                <span className="flex items-center gap-3 font-mono text-slate-400">
+                <span className="font-semibold text-slate-800">{r.topic_name || r.topic_id}</span>
+                <span className="flex items-center gap-3 font-mono text-slate-500">
                   {r.correct}/{r.attempts} correct
                   {r.p_mastery_stored !== undefined && r.p_mastery_stored - r.p_mastery > 0.02 && (
-                    <span className="text-amber-300" title="Estimated forgetting since your last practice">
+                    <span className="text-amber-700" title="Estimated forgetting since your last practice">
                       faded from {Math.round(r.p_mastery_stored * 100)}%
                     </span>
                   )}
-                  <b className="text-slate-100">{Math.round(r.p_mastery * 100)}%</b>
+                  <b className="text-slate-900">{Math.round(r.p_mastery * 100)}%</b>
                   <GhostButton onClick={() => onPractice(r.topic_id)} className="px-2 py-1">
                     Practise
                   </GhostButton>
                 </span>
               </div>
               <MasteryBar p={r.p_mastery} />
-              {r.misconception_signals.length > 0 && <p className="text-[11px] text-amber-300">⚠ {r.misconception_signals.join("; ")}</p>}
+              {r.misconception_signals.length > 0 && <p className="text-[11px] text-amber-700">⚠ {r.misconception_signals.join("; ")}</p>}
             </div>
           ))}
         </Panel>
@@ -77,7 +77,7 @@ export const LearnerProgressView: React.FC<{ learnerId: string; refreshKey: numb
 
       {hist.length > 1 && (
         <Panel>
-          <h3 className="mb-3 text-sm font-bold text-slate-100">Recent answers</h3>
+          <h3 className="mb-3 text-sm font-bold text-slate-900">Recent answers</h3>
           <div className="flex flex-wrap gap-1">
             {hist.map((h, i) => (
               <span

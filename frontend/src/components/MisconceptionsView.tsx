@@ -44,11 +44,11 @@ export const MisconceptionsView: React.FC<{
       {!items && !error && <Spinner />}
       {items && items.length === 0 && <EmptyState icon={CheckCircle2} title="No active misconceptions" body="Repeated errors on the same concept will show up here with the passages to re-read." />}
       {items?.map((m) => (
-        <Panel key={m.signal_id} className="space-y-3 border-amber-500/30">
+        <Panel key={m.signal_id} className="space-y-3 border-amber-200">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <p className="text-sm font-bold text-amber-200">{m.suspected_misconception}</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-sm font-bold text-amber-800">{m.suspected_misconception}</p>
+              <p className="text-xs text-slate-500">
                 {m.topic_name} · {m.error_count} errors · confidence {Math.round(m.confidence * 100)}%
               </p>
             </div>
@@ -59,7 +59,7 @@ export const MisconceptionsView: React.FC<{
               <GhostButton onClick={() => resolve(m.signal_id)}>Mark resolved</GhostButton>
             </div>
           </div>
-          <p className="text-xs text-slate-300">{m.remediation_note}</p>
+          <p className="text-xs text-slate-600">{m.remediation_note}</p>
           <div className="space-y-2">
             {m.evidence_items.map((e) => (
               <button
@@ -67,9 +67,9 @@ export const MisconceptionsView: React.FC<{
                 onClick={() =>
                   onOpenCitation({ evidence_id: e.evidence_id, source_id: "", modality: e.modality as any, location: e.location, snippet: e.text, source_title: e.source_title, locator_label: e.locator_label })
                 }
-                className="block w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-left text-xs text-slate-300 hover:border-indigo-500/40"
+                className="block w-full rounded-xl border border-slate-200 bg-[#fbfaf7] p-3 text-left text-xs text-slate-600 hover:border-indigo-300"
               >
-                <span className="mb-1 flex items-center gap-1 text-[11px] font-bold text-indigo-300">
+                <span className="mb-1 flex items-center gap-1 text-[11px] font-bold text-indigo-600">
                   <MapPin className="h-3 w-3" /> {e.source_title}, {e.locator_label}
                 </span>
                 {e.text.slice(0, 260)}

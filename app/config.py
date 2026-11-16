@@ -29,6 +29,7 @@ class Settings:
     data_dir: Path = ROOT / "data"
     db_path: Path = ROOT / "data" / "cognivault.sqlite"
     seed_demo_course: bool = True
+    show_demo_course: bool = False  # new users start with an empty workspace
 
     # Model providers. "auto" picks Gemini when a key is set, else Ollama
     # when reachable, else the deterministic extractive engine.
@@ -67,6 +68,7 @@ def load_settings() -> Settings:
         data_dir=data_dir,
         db_path=db_path,
         seed_demo_course=_env("SEED_DEMO_COURSE", "1") not in {"0", "false", "no"},
+        show_demo_course=_env("SHOW_DEMO_COURSE", "0") in {"1", "true", "yes"},
         model_provider=_env("MODEL_PROVIDER", "auto").lower(),
         gemini_api_key=_env("GEMINI_API_KEY"),
         gemini_model=_env("GEMINI_MODEL", "gemini-2.0-flash"),

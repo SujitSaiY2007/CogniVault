@@ -10,11 +10,11 @@ const ACCEPT = ".pdf,.pptx,.srt,.vtt,.txt,.md";
 
 const badge = (m: string) =>
   ({
-    pdf: "bg-rose-500/10 text-rose-300 border-rose-500/30",
-    pptx: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-    video: "bg-sky-500/10 text-sky-300 border-sky-500/30",
-    text: "bg-slate-800 text-slate-300 border-slate-700",
-  }[m] || "bg-slate-800 text-slate-300 border-slate-700");
+    pdf: "bg-rose-50 text-rose-700 border-rose-200",
+    pptx: "bg-amber-50 text-amber-700 border-amber-200",
+    video: "bg-sky-50 text-sky-700 border-sky-200",
+    text: "bg-slate-50 text-slate-600 border-slate-200",
+  }[m] || "bg-slate-50 text-slate-600 border-slate-200");
 
 const modalityName = (m: string) => ({ pdf: "PDF", pptx: "Slides", video: "Transcript", text: "Notes" }[m] || m);
 
@@ -91,15 +91,15 @@ export const IngestionView: React.FC<{ onCurriculumUpdated?: () => void }> = ({ 
   const demo = sources.filter((s) => s.owner !== "you");
 
   const Row = ({ s }: { s: SourceRecord }) => (
-    <tr className="transition-colors hover:bg-slate-800/40">
+    <tr className="transition-colors hover:bg-slate-50">
       <td className="px-4 py-3">
-        <div className="font-semibold text-slate-200">{s.title}</div>
+        <div className="font-semibold text-slate-800">{s.title}</div>
         <div className="mt-0.5 text-[11px] text-slate-500">{(s.topics || []).map((t) => t.name).join(" · ") || "—"}</div>
       </td>
       <td className="px-4 py-3">
         <span className={`rounded border px-2 py-0.5 text-[10px] font-bold uppercase ${badge(s.modality)}`}>{modalityName(s.modality)}</span>
       </td>
-      <td className="px-4 py-3 font-mono text-slate-300">{s.evidence_count}</td>
+      <td className="px-4 py-3 font-mono text-slate-600">{s.evidence_count}</td>
       <td className="px-4 py-3 text-right">
         <div className="flex justify-end gap-2">
           <GhostButton onClick={() => view(s)}>
@@ -133,11 +133,11 @@ export const IngestionView: React.FC<{ onCurriculumUpdated?: () => void }> = ({ 
         }}
         onClick={() => fileRef.current?.click()}
         className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
-          dragOver ? "border-indigo-400 bg-indigo-500/10" : "border-slate-700 hover:border-slate-500"
+          dragOver ? "border-indigo-400 bg-indigo-50" : "border-slate-200 hover:border-slate-300"
         }`}
       >
-        <FileUp className="h-8 w-8 text-indigo-400" />
-        <p className="mt-2 text-sm font-bold text-slate-200">Drop files here or click to upload</p>
+        <FileUp className="h-8 w-8 text-indigo-600" />
+        <p className="mt-2 text-sm font-bold text-slate-800">Drop files here or click to upload</p>
         <p className="mt-1 text-xs text-slate-500">PDF · PPTX · SRT · VTT · TXT · MD, up to 25 MB each. Videos: upload the transcript or captions file.</p>
         <input ref={fileRef} type="file" accept={ACCEPT} multiple className="hidden" onChange={(e) => e.target.files && upload(e.target.files)} />
       </div>
@@ -147,18 +147,18 @@ export const IngestionView: React.FC<{ onCurriculumUpdated?: () => void }> = ({ 
           {queue.map((q, i) => (
             <div
               key={`${q.name}-${i}`}
-              className={`rounded-xl border p-3 text-xs ${q.state === "error" ? "border-rose-500/30 bg-rose-950/20 text-rose-200" : q.state === "done" ? "border-emerald-500/30 bg-emerald-950/20 text-emerald-200" : "border-slate-700 bg-slate-900 text-slate-300"}`}
+              className={`rounded-xl border p-3 text-xs ${q.state === "error" ? "border-rose-200 bg-rose-50 text-rose-700" : q.state === "done" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-white text-slate-600"}`}
             >
               <div className="flex items-center gap-2 font-semibold">
                 {q.state === "uploading" ? <Spinner label={`Reading ${q.name}… larger files take longer.`} /> : q.state === "done" ? <CheckCircle2 className="h-4 w-4" /> : <X className="h-4 w-4" />}
                 {q.state !== "uploading" && <span>{q.name}</span>}
               </div>
               {q.result && (
-                <p className="mt-1 text-slate-300">
+                <p className="mt-1 text-slate-600">
                   {q.result.evidence_count} passages{q.result.figure_count ? `, ${q.result.figure_count} figures` : ""}, {q.result.topics.length} topics ({q.result.topics.map((t) => t.name).join(", ")}),{" "}
                   {q.result.question_count} verified questions.
                   {q.result.warnings.map((w) => (
-                    <span key={w} className="block text-amber-300">
+                    <span key={w} className="block text-amber-700">
                       ⚠ {w}
                     </span>
                   ))}
@@ -175,14 +175,14 @@ export const IngestionView: React.FC<{ onCurriculumUpdated?: () => void }> = ({ 
       ) : (
         <>
           <Panel className="overflow-hidden p-0">
-            <div className="border-b border-slate-800 p-4 text-sm font-bold uppercase tracking-wider text-slate-300">Your material ({mine.length})</div>
+            <div className="border-b border-slate-200 p-4 text-sm font-bold uppercase tracking-wider text-slate-600">Your material ({mine.length})</div>
             {mine.length === 0 ? (
               <div className="p-6">
-                <EmptyState icon={Upload} title="Nothing uploaded yet" body="Until you upload your own files, the tutor and quizzes use the demo course below." />
+                <EmptyState icon={Upload} title="Nothing uploaded yet" body="Drop a PDF, slide deck, transcript or notes file above. Your tutor, quizzes and study plan are built only from what you upload." />
               </div>
             ) : (
               <table className="w-full text-left text-xs">
-                <tbody className="divide-y divide-slate-800/80">
+                <tbody className="divide-y divide-slate-100">
                   {mine.map((s) => (
                     <Row key={s.source_id} s={s} />
                   ))}
@@ -190,25 +190,27 @@ export const IngestionView: React.FC<{ onCurriculumUpdated?: () => void }> = ({ 
               </table>
             )}
           </Panel>
+          {demo.length > 0 && (
           <Panel className="overflow-hidden p-0">
-            <div className="border-b border-slate-800 p-4 text-sm font-bold uppercase tracking-wider text-slate-300">Demo course ({demo.length})</div>
+            <div className="border-b border-slate-200 p-4 text-sm font-bold uppercase tracking-wider text-slate-600">Demo course ({demo.length})</div>
             <table className="w-full text-left text-xs">
-              <tbody className="divide-y divide-slate-800/80">
+              <tbody className="divide-y divide-slate-100">
                 {demo.map((s) => (
                   <Row key={s.source_id} s={s} />
                 ))}
               </tbody>
             </table>
           </Panel>
+          )}
         </>
       )}
 
       {viewing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={() => setViewing(null)}>
-          <div className="max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm" onClick={() => setViewing(null)}>
+          <div className="max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-100">{viewing.title}</h3>
-              <button onClick={() => setViewing(null)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800">
+              <h3 className="text-base font-bold text-slate-900">{viewing.title}</h3>
+              <button onClick={() => setViewing(null)} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-50">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -217,13 +219,13 @@ export const IngestionView: React.FC<{ onCurriculumUpdated?: () => void }> = ({ 
             ) : (
               <div className="space-y-2">
                 {units.map((u) => (
-                  <div key={u.evidence_id} className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs">
-                    <div className="mb-1 flex items-center gap-2 text-[11px] text-indigo-300">
+                  <div key={u.evidence_id} className="rounded-xl border border-slate-200 bg-[#fbfaf7] p-3 text-xs">
+                    <div className="mb-1 flex items-center gap-2 text-[11px] text-indigo-600">
                       {u.evidence_type === "figure" && <ImageIcon className="h-3 w-3" />}
                       <b>{locLabel(u)}</b>
                       {u.section && <span className="text-slate-500">· {u.section}</span>}
                     </div>
-                    <p className="whitespace-pre-wrap text-slate-300">{u.text}</p>
+                    <p className="whitespace-pre-wrap text-slate-600">{u.text}</p>
                   </div>
                 ))}
               </div>

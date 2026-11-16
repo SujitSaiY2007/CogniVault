@@ -78,11 +78,6 @@ class ObservationRequest(BaseModel):
     timestamp: Optional[str] = None
 
 
-class IntakeRequest(BaseModel):
-    initial_topic_masteries: Optional[dict[str, float]] = None
-    diagnostic_responses: Optional[list[dict[str, Any]]] = None
-
-
 class ReviewRequest(BaseModel):
     grade: int = Field(ge=0, le=5)
 
@@ -115,7 +110,7 @@ class RateLimiter:
 def create_app(service: Optional[CogniVault] = None, settings: Optional[Settings] = None) -> FastAPI:
     settings = settings or (service.settings if service else load_settings())
     svc = service or CogniVault(settings)
-    if settings.seed_demo_course:
+    if settings.seed_demo_course and settings.show_demo_course:
         try:
             svc.seed_demo_course()
         except Exception:  # pragma: no cover - never block start-up
@@ -348,11 +343,6 @@ def create_app(service: Optional[CogniVault] = None, settings: Optional[Settings
     def quiz_history(me: str = Depends(current_user)):
         return svc.quiz_history(me)
 
-    @app.post("/api/v1/diagnostic", tags=["Assessment"])
-    def diagnostic(me: str = Depends(current_user)):
-        with svc.owner_lock(me):
-            return svc.diagnostic(me)
-
     @app.get("/api/v1/quiz/{session_id}", tags=["Assessment"])
     def get_quiz(session_id: str, me: str = Depends(current_user)):
         quiz = svc.db.get_quiz(session_id)
@@ -409,10 +399,6 @@ def create_app(service: Optional[CogniVault] = None, settings: Optional[Settings
     def recommendations(active_topic_id: Optional[str] = None, me: str = Depends(same_learner)):
         return svc.recommendation(me, active_topic_id)
 
-    @app.post("/api/v1/learner/{learner_id}/intake", tags=["Learner"])
-    def intake(body: IntakeRequest, me: str = Depends(same_learner)):
-        with svc.owner_lock(me):
-            return svc.intake(me, body.initial_topic_masteries, body.diagnostic_responses)
 
     # -------------------------------------------------------------- study
     @app.get("/api/v1/flashcards", tags=["Study"])

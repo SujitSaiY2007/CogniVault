@@ -49,6 +49,7 @@ class CogniVault:
                  embedder: Optional[Embedder] = None, backend: Optional[Backend] = None):
         self.settings = settings or load_settings()
         self.db = db or Database(self.settings.db_path)
+        self.db.show_public = self.settings.show_demo_course
         self.embedder = embedder or make_embedder(self.settings.embedding_provider, self.settings.gemini_api_key,
                                                   self.settings.gemini_embed_model)
         self.llm = llm if llm is not None else make_llm(self.settings.model_provider, self.settings.gemini_api_key,
@@ -582,38 +583,6 @@ class CogniVault:
                                              "is_correct": bool(i["is_correct"]), "p_after": i["p_after"]} for i in inter[-60:]],
             "meta": self.db.get_meta(owner_id),
         }
-
-    def intake(self, owner_id: str, self_ratings: Optional[dict[str, float]] = None,
-               responses: Optional[list[dict[str, Any]]] = None) -> dict[str, Any]:
-        names = self.topic_names(owner_id)
-        for tid, r in (self_ratings or {}).items():
-            if tid in names:
-                self.learner.set_prior(owner_id, tid, float(r))
-        for resp in responses or []:
-            if resp.get("question_id"):
-                self.submit(owner_id, resp["question_id"], str(resp.get("answer", "")))
-            elif resp.get("topic_id") in names:
-                self.learner.observe_binary(owner_id, resp["topic_id"], bool(resp.get("is_correct")))
-        meta = self.db.get_meta(owner_id)
-        meta["intake_completed_at"] = now_iso()
-        self.db.put_meta(owner_id, meta)
-        self.save_progress(owner_id)
-        return {"learner_id": owner_id, "intake_status": "completed", "profile": self.profile(owner_id),
-                "initial_recommendation": self.learner.recommend(owner_id, self.db.topics(owner_id)).model_dump()}
-
-    def diagnostic(self, owner_id: str, per_topic: int = 1, max_questions: int = 10) -> dict[str, Any]:
-        """Cold start: one easy question per topic, foundational topics first."""
-        from .study import topo_order
-
-        picked = []
-        for t in topo_order(self.db.topics(owner_id)):
-            bank = self.db.questions(owner_id, t.topic_id)
-            q = self.learner.select_question(owner_id, bank, Difficulty.easy)
-            if q:
-                picked.append(q)
-            if len(picked) >= max_questions:
-                break
-        return self.create_quiz_from(owner_id, picked, mode="diagnostic")
 
     def create_quiz_from(self, owner_id: str, questions: list[Question], mode: str) -> dict[str, Any]:
         if not questions:

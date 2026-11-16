@@ -42,13 +42,13 @@ function TopicOptions({ topics }: { topics: CurriculumTopic[] }) {
           ))}
         </optgroup>
       )}
-      <optgroup label="Demo course">
+      {demo.length > 0 && <optgroup label="Demo course">
         {demo.map((t) => (
           <option key={t.topic_id} value={t.topic_id}>
             {t.name}
           </option>
         ))}
-      </optgroup>
+      </optgroup>}
     </>
   );
 }
@@ -81,14 +81,14 @@ function QuestionCard({
   return (
     <Panel className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-wide">
-        <span className="rounded-md border border-indigo-500/40 bg-indigo-500/10 px-2 py-0.5 text-indigo-300">{topicName}</span>
-        <span className="rounded-md border border-slate-700 px-2 py-0.5 text-slate-300">{TYPE_LABEL[question.question_type]}</span>
-        <span className="rounded-md border border-slate-700 px-2 py-0.5 text-slate-400">{question.difficulty}</span>
-        <span className="rounded-md border border-emerald-500/30 px-2 py-0.5 text-emerald-300" title={(question.metadata?.checks || []).join(", ")}>
+        <span className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-indigo-600">{topicName}</span>
+        <span className="rounded-md border border-slate-200 px-2 py-0.5 text-slate-600">{TYPE_LABEL[question.question_type]}</span>
+        <span className="rounded-md border border-slate-200 px-2 py-0.5 text-slate-500">{question.difficulty}</span>
+        <span className="rounded-md border border-emerald-200 px-2 py-0.5 text-emerald-700" title={(question.metadata?.checks || []).join(", ")}>
           verified
         </span>
       </div>
-      <p className="text-base font-semibold leading-relaxed text-slate-100">{question.prompt}</p>
+      <p className="text-base font-semibold leading-relaxed text-slate-900">{question.prompt}</p>
 
       <form
         onSubmit={(e) => {
@@ -105,22 +105,22 @@ function QuestionCard({
               const style =
                 ev && showFeedback
                   ? isKey
-                    ? "border-emerald-500/60 bg-emerald-500/10"
+                    ? "border-emerald-300 bg-emerald-50"
                     : chosen
-                    ? "border-rose-500/60 bg-rose-500/10"
-                    : "border-slate-700 opacity-70"
+                    ? "border-rose-300 bg-rose-50"
+                    : "border-slate-200 opacity-70"
                   : chosen
-                  ? "border-indigo-400 bg-indigo-500/15"
-                  : "border-slate-700 hover:border-slate-500";
+                  ? "border-indigo-400 bg-indigo-50"
+                  : "border-slate-200 hover:border-slate-300";
               return (
                 <button
                   type="button"
                   key={o.key}
                   disabled={locked}
                   onClick={() => setAnswer(o.key)}
-                  className={`flex items-start gap-3 rounded-xl border-2 p-3 text-left text-sm text-slate-200 transition-colors ${style}`}
+                  className={`flex items-start gap-3 rounded-xl border-2 p-3 text-left text-sm text-slate-800 transition-colors ${style}`}
                 >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-xs font-bold">{o.key}</span>
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-xs font-bold">{o.key}</span>
                   <span>{o.text}</span>
                 </button>
               );
@@ -133,7 +133,7 @@ function QuestionCard({
             disabled={locked}
             inputMode={question.question_type === "numerical" ? "decimal" : "text"}
             placeholder={question.question_type === "numerical" ? "Enter a number (units optional)" : "Type your answer"}
-            className="w-full rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-sm text-slate-100 focus:border-indigo-400 focus:outline-none"
+            className="w-full rounded-xl border-2 border-slate-200 bg-[#fbfaf7] px-4 py-3 text-sm text-slate-900 focus:border-indigo-400 focus:outline-none"
           />
         )}
         {!result && (
@@ -144,41 +144,41 @@ function QuestionCard({
       </form>
 
       {ev && showFeedback && (
-        <div className="space-y-3 border-t border-slate-800 pt-4">
+        <div className="space-y-3 border-t border-slate-200 pt-4">
           <div
             className={`flex items-start gap-2 rounded-xl border p-3 text-sm ${
-              ev.is_correct ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200" : ev.status === "partially_correct" ? "border-amber-500/40 bg-amber-500/10 text-amber-200" : "border-rose-500/40 bg-rose-500/10 text-rose-200"
+              ev.is_correct ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ev.status === "partially_correct" ? "border-amber-300 bg-amber-50 text-amber-800" : "border-rose-200 bg-rose-50 text-rose-700"
             }`}
           >
             {ev.is_correct ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0" />}
             <span>{ev.feedback}</span>
           </div>
           {ev.solution && (
-            <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">
-              <span className="font-bold text-slate-200">From the source: </span>
+            <div className="rounded-xl border border-slate-200 bg-[#fbfaf7] p-3 text-xs text-slate-600">
+              <span className="font-bold text-slate-800">From the source: </span>
               {ev.solution}
             </div>
           )}
           <div className="flex flex-wrap gap-2">
             {ev.citations.map((c) => (
-              <button key={c.evidence_id} onClick={() => onOpenCitation(c)} className="flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-xs text-indigo-300 hover:bg-indigo-500/20">
+              <button key={c.evidence_id} onClick={() => onOpenCitation(c)} className="flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs text-indigo-600 hover:bg-indigo-100">
                 <MapPin className="h-3 w-3" /> {c.source_title}, {locatorLabel(c)}
               </button>
             ))}
           </div>
           {result && (
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs text-slate-400">
+              <div className="flex items-center justify-between text-xs text-slate-500">
                 <span>Mastery of {topicName}</span>
                 <span className="font-mono">
-                  {(result.p_before * 100).toFixed(0)}% → <b className="text-slate-100">{(result.mastery.p_mastery * 100).toFixed(0)}%</b>
+                  {(result.p_before * 100).toFixed(0)}% → <b className="text-slate-900">{(result.mastery.p_mastery * 100).toFixed(0)}%</b>
                 </span>
               </div>
               <MasteryBar p={result.mastery.p_mastery} before={result.p_before} />
             </div>
           )}
           {result?.misconception_detected && result.misconception && (
-            <div className="flex items-start gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-200">
+            <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>
                 <b>Possible misconception:</b> {result.misconception.suspected_misconception}. {result.misconception.remediation_note}
@@ -198,9 +198,9 @@ function Report({ report, onOpenCitation, onRestart }: { report: QuizReport; onO
     <div className="space-y-5">
       <Panel className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-indigo-300">{report.mode === "exam" ? "Mock exam report" : report.mode === "diagnostic" ? "Placement check report" : "Quiz report"}</p>
-          <p className="mt-1 text-3xl font-black text-white">{report.percent.toFixed(0)}%</p>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">{report.mode === "exam" ? "Mock exam report" : "Quiz report"}</p>
+          <p className="mt-1 text-3xl font-black text-slate-900">{report.percent.toFixed(0)}%</p>
+          <p className="text-xs text-slate-500">
             {report.score} of {report.total} points · {report.answered} answered
           </p>
         </div>
@@ -210,18 +210,18 @@ function Report({ report, onOpenCitation, onRestart }: { report: QuizReport; onO
       </Panel>
 
       <Panel>
-        <h3 className="mb-3 text-sm font-bold text-slate-100">Topics</h3>
+        <h3 className="mb-3 text-sm font-bold text-slate-900">Topics</h3>
         <div className="space-y-3">
           {report.topics.map((t) => (
             <div key={t.topic_id}>
               <div className="mb-1 flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-200">
+                <span className="font-semibold text-slate-800">
                   {t.topic_name}{" "}
-                  <span className={`ml-1 rounded px-1.5 py-0.5 text-[10px] uppercase ${t.status === "strong" ? "bg-emerald-500/15 text-emerald-300" : t.status === "weak" ? "bg-rose-500/15 text-rose-300" : "bg-amber-500/15 text-amber-300"}`}>
+                  <span className={`ml-1 rounded px-1.5 py-0.5 text-[10px] uppercase ${t.status === "strong" ? "bg-emerald-50 text-emerald-700" : t.status === "weak" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700"}`}>
                     {t.status}
                   </span>
                 </span>
-                <span className="font-mono text-slate-400">
+                <span className="font-mono text-slate-500">
                   {t.correct}/{t.answered} · mastery {Math.round((t.mastery_before ?? 0) * 100)}% → {Math.round(t.mastery_after * 100)}%
                 </span>
               </div>
@@ -233,21 +233,21 @@ function Report({ report, onOpenCitation, onRestart }: { report: QuizReport; onO
 
       {(report.weak_topics.length > 0 || report.confusions.length > 0 || report.misconceptions.length > 0) && (
         <Panel className="space-y-3">
-          <h3 className="flex items-center gap-2 text-sm font-bold text-slate-100">
-            <AlertTriangle className="h-4 w-4 text-amber-400" /> What to work on
+          <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900">
+            <AlertTriangle className="h-4 w-4 text-amber-700" /> What to work on
           </h3>
           {report.weak_topics.length > 0 && (
-            <p className="text-sm text-slate-300">
+            <p className="text-sm text-slate-600">
               Weak topics: <b>{report.weak_topics.map((t) => t.topic_name).join(", ")}</b>
             </p>
           )}
           {report.confusions.map((c, i) => (
-            <p key={i} className="text-sm text-amber-200">
+            <p key={i} className="text-sm text-amber-800">
               • {c.note}
             </p>
           ))}
           {report.misconceptions.map((m) => (
-            <p key={m.signal_id} className="text-sm text-amber-200">
+            <p key={m.signal_id} className="text-sm text-amber-800">
               • Likely misconception: {m.suspected_misconception} ({m.error_count} errors)
             </p>
           ))}
@@ -256,12 +256,12 @@ function Report({ report, onOpenCitation, onRestart }: { report: QuizReport; onO
 
       {report.review.length > 0 && (
         <Panel>
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-100">
-            <FileText className="h-4 w-4 text-indigo-400" /> Re-read these passages
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
+            <FileText className="h-4 w-4 text-indigo-600" /> Re-read these passages
           </h3>
           <div className="flex flex-wrap gap-2">
             {report.review.map((r) => (
-              <button key={r.citation.evidence_id} onClick={() => onOpenCitation(r.citation)} className="flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-xs text-indigo-300 hover:bg-indigo-500/20">
+              <button key={r.citation.evidence_id} onClick={() => onOpenCitation(r.citation)} className="flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs text-indigo-600 hover:bg-indigo-100">
                 <MapPin className="h-3 w-3" /> {r.citation.source_title}, {locatorLabel(r.citation)}
               </button>
             ))}
@@ -270,22 +270,22 @@ function Report({ report, onOpenCitation, onRestart }: { report: QuizReport; onO
       )}
 
       <Panel>
-        <h3 className="mb-3 text-sm font-bold text-slate-100">Answers</h3>
+        <h3 className="mb-3 text-sm font-bold text-slate-900">Answers</h3>
         <div className="space-y-2">
           {report.items.map((it, i) => (
-            <details key={it.question_id} className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-sm">
-              <summary className="flex cursor-pointer items-start gap-2 text-slate-200">
-                {it.is_correct ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />}
+            <details key={it.question_id} className="rounded-xl border border-slate-200 bg-[#fbfaf7] p-3 text-sm">
+              <summary className="flex cursor-pointer items-start gap-2 text-slate-800">
+                {it.is_correct ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />}
                 <span>
                   {i + 1}. {it.prompt}
                 </span>
               </summary>
-              <div className="mt-2 space-y-1 pl-6 text-xs text-slate-400">
+              <div className="mt-2 space-y-1 pl-6 text-xs text-slate-500">
                 <p>Your answer: {it.your_answer ?? "—"}</p>
-                <p>Correct answer: <span className="text-slate-200">{it.expected_answer}</span></p>
+                <p>Correct answer: <span className="text-slate-800">{it.expected_answer}</span></p>
                 {it.solution && <p>Source: {it.solution}</p>}
                 {it.citation && (
-                  <button onClick={() => onOpenCitation(it.citation!)} className="text-indigo-300 underline decoration-dotted">
+                  <button onClick={() => onOpenCitation(it.citation!)} className="text-indigo-600 underline decoration-dotted">
                     {it.citation.source_title}, {locatorLabel(it.citation)}
                   </button>
                 )}
@@ -296,9 +296,9 @@ function Report({ report, onOpenCitation, onRestart }: { report: QuizReport; onO
       </Panel>
 
       {rec && rec.topic_id && (
-        <Panel className="border-indigo-500/40">
-          <p className="text-xs font-bold uppercase tracking-wider text-indigo-300">Next step · {ACTION_LABELS[rec.recommended_action]}</p>
-          <p className="mt-1 text-sm text-slate-200">{rec.rationale}</p>
+        <Panel className="border-indigo-200">
+          <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">Next step · {ACTION_LABELS[rec.recommended_action]}</p>
+          <p className="mt-1 text-sm text-slate-800">{rec.rationale}</p>
         </Panel>
       )}
     </div>
@@ -492,8 +492,8 @@ export const AssessmentView: React.FC<Props> = ({ topics, initialTopic, pendingQ
           )}
           {result && (
             <Panel className="flex items-center justify-between gap-3">
-              <p className="text-xs text-slate-300">
-                <b className="text-indigo-300">{ACTION_LABELS[result.next_recommendation.recommended_action]}:</b> {result.next_recommendation.rationale}
+              <p className="text-xs text-slate-600">
+                <b className="text-indigo-600">{ACTION_LABELS[result.next_recommendation.recommended_action]}:</b> {result.next_recommendation.rationale}
               </p>
               <PrimaryButton onClick={() => loadQuestion()} disabled={busy}>
                 Next <ArrowRight className="h-4 w-4" />
@@ -506,23 +506,23 @@ export const AssessmentView: React.FC<Props> = ({ topics, initialTopic, pendingQ
       {mode === "builder" && (
         <Panel className="space-y-5">
           <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Scope (leave empty for all topics)</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Scope (leave empty for all topics)</p>
             <div className="grid max-h-64 gap-1.5 overflow-y-auto sm:grid-cols-2">
               {withQuestions.map((t) => (
-                <label key={t.topic_id} className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-800 px-3 py-2 text-xs text-slate-200 hover:border-slate-600">
+                <label key={t.topic_id} className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-800 hover:border-slate-300">
                   <input type="checkbox" className="accent-indigo-500" checked={scope.includes(t.topic_id)} onChange={(e) => setScope((s) => (e.target.checked ? [...s, t.topic_id] : s.filter((x) => x !== t.topic_id)))} />
                   <span className="truncate">{t.name}</span>
-                  {t.owner === "you" && <span className="ml-auto text-[10px] font-bold text-indigo-300">yours</span>}
+                  {t.owner === "you" && <span className="ml-auto text-[10px] font-bold text-indigo-600">yours</span>}
                 </label>
               ))}
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            <label className="text-xs text-slate-300">
+            <label className="text-xs text-slate-600">
               Questions: <b>{count}</b>
               <input type="range" min={3} max={25} value={count} onChange={(e) => setCount(+e.target.value)} className="mt-2 w-full accent-indigo-500" />
             </label>
-            <div className="text-xs text-slate-300">
+            <div className="text-xs text-slate-600">
               Types
               <div className="mt-2 flex flex-wrap gap-2">
                 {(Object.keys(TYPE_LABEL) as QuestionType[]).map((ty) => (
@@ -533,7 +533,7 @@ export const AssessmentView: React.FC<Props> = ({ topics, initialTopic, pendingQ
                 ))}
               </div>
             </div>
-            <div className="text-xs text-slate-300">
+            <div className="text-xs text-slate-600">
               Mode
               <div className="mt-2 flex gap-3">
                 <label className="flex items-center gap-1">
@@ -554,13 +554,13 @@ export const AssessmentView: React.FC<Props> = ({ topics, initialTopic, pendingQ
 
       {mode === "quiz" && quiz && current && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs text-slate-400">
+          <div className="flex items-center justify-between text-xs text-slate-500">
             <span>
-              {quiz.mode === "exam" ? "Mock exam" : quiz.mode === "diagnostic" ? "Placement check" : "Quiz"} · question {qi + 1} of {quiz.questions.length}
+              {quiz.mode === "exam" ? "Mock exam" : "Quiz"} · question {qi + 1} of {quiz.questions.length}
             </span>
             <span>{answeredCount} answered</span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-50">
             <div className="h-full bg-indigo-500 transition-all" style={{ width: `${(answeredCount / quiz.questions.length) * 100}%` }} />
           </div>
           <QuestionCard
@@ -572,7 +572,7 @@ export const AssessmentView: React.FC<Props> = ({ topics, initialTopic, pendingQ
             showFeedback={quiz.mode !== "exam"}
             onOpenCitation={onOpenCitation}
           />
-          {quiz.mode === "exam" && currentResult && <p className="text-xs text-slate-400">Answer recorded. Feedback comes in the report.</p>}
+          {quiz.mode === "exam" && currentResult && <p className="text-xs text-slate-500">Answer recorded. Feedback comes in the report.</p>}
           <div className="flex flex-wrap justify-between gap-2">
             <GhostButton onClick={() => setQi(Math.max(0, qi - 1))} disabled={qi === 0}>
               Previous

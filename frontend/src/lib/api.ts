@@ -156,7 +156,6 @@ export const api = {
 
   createQuiz: (opts: { topic_ids: string[]; count: number; types: string[]; difficulty?: string; mode: string }) =>
     post<QuizSession>("/api/v1/quiz", opts),
-  diagnostic: () => post<QuizSession>("/api/v1/diagnostic"),
   answerQuiz: (sessionId: string, questionId: string, answer: string) =>
     post<AssessmentCycleResult & { recorded?: boolean }>(`/api/v1/quiz/${sessionId}/answer`, { question_id: questionId, answer }),
   finishQuiz: (sessionId: string) => post<QuizReport>(`/api/v1/quiz/${sessionId}/finish`),
@@ -170,10 +169,6 @@ export const api = {
     request<Recommendation>(
       `/api/v1/learner/${encodeURIComponent(learnerId)}/recommendations${activeTopicId ? `?active_topic_id=${encodeURIComponent(activeTopicId)}` : ""}`
     ),
-  intake: (learnerId: string, ratings: Record<string, number>) =>
-    post<{ intake_status: string; initial_recommendation: Recommendation }>(`/api/v1/learner/${encodeURIComponent(learnerId)}/intake`, {
-      initial_topic_masteries: ratings,
-    }),
 
   flashcards: (topicId?: string) => request<Flashcard[]>(`/api/v1/flashcards${topicId ? `?topic_id=${encodeURIComponent(topicId)}` : ""}`),
   reviewFlashcard: (cardId: string, grade: number) => post<{ due: string; interval_days: number }>(`/api/v1/flashcards/${encodeURIComponent(cardId)}/review`, { grade }),

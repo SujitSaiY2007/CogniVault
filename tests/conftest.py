@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def make_service(backend: Optional[Backend] = None, llm: Optional[LLM] = None, seed: bool = True) -> CogniVault:
-    settings = Settings(data_dir=ROOT / "data", seed_demo_course=seed)
+    settings = Settings(data_dir=ROOT / "data", seed_demo_course=seed, show_demo_course=seed)
     svc = CogniVault(settings, db=Database(":memory:"), llm=llm or LLM(), backend=backend)
     if seed:
         svc.seed_demo_course()

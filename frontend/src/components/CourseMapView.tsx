@@ -12,10 +12,10 @@ const GX = 70;
 const GY = 18;
 
 const STATUS: Record<string, { fill: string; stroke: string; label: string }> = {
-  mastered: { fill: "#064e3b", stroke: "#34d399", label: "Mastered" },
-  in_progress: { fill: "#422006", stroke: "#f59e0b", label: "In progress" },
-  ready: { fill: "#1e1b4b", stroke: "#818cf8", label: "Ready to start" },
-  locked: { fill: "#0f172a", stroke: "#475569", label: "Prerequisites first" },
+  mastered: { fill: "#ecfdf5", stroke: "#10b981", label: "Mastered" },
+  in_progress: { fill: "#fffbeb", stroke: "#f59e0b", label: "In progress" },
+  ready: { fill: "#eef2ff", stroke: "#6366f1", label: "Ready to start" },
+  locked: { fill: "#f8fafc", stroke: "#cbd5e1", label: "Prerequisites first" },
 };
 
 export const CourseMapView: React.FC<{ refreshKey: number; onPractice: (topicId: string) => void }> = ({ refreshKey, onPractice }) => {
@@ -72,7 +72,7 @@ export const CourseMapView: React.FC<{ refreshKey: number; onPractice: (topicId:
         title="Course Map"
         subtitle="Topics found in your material and the prerequisites between them. Arrows point from a prerequisite to the topic that builds on it. Click a topic to practise it."
         right={
-          <div className="flex flex-wrap gap-3 text-[11px] text-slate-300">
+          <div className="flex flex-wrap gap-3 text-[11px] text-slate-600">
             {Object.values(STATUS).map((s) => (
               <span key={s.label} className="flex items-center gap-1">
                 <span className="h-3 w-3 rounded border" style={{ background: s.fill, borderColor: s.stroke }} /> {s.label}
@@ -84,7 +84,7 @@ export const CourseMapView: React.FC<{ refreshKey: number; onPractice: (topicId:
       {error && <ErrorBanner message={error} onRetry={load} />}
       {!map && !error && <Spinner label="Drawing your course map…" />}
       {map && layout && (
-        <div className="overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-3">
+        <div className="overflow-auto rounded-2xl border border-slate-200 bg-[#fbfaf7] p-3">
           <svg width={layout.width} height={layout.height} role="img" aria-label="Course topic map">
             <defs>
               <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -92,7 +92,7 @@ export const CourseMapView: React.FC<{ refreshKey: number; onPractice: (topicId:
               </marker>
             </defs>
             {layout.headers.map((h) => (
-              <text key={h.title + h.y} x={10} y={h.y + 16} fill="#a5b4fc" fontSize={12} fontWeight={700}>
+              <text key={h.title + h.y} x={10} y={h.y + 16} fill="#4f46e5" fontSize={12} fontWeight={700}>
                 {h.title}
               </text>
             ))}
@@ -117,10 +117,10 @@ export const CourseMapView: React.FC<{ refreshKey: number; onPractice: (topicId:
                 <g key={n.topic_id} transform={`translate(${p.x},${p.y})`} onClick={() => onPractice(n.topic_id)} style={{ cursor: "pointer" }}>
                   <title>{`${n.name}\nMastery ${Math.round(n.p_mastery * 100)}%\n${n.concepts.join(", ")}`}</title>
                   <rect width={W} height={H} rx={12} fill={s.fill} stroke={s.stroke} strokeWidth={1.5} />
-                  <text x={12} y={23} fill="#f1f5f9" fontSize={12} fontWeight={700}>
+                  <text x={12} y={23} fill="#172033" fontSize={12} fontWeight={700}>
                     {n.name.length > 26 ? n.name.slice(0, 25) + "…" : n.name}
                   </text>
-                  <rect x={12} y={36} width={W - 24} height={6} rx={3} fill="#1e293b" />
+                  <rect x={12} y={36} width={W - 24} height={6} rx={3} fill="#e2e8f0" />
                   <rect x={12} y={36} width={(W - 24) * n.p_mastery} height={6} rx={3} fill={s.stroke} />
                 </g>
               );

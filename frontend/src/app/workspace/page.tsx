@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, authApi, onConnectionStatus } from "@/lib/api";
-import { Citation, CurriculumTopic, QuizSession, SystemHealth } from "@/lib/types";
+import { Citation, CurriculumTopic, SystemHealth } from "@/lib/types";
 import { Navbar, TABS } from "@/components/Navbar";
 import { TutorView } from "@/components/TutorView";
 import { AssessmentView } from "@/components/AssessmentView";
@@ -13,8 +13,8 @@ import { RecommendationsView } from "@/components/RecommendationsView";
 import { CourseMapView } from "@/components/CourseMapView";
 import { IngestionView } from "@/components/IngestionView";
 import { CitationDrawer } from "@/components/CitationDrawer";
-import { ColdStartModal } from "@/components/ColdStartModal";
-import { ErrorBanner } from "@/components/ui";
+import { EmptyState, ErrorBanner, PrimaryButton } from "@/components/ui";
+import { BookOpen } from "lucide-react";
 
 export default function Workspace() {
   const router = useRouter();
@@ -27,10 +27,9 @@ export default function Workspace() {
   const [connection, setConnection] = useState<"ok" | "waking" | "down">("ok");
   const [topics, setTopics] = useState<CurriculumTopic[]>([]);
   const [topicsError, setTopicsError] = useState<string | null>(null);
+  const [topicsLoaded, setTopicsLoaded] = useState(false);
   const [practiceTopic, setPracticeTopic] = useState<string | undefined>();
-  const [pendingQuiz, setPendingQuiz] = useState<QuizSession | null>(null);
   const [citation, setCitation] = useState<Citation | null>(null);
-  const [coldStart, setColdStart] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(
@@ -45,9 +44,13 @@ export default function Workspace() {
   const loadTopics = useCallback(async () => {
     setTopicsError(null);
     try {
-      setTopics(await api.listTopics());
+      const list = await api.listTopics();
+      setTopics(list);
+      setTopicsLoaded(true);
+      return list;
     } catch (e: any) {
       setTopicsError(e.message);
+      return null;
     }
   }, []);
 
@@ -64,7 +67,10 @@ export default function Workspace() {
         setReady(true);
         const t = new URLSearchParams(window.location.search).get("tab");
         if (t && TABS.some((x) => x.id === t)) setTab(t);
-        loadTopics();
+        loadTopics().then((list) => {
+          // A brand-new account has no materials yet: start on the upload page.
+          if (!t && list && list.length === 0) setTab("materials");
+        });
         api.getHealth().then(setHealth).catch(() => setConnection("down"));
       })
       .catch((e) => {
@@ -84,11 +90,11 @@ export default function Workspace() {
 
   if (!ready)
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-950 p-6 text-center text-slate-200">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#fbfaf7] p-6 text-center text-slate-800">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
         <p className="max-w-md text-sm font-semibold">{bootMessage}</p>
         {connection === "down" && (
-          <button onClick={() => window.location.reload()} className="rounded-xl border border-slate-600 px-4 py-2 text-xs font-bold hover:border-indigo-400">
+          <button onClick={() => window.location.reload()} className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold hover:border-indigo-400">
             Try again
           </button>
         )}
@@ -96,13 +102,12 @@ export default function Workspace() {
     );
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
+    <div className="flex min-h-screen flex-col bg-[#fbfaf7] text-slate-900">
       <Navbar
         activeTab={tab}
         setActiveTab={setTab}
         health={health}
         connection={connection}
-        onOpenColdStart={() => setColdStart(true)}
         accountUsername={username}
         onLogout={async () => {
           try {
@@ -118,23 +123,31 @@ export default function Workspace() {
         </div>
       )}
       <main className="flex-1 overflow-x-hidden">
-        <div className={tab === "tutor" ? "block" : "hidden"}>
+        {topicsLoaded && topics.length === 0 && tab !== "materials" && (
+          <div className="mx-auto max-w-3xl p-6">
+            <EmptyState
+              icon={BookOpen}
+              title="Add your course materials to begin"
+              body="Upload notes, slides, a PDF or a lecture transcript. CogniVault turns them into topics, practice questions and a study plan that belong only to you."
+              action={<PrimaryButton onClick={() => setTab("materials")}>Upload materials</PrimaryButton>}
+            />
+          </div>
+        )}
+        <div className={tab === "tutor" && !(topicsLoaded && topics.length === 0) ? "block" : "hidden"}>
           <TutorView topics={topics} onOpenCitation={setCitation} />
         </div>
-        {tab === "assessment" && (
+        {tab === "assessment" && topics.length > 0 && (
           <AssessmentView
             topics={topics}
             initialTopic={practiceTopic}
-            pendingQuiz={pendingQuiz}
-            onPendingQuizConsumed={() => setPendingQuiz(null)}
             onOpenCitation={setCitation}
             onAssessmentCompleted={changed}
           />
         )}
-        {tab === "mastery" && <LearnerProgressView learnerId={learnerId} refreshKey={refreshKey} onPractice={practise} />}
-        {tab === "misconceptions" && <MisconceptionsView learnerId={learnerId} refreshKey={refreshKey} onPractice={practise} onOpenCitation={setCitation} />}
-        {tab === "recommendations" && <RecommendationsView learnerId={learnerId} refreshKey={refreshKey} onPractice={practise} onOpenCitation={setCitation} />}
-        {tab === "map" && <CourseMapView refreshKey={refreshKey} onPractice={practise} />}
+        {tab === "mastery" && topics.length > 0 && <LearnerProgressView learnerId={learnerId} refreshKey={refreshKey} onPractice={practise} />}
+        {tab === "misconceptions" && topics.length > 0 && <MisconceptionsView learnerId={learnerId} refreshKey={refreshKey} onPractice={practise} onOpenCitation={setCitation} />}
+        {tab === "recommendations" && topics.length > 0 && <RecommendationsView learnerId={learnerId} refreshKey={refreshKey} onPractice={practise} onOpenCitation={setCitation} />}
+        {tab === "map" && topics.length > 0 && <CourseMapView refreshKey={refreshKey} onPractice={practise} />}
         {tab === "materials" && (
           <IngestionView
             onCurriculumUpdated={() => {
@@ -145,20 +158,6 @@ export default function Workspace() {
         )}
       </main>
       <CitationDrawer citation={citation} onClose={() => setCitation(null)} />
-      <ColdStartModal
-        isOpen={coldStart}
-        onClose={() => setColdStart(false)}
-        learnerId={learnerId}
-        topics={topics}
-        onComplete={(quiz) => {
-          setColdStart(false);
-          changed();
-          if (quiz) {
-            setPendingQuiz(quiz);
-            setTab("assessment");
-          } else setTab("recommendations");
-        }}
-      />
     </div>
   );
 }

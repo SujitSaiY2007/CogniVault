@@ -12,7 +12,7 @@
 | **Tutor** | Hybrid search (BM25 + embeddings, RRF fusion, coverage re-rank, MMR). An evidence gate decides whether to **answer**, answer as **partial** (naming what the material doesn't mention) or **decline**. Every sentence links to its source. Follow-up questions work. |
 | **Practice & exams** | MCQ, numerical and fill-in questions generated from your text and verified before use. Numerical answers are computed from the formulas in your notes. Quick practice, custom quizzes and mock exams end with a report: weak topics, confusions, misconceptions, and passages to re-read. |
 | **Learner model** | BKT with item-specific guess/slip, partial credit and forgetting. Misconceptions are flagged after repeated errors. Recommendations follow prerequisites, interleave topics and avoid "wheel-spinning". |
-| **Study tools** | Placement check (cold start), day-by-day plan to an exam date, SM-2 flashcards, and a course map of topics and prerequisites. |
+| **Study tools** | Day-by-day plan to an exam date (pick a range and daily time; it re-plans as you change them), SM-2 flashcards, and a course map of topics and prerequisites. |
 | **Optional AI** | With `GEMINI_API_KEY` (or a local Ollama), the model writes explanations. Each sentence is still checked against the cited passage: unsupported sentences are removed, and the app falls back to the extractive answer if too few survive. Without a key, everything works using the extractive engine. |
 
 ## Results (v2, demo course, `python -m evaluation.run_eval`)
@@ -86,7 +86,7 @@ Free Render instances sleep when idle. The UI shows "Waking server…" and retri
 |---|---|
 | `app/` | backend: `ingest`, `knowledge`, `retrieval`, `grounding`, `questions`, `learner`, `study`, `service`, `api`, `persistence` |
 | `frontend/` | Next.js 14 + TypeScript + Tailwind |
-| `data/corpus/` | demo course (project-authored, CC0; rebuilt by `app/corpus.py`) |
+| `data/corpus/` | demo course (project-authored, CC0; rebuilt by `app/corpus.py`). Hidden from users by default; set `SHOW_DEMO_COURSE=1` to show it. Used by the evaluation scripts |
 | `evaluation/` | datasets, runners, recorded results |
 | `tests/` | unit, API and persistence tests |
 | `docs/` | architecture, evaluation, archived v1 records, hackathon reference PDFs |

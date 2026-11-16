@@ -133,3 +133,18 @@ def test_supabase_diagnose_reports_connection_failure():
     assert d["key_kind"] == "sb_secret" and d["all_ok"] is False
     assert all(p["ok"] is False and p["error"] for p in d["probes"].values())
     assert "sb_secret_testkey" not in str(d)
+
+
+def test_new_users_start_with_no_demo_documents():
+    from app.config import Settings
+    from app.db import Database
+    from app.service import CogniVault
+    from app.llm import LLM
+    from .conftest import ROOT
+    svc = CogniVault(Settings(data_dir=ROOT / "data", show_demo_course=False), db=Database(":memory:"), llm=LLM())
+    svc.seed_demo_course()  # demo exists in the shared scope but must stay hidden
+    assert svc.db.topics("learner-new") == [] and svc.db.sources("learner-new") == []
+    assert svc.ask("learner-new", "What is Newton's second law?").is_grounded is False
+    shown = CogniVault(Settings(data_dir=ROOT / "data", show_demo_course=True), db=Database(":memory:"), llm=LLM())
+    shown.seed_demo_course()
+    assert shown.db.topics("learner-new")

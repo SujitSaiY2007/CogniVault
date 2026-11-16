@@ -136,9 +136,11 @@ class Database:
             self.conn.execute(sql, tuple(params))
             self.conn.commit()
 
-    @staticmethod
-    def _scope(owner_id: str) -> tuple[str, list[str]]:
-        owners = [PUBLIC_OWNER] if owner_id == PUBLIC_OWNER else [PUBLIC_OWNER, owner_id]
+    # When False, signed-in users see only their own uploads (the shared demo course is hidden).
+    show_public = True
+
+    def _scope(self, owner_id: str) -> tuple[str, list[str]]:
+        owners = [PUBLIC_OWNER] if owner_id == PUBLIC_OWNER else [PUBLIC_OWNER, owner_id] if self.show_public else [owner_id]
         return "(" + ",".join("?" for _ in owners) + ")", owners
 
     # ------------------------------------------------------------------ sources
