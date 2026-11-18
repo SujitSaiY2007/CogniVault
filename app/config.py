@@ -53,6 +53,7 @@ class Settings:
     max_files_per_account: int = 20
     max_account_mb: int = 150
     cors_origins: tuple[str, ...] = field(default_factory=tuple)
+    cors_origin_regex: str = ""
 
     @property
     def supabase_enabled(self) -> bool:
@@ -83,4 +84,5 @@ def load_settings() -> Settings:
         max_files_per_account=_env_int("MAX_FILES_PER_ACCOUNT", 20),
         max_account_mb=_env_int("MAX_ACCOUNT_MB", 150),
         cors_origins=origins,
+        cors_origin_regex=_env("CORS_ORIGIN_REGEX"),
     )

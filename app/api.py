@@ -120,7 +120,16 @@ def create_app(service: Optional[CogniVault] = None, settings: Optional[Settings
                   description="Evidence-first tutoring, assessment and learner modelling over your own course material.")
     origins = list(settings.cors_origins) or ["*"]
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=origins != ["*"],
-                       allow_methods=["*"], allow_headers=["*"])
+                       allow_methods=["*"], allow_headers=["*"],
+                       allow_origin_regex=settings.cors_origin_regex or None)
+
+    @app.middleware("http")
+    async def _log_blocked_origin(request: Request, call_next):
+        response = await call_next(request)
+        if request.method == "OPTIONS" and response.status_code == 400 and request.headers.get("origin"):
+            log.warning("CORS blocked origin %r (allowed: %s, regex: %r)", request.headers["origin"],
+                        ", ".join(origins), settings.cors_origin_regex)
+        return response
     app.state.service = svc
     limiter = RateLimiter()
 

@@ -24,6 +24,9 @@ services:
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: CORS_ORIGINS
-        value: https://cogni-vault.vercel.app
+        value: https://cogni-vault.vercel.app,https://cogni-vault-git-main-code-ksethram.vercel.app
+      # Also accepts every Vercel address of this project (production, branch alias, per-deploy URL).
+      - key: CORS_ORIGIN_REGEX
+        value: ^https://cogni-vault(-[a-z0-9-]+)?\.vercel\.app$
       - key: CV_DATA_DIR
         value: /tmp/cognivault
