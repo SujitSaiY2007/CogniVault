@@ -2,7 +2,7 @@
 
 **A study companion that only answers from your own course material.** Upload your PDFs, slides, lecture transcripts or notes. CogniVault cites the exact page, slide or timestamp behind every answer, and declines questions the material doesn't cover. It generates checked practice questions and tracks what you know with Bayesian Knowledge Tracing. It then plans what to study next.
 
-> Started at the Multimodal AI Hackathon 2026 (Track D, Personalized Tutoring & Adaptive Learning) and rebuilt in v2 as a usable product. The v1 hackathon records are in [`docs/archive/v1-hackathon`](docs/archive/v1-hackathon).
+> Started at the Multimodal AI Hackathon 2026 (Track D, Personalized Tutoring & Adaptive Learning) and rebuilt in v2 as a usable product.
 
 ## What it does
 
@@ -86,10 +86,10 @@ Free Render instances sleep when idle. The UI shows "Waking server…" and retri
 |---|---|
 | `app/` | backend: `ingest`, `knowledge`, `retrieval`, `grounding`, `questions`, `learner`, `study`, `service`, `api`, `persistence` |
 | `frontend/` | Next.js 14 + TypeScript + Tailwind |
-| `data/corpus/` | demo course (project-authored, CC0; rebuilt by `app/corpus.py`). Hidden from users by default; set `SHOW_DEMO_COURSE=1` to show it. Used by the evaluation scripts |
+| `data/corpus/` | demo course (project-authored, CC0; generated on first use by `app/corpus.py`, not stored in git). Hidden from users by default; set `SHOW_DEMO_COURSE=1` to show it. Used by the evaluation scripts |
 | `evaluation/` | datasets, runners, recorded results |
 | `tests/` | unit, API and persistence tests |
-| `docs/` | architecture, evaluation, archived v1 records, hackathon reference PDFs |
+| `docs/` | architecture and evaluation notes |
 
 ## Limitations
 
