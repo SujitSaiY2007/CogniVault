@@ -161,12 +161,14 @@ def test_cors_regex_allows_vercel_project_origins(monkeypatch, caplog):
     from fastapi.testclient import TestClient
     from app.api import create_app
     monkeypatch.setenv("CORS_ORIGINS", "https://cogni-vault.vercel.app")
-    monkeypatch.setenv("CORS_ORIGIN_REGEX", r"https://cogni-vault(-[a-z0-9-]+)?\.vercel\.app")
+    monkeypatch.delenv("CORS_ORIGIN_REGEX", raising=False)  # the built-in default must cover this project
     monkeypatch.setenv("CV_DATA_DIR", "/tmp/cv_cors_test")
     c = TestClient(create_app())
     hdr = lambda o: {"Origin": o, "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "content-type"}
     assert c.options("/api/v1/auth/login", headers=hdr("https://cogni-vault-git-main-code-ksethram.vercel.app")).status_code == 200
+    assert c.options("/api/v1/auth/login", headers=hdr("https://cogni-vault-6ezh63d32-code-ksethram.vercel.app")).status_code == 200
     assert c.options("/api/v1/auth/login", headers=hdr("https://cogni-vault.vercel.app")).status_code == 200
+    assert c.options("/api/v1/auth/login", headers=hdr("https://cogni-vault-x-other-team.vercel.app")).status_code == 400
     with caplog.at_level("WARNING"):
         assert c.options("/api/v1/auth/login", headers=hdr("https://evil.example.com")).status_code == 400
     assert "evil.example.com" in caplog.text

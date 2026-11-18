@@ -23,6 +23,11 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+# Vercel addresses of this project: production, the branch alias and every per-deploy URL
+# (cogni-vault-<hash>-code-ksethram.vercel.app). Override with CORS_ORIGIN_REGEX for another project.
+DEFAULT_CORS_REGEX = r"^https://cogni-vault(-[a-z0-9-]+-code-ksethram)?\.vercel\.app$"
+
+
 @dataclass(frozen=True)
 class Settings:
     app_env: str = "development"
@@ -84,5 +89,5 @@ def load_settings() -> Settings:
         max_files_per_account=_env_int("MAX_FILES_PER_ACCOUNT", 20),
         max_account_mb=_env_int("MAX_ACCOUNT_MB", 150),
         cors_origins=origins,
-        cors_origin_regex=_env("CORS_ORIGIN_REGEX"),
+        cors_origin_regex=_env("CORS_ORIGIN_REGEX", DEFAULT_CORS_REGEX),
     )
