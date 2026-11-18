@@ -26,6 +26,53 @@ Search, grounding checks, question generation and the learner model are rule-bas
 | Optional AI | Google Gemini or a local Ollama model | Phrasing answers and describing figures |
 | Hosting | Vercel (frontend), Render (backend), Supabase (data) | Free-tier deployment |
 
+## Architecture
+
+```mermaid
+flowchart LR
+  U["Student<br/>Next.js on Vercel"] -->|HTTPS + token| API["FastAPI on Render<br/>auth and routes"]
+  API --> SV["CogniVault service"]
+
+  subgraph Learn ["Upload"]
+    direction TB
+    P["Parse files<br/>PDF, slides, captions, notes"] --> T["Topics, concepts,<br/>prerequisites"]
+    T --> QB["Question bank<br/>generated and verified"]
+  end
+
+  subgraph Ask ["Ask"]
+    direction TB
+    S["Search<br/>BM25 + vectors"] --> G{"Evidence gate"}
+    G -->|covered| A["Answer with citations"]
+    G -->|not covered| D["Decline"]
+  end
+
+  subgraph Practice ["Practice"]
+    direction TB
+    Q["Quiz and grading"] --> M["Learner model<br/>mastery, misconceptions"]
+    M --> R["Next step, flashcards,<br/>study plan"]
+  end
+
+  SV --> Learn
+  SV --> Ask
+  SV --> Practice
+  QB -.-> Q
+
+  SV --> DB[("SQLite<br/>working data")]
+  SV --> SB[("Supabase<br/>accounts, files, progress")]
+  A -.->|optional| L["LLM<br/>phrases answers,<br/>output verified"]
+
+  classDef core fill:#ffffff,stroke:#334155,color:#0f172a;
+  classDef accent fill:#eef2ff,stroke:#4f46e5,color:#312e81;
+  classDef store fill:#f1f5f9,stroke:#64748b,color:#0f172a;
+  classDef opt fill:#ffffff,stroke:#94a3b8,color:#475569,stroke-dasharray:4 3;
+  class U,API,SV,P,T,QB,S,A,D,Q,M,R core;
+  class G accent;
+  class DB,SB store;
+  class L opt;
+```
+
+**Reading it:** the browser talks to one backend service. Three flows run through it. *Upload* turns files into topics and questions. *Ask* searches your material and the evidence gate decides whether to answer or decline. *Practice* grades answers and updates the learner model, which drives recommendations. Data is kept in SQLite while running and in Supabase for the long term. The LLM is optional and only phrases answers.
+
 ## Deployment
 
 **Live app:** https://cogni-vault.vercel.app
